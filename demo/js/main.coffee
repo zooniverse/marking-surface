@@ -9,8 +9,9 @@ class PointTool extends Tool
 
   constructor: ->
     super
-    @circle = @addShape 'circle', 0, 0, 10
-    @circle.attr fill: 'red'
+    @hr = @addShape 'rect', -20, -1, 40, 2, fill: 'green', 'stroke-width': 0
+    @vr = @addShape 'rect', -1, -20, 2, 40, fill: 'blue', 'stroke-width': 0
+    @circle = @addShape 'circle', 0, 0, 10, fill: 'red', 'stroke-width': 0
 
   onInitialClick: (e) ->
     super
@@ -24,8 +25,7 @@ class PointTool extends Tool
     @mark.set @surface.mouseOffset e
 
   render: ->
-    @shapeSet.transform {}
-    @shapeSet.translate @mark.x, @mark.y
+    @shapeSet.transform "t #{@mark.x} #{@mark.y}"
 
   select: ->
     super
@@ -33,7 +33,7 @@ class PointTool extends Tool
 
   deselect: ->
     super
-    @circle.attr 'stroke-width', 1
+    @circle.attr 'stroke-width', 0
 
 
 window.ms = new MarkingSurface tool: PointTool

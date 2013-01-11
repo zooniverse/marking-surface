@@ -68,7 +68,11 @@ class Tool extends BaseClass
         @shapeSet[eventName] $.proxy @, 'handleEvents'
 
   addShape: (type, params...) ->
+    if typeof params[params.length - 1] is 'object'
+      attributes = params.pop()
+
     shape = @surface.paper[type.toLowerCase()] params...
+    shape.attr attributes
     @shapeSet.push shape
     shape
 
