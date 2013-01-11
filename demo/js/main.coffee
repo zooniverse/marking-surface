@@ -35,6 +35,6 @@ class PointTool extends Tool
     super
     @circle.attr 'stroke-width', 0
 
-
-window.ms = new MarkingSurface tool: PointTool
+demoImage = 'http://www.seafloorexplorer.org/images/field-guide/fish.jpg'
+window.ms = new MarkingSurface tool: PointTool, image: demoImage
 window.ms.container.appendTo 'body'

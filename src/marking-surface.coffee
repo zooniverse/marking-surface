@@ -147,6 +147,7 @@ class MarkingSurface extends BaseClass
   className: 'marking-surface'
   width: 480
   height: 320
+  image: ''
 
   paper: null
   marks: null
@@ -166,6 +167,7 @@ class MarkingSurface extends BaseClass
     @height = @container.height() || @height unless 'height' of params
 
     @paper ?= Raphael @container.get(0), @width, @height
+    @background = @paper.image @image, 0, 0, @width, @height
 
     @marks ?= []
     @tools ?= []
@@ -179,7 +181,7 @@ class MarkingSurface extends BaseClass
     return if @disabled
     @container.focus()
 
-    return unless e.target in [@container.get(0), @paper.canvas]
+    return unless e.target in [@container.get(0), @paper.canvas, @background.node]
     return if e.isDefaultPrevented()
 
     e.preventDefault()
