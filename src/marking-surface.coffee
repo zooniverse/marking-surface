@@ -15,9 +15,9 @@ class BaseClass
     @trigger 'destroy'
     @off()
 
-for method in ['on', 'one', 'trigger', 'off'] then do (method) ->
-  BaseClass::[method] = ->
-    @_$[method] arguments...
+  for method in ['on', 'one', 'trigger', 'off'] then do (method) =>
+    @::[method] = ->
+      @_$[method] arguments...
 
 
 class Mark extends BaseClass
