@@ -161,6 +161,7 @@ class MarkingSurface extends BaseClass
     @container ?= document.createElement 'div'
     @container = $(@container)
     @container.addClass @className
+    @container.attr tabindex: 0
     @width = @container.width() || @width unless 'width' of params
     @height = @container.height() || @height unless 'height' of params
 
@@ -172,9 +173,12 @@ class MarkingSurface extends BaseClass
     disable() if @disabled
 
     @container.on 'mousedown touchstart', $.proxy @, 'onMouseDown'
+    @container.on 'keydown', $.proxy @, 'onKeyDown'
 
   onMouseDown: (e) ->
     return if @disabled
+    @container.focus()
+
     return unless e.target in [@container.get(0), @paper.canvas]
     return if e.isDefaultPrevented()
 
@@ -189,6 +193,11 @@ class MarkingSurface extends BaseClass
 
       tool.on 'selected', =>
         @selection?.deselect()
+
+        index = @tools.indexOf tool
+        @tools.splice index, 1
+        @tools.push tool
+
         @selection = tool
 
       tool.on 'deselected', =>
@@ -197,6 +206,7 @@ class MarkingSurface extends BaseClass
       tool.on 'destroyed', =>
         index = @tools.indexOf tool
         @tools.splice index, 1
+        @tools[@tools.length - 1]?.select() if tool is @selection
 
       mark.on 'destroyed', =>
         index = @marks.indexOf mark
@@ -215,6 +225,12 @@ class MarkingSurface extends BaseClass
 
   onDrag: (e) ->
     @selection.onInitialDrag e
+
+  onKeyDown: (e) ->
+
+    if e.which in [8, 46] # Backspace and delete
+      e.preventDefault()
+      @selection?.mark.destroy()
 
   disable: (e) ->
     @disabled = true
