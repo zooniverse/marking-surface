@@ -5,60 +5,75 @@ doc = $(document)
 
 
 class BaseClass
-  _$: null
+  jQueryInstance: null
 
   constructor: (params = {}) ->
     @[property] = value for own property, value of params when property of @
-    @_$ = $(@)
+    @jQueryInstance = $(@)
 
   destroy: ->
-    @trigger 'destroy'
+    @trigger 'destroyed'
     @off()
 
   for method in ['on', 'one', 'trigger', 'off'] then do (method) =>
     @::[method] = ->
-      @_$[method] arguments...
+      @jQueryInstance[method] arguments...
 
 
 class Mark extends BaseClass
-  type: 'mark'
-
   set: (property, value, {fromMany} = {}) ->
     if typeof property is 'string'
       setter = @["set #{property}"]
       @[property] = if setter then setter.call @, value else value
+
     else
       map = property
       @set property, value, fromMany: true for property, value of map
 
-    @trigger 'change' unless fromMany
+    @trigger 'change', property, value unless fromMany
 
   toJSON: ->
-    {@type}
+    result = {@type}
+
+    for own property, value of @
+      continue if property[...'jQuery'.length] is 'jQuery'
+      result[property] = value
+
+    result
 
 
 class Tool extends BaseClass
-  @mark: Mark
+  @Mark: Mark
 
-  mark: null
+  markDefaults: null
   surface: null
 
-  set: null
+  shapeSet: null
 
   constructor: ->
     super
-    @set ?= @surface.paper.set()
+    @shapeSet ?= @surface.paper.set()
 
-    @mark.on 'change', @render
+    @mark ?= new @constructor.Mark
+    @mark.set @markDefaults if @markDefaults
+    @mark.on 'change', $.proxy @, 'render'
+    @mark.on 'destroyed', $.proxy @, 'destroy'
+
+    @deleteButton = $('<button name="delete-button">&times;</button>')
+    @deleteButton.on 'click', $.proxy @, 'onClickDelete'
+    @deleteButton.appendTo @surface.container
 
     setTimeout =>
       for eventName in ['mousedown', 'mousemove', 'mouseup']
-        @set[eventName] $.proxy @, 'handleEvents'
+        @shapeSet[eventName] $.proxy @, 'handleEvents'
 
   addShape: (type, params...) ->
     shape = @surface.paper[type.toLowerCase()] params...
-    @set.push shape
+    @shapeSet.push shape
     shape
+
+  onClickDelete: (e) ->
+    @mark.destroy()
 
   onInitialClick: (e) ->
     @trigger 'initial-click', [e]
@@ -66,11 +81,12 @@ class Tool extends BaseClass
       @trigger 'initial-drag', [e]
 
   onInitialDrag: (e) ->
+    # Override this to change some value of the mark.
 
   handleEvents: (e) ->
     type = e.type
 
-    for name, shape of @ when shape in @set
+    for name, shape of @ when shape in @shapeSet
       break if shape.node is e.target
       name = ''
       shape = null
@@ -97,18 +113,25 @@ class Tool extends BaseClass
     e.preventDefault()
 
   render: ->
+    # Override this to redraw the shape based on the current state of the mark.
 
   select: ->
-    @set.toFront()
-    @trigger 'tool-select', arguments
+    @shapeSet.toFront()
+    @trigger 'selected', arguments
 
   deselect: ->
-    @trigger 'tool-deselect', arguments
+    @trigger 'deselected', arguments
 
   destroy: ->
+    @shapeSet.animate
+      transform: '...s0.01'
+      250
+      'ease-out'
+      =>
+        @shapeSet.remove()
+        @deleteButton.remove()
+
     super
-    @set.remove()
-    @deleteButton.remove()
 
   isComplete: ->
     true
@@ -148,24 +171,35 @@ class MarkingSurface extends BaseClass
 
   onMouseDown: (e) ->
     return if @disabled
+    return unless e.target in [@container.get(0), @paper.canvas]
     return if e.isDefaultPrevented()
+
     e.preventDefault()
 
     if not @selection? or @selection.isComplete()
-      tool = new @tool
-        mark: new @tool.mark
-        surface: @
+      tool = new @tool surface: @
+      mark = tool.mark
 
       @tools.push tool
+      @marks.push mark
 
-      tool.on 'tool-select', =>
+      tool.on 'selected', =>
         @selection?.deselect()
         @selection = tool
 
-      tool.on 'tool-deselect', =>
+      tool.on 'deselected', =>
         @selection = null
 
+      tool.on 'destroyed', =>
+        index = @tools.indexOf tool
+        @tools.splice index, 1
+
+      mark.on 'destroyed', =>
+        index = @marks.indexOf mark
+        @marks.splice index, 1
+
       tool.select()
+
     else
       tool = @selection
 

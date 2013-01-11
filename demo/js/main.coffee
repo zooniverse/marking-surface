@@ -3,14 +3,9 @@ MarkingSurface = require '/src/marking-surface'
 Raphael = window.Raphael
 
 
-class PointMark extends Mark
-  name: 'point'
-  x: 0
-  y: 0
-
-
 class PointTool extends Tool
   circle: null
+  markDefaults: type: 'point'
 
   constructor: ->
     super
@@ -28,9 +23,9 @@ class PointTool extends Tool
   'on drag circle': (e) ->
     @mark.set @surface.mouseOffset e
 
-  render: =>
-    @set.transform {}
-    @set.translate @mark.x, @mark.y
+  render: ->
+    @shapeSet.transform {}
+    @shapeSet.translate @mark.x, @mark.y
 
   select: ->
     super
