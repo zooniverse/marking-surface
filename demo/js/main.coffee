@@ -7,6 +7,8 @@ class PointTool extends Tool
   circle: null
   markDefaults: type: 'point'
 
+  cursors: circle: 'move'
+
   constructor: ->
     super
     @hr = @addShape 'rect', -20, -1, 40, 2, fill: 'green', 'stroke-width': 0
@@ -25,6 +27,7 @@ class PointTool extends Tool
     @mark.set @surface.mouseOffset e
 
   render: ->
+    super
     @shapeSet.transform "t #{@mark.x} #{@mark.y}"
 
   select: ->

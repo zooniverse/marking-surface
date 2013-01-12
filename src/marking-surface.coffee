@@ -2,6 +2,7 @@ $ = window.jQuery
 Raphael = window.Raphael
 
 doc = $(document)
+body = $(document.body)
 
 
 class BaseClass
@@ -48,6 +49,8 @@ class Tool extends BaseClass
   markDefaults: null
   surface: null
 
+  cursors: null
+
   shapeSet: null
 
   constructor: ->
@@ -64,7 +67,7 @@ class Tool extends BaseClass
     @deleteButton.appendTo @surface.container
 
     setTimeout =>
-      for eventName in ['mousedown', 'mousemove', 'mouseup']
+      for eventName in ['mousedown', 'mouseover', 'mousemove', 'mouseout', 'mouseup']
         @shapeSet[eventName] $.proxy @, 'handleEvents'
 
   addShape: (type, params...) ->
@@ -98,7 +101,17 @@ class Tool extends BaseClass
     @["on #{type}"]?.call @, arguments...
     @["on #{type} #{name}"]?.call @, arguments... if name
 
+    if type is 'mouseover'
+      setTimeout =>
+        body.css cursor: @cursors[name]
+
+    if type is 'mouseout'
+      body.css cursor: ''
+
     if type in ['mousedown', 'touchstart']
+      @select()
+      e.preventDefault()
+
       onDrag = $.proxy @, 'on drag' if 'on drag' of @
       onNamedDrag = $.proxy @, "on drag #{name}" if "on drag #{name}" of @
 
@@ -111,10 +124,6 @@ class Tool extends BaseClass
         doc.on 'mousemove touchmove', onNamedDrag
         doc.one 'mouseup touchend', =>
           doc.off 'mousemove touchmove', onNamedDrag
-
-  'on mousedown': (e) ->
-    @select()
-    e.preventDefault()
 
   render: ->
     # Override this to redraw the shape based on the current state of the mark.
