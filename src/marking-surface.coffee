@@ -1,6 +1,7 @@
 $ = window.jQuery
 Raphael = window.Raphael
 
+win = $(window)
 doc = $(document)
 body = $(document.body)
 
@@ -46,6 +47,7 @@ class Mark extends BaseClass
 class Tool extends BaseClass
   @Mark: Mark
 
+  mark: null
   markDefaults: null
   surface: null
 
@@ -144,8 +146,7 @@ class Tool extends BaseClass
       =>
         @shapeSet.remove()
         @deleteButton.remove()
-
-    super
+        super
 
   isComplete: ->
     true
@@ -182,6 +183,8 @@ class MarkingSurface extends BaseClass
 
     @paper ?= Raphael @container.get(0), @width, @height
     @image = @paper.image @background, 0, 0, @width, @height
+    win.on 'resize', $.proxy @, 'resize'
+    setTimeout $.proxy @, 'resize'
 
     @marks ?= []
     @tools ?= []
@@ -190,6 +193,12 @@ class MarkingSurface extends BaseClass
 
     @container.on 'mousedown touchstart', $.proxy @, 'onMouseDown'
     @container.on 'keydown', $.proxy @, 'onKeyDown'
+
+  resize: ->
+    @width = @container.width()
+    @height = @container.height()
+    @paper.setSize @width, @height
+    @image.attr {@width, @height}
 
   onMouseDown: (e) ->
     return if @disabled
