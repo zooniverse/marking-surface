@@ -176,6 +176,7 @@ class MarkingSurface extends BaseClass
     @container = $(@container)
     @container.addClass @className
     @container.attr tabindex: 0
+    @container.on 'blur', $.proxy @, 'onBlur'
 
     unless @container.parents().length is 0
       @width = @container.width() || @width unless 'width' of params
@@ -252,15 +253,18 @@ class MarkingSurface extends BaseClass
     @selection.onInitialDrag e
 
   onKeyDown: (e) ->
-
     if e.which in [8, 46] # Backspace and delete
       e.preventDefault()
       @selection?.mark.destroy()
+
+  onBlur: ->
+    @selection?.deselect()
 
   disable: (e) ->
     @disabled = true
     @container.attr disabled: true
     @container.addClass 'disabled'
+    @selection?.deselect()
 
   enable: (e) ->
     @disabled = false
