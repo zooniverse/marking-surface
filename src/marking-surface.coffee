@@ -267,4 +267,5 @@ class MarkingSurface extends BaseClass
 MarkingSurface.Mark = Mark
 MarkingSurface.Tool = Tool
 
-module.exports = MarkingSurface
+window.MarkingSurface = MarkingSurface
+module.exports = MarkingSurface if module?

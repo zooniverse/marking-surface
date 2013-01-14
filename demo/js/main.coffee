@@ -1,7 +1,6 @@
-MarkingSurface = require '/src/marking-surface'
+MarkingSurface = window.MarkingSurface
 {Mark, Tool} = MarkingSurface
 Raphael = window.Raphael
-
 
 class PointTool extends Tool
   circle: null
