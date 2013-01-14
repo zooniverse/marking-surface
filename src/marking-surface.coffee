@@ -92,9 +92,10 @@ class Tool extends BaseClass
 
   handleEvents: (e) ->
     type = e.type
+    target = e.target || e.srcElement
 
     for name, shape of @ when shape in @shapeSet
-      break if shape.node is e.target
+      break if shape.node is target
       name = ''
       shape = null
 
@@ -156,9 +157,10 @@ class MarkingSurface extends BaseClass
   className: 'marking-surface'
   width: 480
   height: 320
-  image: ''
+  background: ''
 
   paper: null
+  image: null
   marks: null
   tools: null
 
@@ -168,15 +170,18 @@ class MarkingSurface extends BaseClass
 
   constructor: (params = {}) ->
     super
+
     @container ?= document.createElement 'div'
     @container = $(@container)
     @container.addClass @className
     @container.attr tabindex: 0
-    @width = @container.width() || @width unless 'width' of params
-    @height = @container.height() || @height unless 'height' of params
+
+    unless @container.parents().length is 0
+      @width = @container.width() || @width unless 'width' of params
+      @height = @container.height() || @height unless 'height' of params
 
     @paper ?= Raphael @container.get(0), @width, @height
-    @background = @paper.image @image, 0, 0, @width, @height
+    @image = @paper.image @background, 0, 0, @width, @height
 
     @marks ?= []
     @tools ?= []
@@ -190,7 +195,7 @@ class MarkingSurface extends BaseClass
     return if @disabled
     @container.focus()
 
-    return unless e.target in [@container.get(0), @paper.canvas, @background.node]
+    return unless e.target in [@container.get(0), @paper.canvas, @image.node]
     return if e.isDefaultPrevented()
 
     e.preventDefault()
@@ -205,7 +210,7 @@ class MarkingSurface extends BaseClass
       tool.on 'selected', =>
         @selection?.deselect()
 
-        index = @tools.indexOf tool
+        index = i for t, i in @tools when t is tool
         @tools.splice index, 1
         @tools.push tool
 
@@ -215,12 +220,12 @@ class MarkingSurface extends BaseClass
         @selection = null
 
       tool.on 'destroyed', =>
-        index = @tools.indexOf tool
+        index = i for t, i in @tools when t is tool
         @tools.splice index, 1
         @tools[@tools.length - 1]?.select() if tool is @selection
 
       mark.on 'destroyed', =>
-        index = @marks.indexOf mark
+        index = i for m, i in @marks when m is mark
         @marks.splice index, 1
 
       tool.select()
@@ -258,8 +263,8 @@ class MarkingSurface extends BaseClass
     super
 
   mouseOffset: (e) ->
-    e = e.originalEvent if 'originalEvent' of e
-    e = e.touches[0] if 'touches' of e
+    originalEvent = e.originalEvent if 'originalEvent' of e
+    e = originalEvent.touches[0] if originalEvent? and 'touches' of originalEvent
     {left, top} = @container.offset()
     x: e.pageX - left, y: e.pageY - top
 

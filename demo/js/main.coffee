@@ -1,6 +1,6 @@
-MarkingSurface = window.MarkingSurface
-{Mark, Tool} = MarkingSurface
 Raphael = window.Raphael
+MarkingSurface = window.MarkingSurface
+{Tool} = MarkingSurface
 
 class PointTool extends Tool
   circle: null
@@ -23,6 +23,7 @@ class PointTool extends Tool
     @['on drag circle'] e
 
   'on drag circle': (e) ->
+    offset = @surface.mouseOffset e
     @mark.set @surface.mouseOffset e
 
   render: ->
@@ -38,5 +39,5 @@ class PointTool extends Tool
     @circle.attr 'stroke-width', 0
 
 demoImage = 'http://www.seafloorexplorer.org/images/field-guide/fish.jpg'
-window.ms = new MarkingSurface tool: PointTool, image: demoImage
+window.ms = new MarkingSurface tool: PointTool, background: demoImage
 window.ms.container.appendTo 'body'
