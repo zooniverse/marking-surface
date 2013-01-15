@@ -28,6 +28,7 @@ class PointTool extends Tool
 
   render: ->
     super
+    @circle.attr r: 10 / @surface.zoomBy
     @shapeSet.transform "t #{@mark.x} #{@mark.y}"
 
   select: ->
@@ -45,6 +46,15 @@ disabledCheckbox = $('#disabled')
 disabledCheckbox.on 'change': ->
   checked = !!disabledCheckbox.attr 'checked'
   ms[if checked then 'disable' else 'enable']()
+
+zoomSlider = $('#zoom')
+zoomSlider.on 'change', ->
+  ms.zoom zoomSlider.val()
+
+noZoomButton = $('#no-zoom')
+noZoomButton.on 'click', ->
+  zoomSlider.val 1
+  ms.zoom 1, 0, 0
 
 ms.container.appendTo 'body'
 

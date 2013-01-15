@@ -166,6 +166,10 @@ class MarkingSurface extends BaseClass
   marks: null
   tools: null
 
+  zoomBy: 1
+  zoomX: 0
+  zoomY: 0
+
   selection: null
 
   disabled: false
@@ -194,6 +198,7 @@ class MarkingSurface extends BaseClass
     disable() if @disabled
 
     @container.on 'mousedown touchstart', $.proxy @, 'onMouseDown'
+    @container.on 'mousemove touchmove', $.proxy @, 'onMouseMove'
     @container.on 'keydown', $.proxy @, 'onKeyDown'
 
   resize: ->
@@ -201,6 +206,19 @@ class MarkingSurface extends BaseClass
     @height = @container.height()
     @paper.setSize @width, @height
     @image.attr {@width, @height}
+
+  zoom: (@zoomBy = @zoomBy, @zoomX = @zoomX, @zoomY = @zoomY) ->
+    @zoomX = Math.min @width, @zoomX
+    @zoomY = Math.min @height, @zoomY
+    @paper.setViewBox @zoomX, @zoomY, @width / @zoomBy, @height / @zoomBy
+    tool.render() for tool in @tools
+
+  onMouseMove: (e) ->
+    return if @zoomBy is 1
+    {x, y} = @mouseOffset e
+    @zoomX = (@width - (@width / @zoomBy)) * (x / @width)
+    @zoomY = (@height - (@height / @zoomBy)) * (y / @height)
+    @zoom()
 
   onMouseDown: (e) ->
     return if @disabled
