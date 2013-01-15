@@ -93,6 +93,7 @@ class Tool extends BaseClass
     # Override this to change some value of the mark.
 
   handleEvents: (e) ->
+    return if @surface.disabled
     type = e.type
     target = e.target || e.srcElement
 
