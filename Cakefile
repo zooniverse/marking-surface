@@ -7,7 +7,6 @@ run = ->
   child.stdout.on 'data', process.stdout.write.bind process.stdout
   child.stderr.on 'data', process.stderr.write.bind process.stderr
 
-
 task 'watch', 'Watch changes during development', ->
   run 'coffee', ['--watch', '--output', './lib', '--compile', './src']
 
