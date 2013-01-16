@@ -1,0 +1,9 @@
+{
+  "name": "marking-surface",
+  "version": "0.0.3",
+  "main": "./lib/marking-surface.js",
+  "dependencies": {
+    "jquery": "~1.8.3",
+    "raphael": "~2.1.0"
+  }
+}
