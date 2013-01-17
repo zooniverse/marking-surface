@@ -5,6 +5,7 @@ win = $(window)
 doc = $(document)
 body = $(document.body)
 
+MOUSE_EVENTS = ['mousedown', 'mouseover', 'mousemove', 'mouseout', 'mouseup']
 
 class BaseClass
   jQueryInstance: null
@@ -65,16 +66,15 @@ class Tool extends BaseClass
     @mark.on 'destroyed', $.proxy @, 'destroy'
 
     @deleteButton = $('<button name="delete-button">&times;</button>')
+    @deleteButton.css position: 'absolute'
     @deleteButton.on 'click', $.proxy @, 'onClickDelete'
     @deleteButton.appendTo @surface.container
 
     setTimeout =>
-      for eventName in ['mousedown', 'mouseover', 'mousemove', 'mouseout', 'mouseup']
-        @shapeSet[eventName] $.proxy @, 'handleEvents'
+      @shapeSet[eventName] $.proxy @, 'handleEvents' for eventName in MOUSE_EVENTS
 
   addShape: (type, params...) ->
-    if typeof params[params.length - 1] is 'object'
-      attributes = params.pop()
+    attributes = params.pop() if typeof params[params.length - 1] is 'object'
 
     shape = @surface.paper[type.toLowerCase()] params...
     shape.attr attributes
@@ -102,18 +102,18 @@ class Tool extends BaseClass
       name = ''
       shape = null
 
-    @["on #{type}"]?.call @, arguments...
-    @["on #{type} #{name}"]?.call @, arguments... if name
+    @["on #{type}"]?.call @, arguments..., target
+    @["on #{type} #{name}"]?.call @, arguments..., target if name
 
     if type is 'mouseover'
       setTimeout =>
-        body.css cursor: @cursors[name]
+        body.css cursor: @cursors?[name]
 
     if type is 'mouseout'
       body.css cursor: ''
 
     if type in ['mousedown', 'touchstart']
-      @select()
+      setTimeout ($.proxy @, 'select'), 100
       e.preventDefault()
 
       onDrag = $.proxy @, 'on drag' if 'on drag' of @
@@ -133,13 +133,18 @@ class Tool extends BaseClass
     # Override this to redraw the shape based on the current state of the mark.
 
   select: ->
+    @deleteButton.show()
     @shapeSet.toFront()
     @trigger 'selected', arguments
 
   deselect: ->
+    @deleteButton.hide()
     @trigger 'deselected', arguments
 
   destroy: ->
+    @shapeSet["un#{eventName}"] $.proxy @, 'handleEvents' for eventName in MOUSE_EVENTS
+    @deleteButton.off()
+
     @shapeSet.animate
       transform: '...s0.01'
       250
@@ -189,8 +194,8 @@ class MarkingSurface extends BaseClass
 
     @paper ?= Raphael @container.get(0), @width, @height
     @image = @paper.image @background, 0, 0, @width, @height
-    win.on 'resize', $.proxy @, 'resize'
-    setTimeout $.proxy @, 'resize'
+    # win.on 'resize', $.proxy @, 'resize'
+    # setTimeout $.proxy @, 'resize'
 
     @marks ?= []
     @tools ?= []
@@ -222,10 +227,10 @@ class MarkingSurface extends BaseClass
 
   onMouseDown: (e) ->
     return if @disabled
-    @container.focus()
-
     return unless e.target in [@container.get(0), @paper.canvas, @image.node]
     return if e.isDefaultPrevented()
+
+    @container.focus()
 
     e.preventDefault()
 
@@ -277,6 +282,7 @@ class MarkingSurface extends BaseClass
       @selection?.mark.destroy()
 
   onBlur: ->
+    return if @container.has document.activeElement
     @selection?.deselect()
 
   disable: (e) ->
@@ -298,6 +304,10 @@ class MarkingSurface extends BaseClass
     originalEvent = e.originalEvent if 'originalEvent' of e
     e = originalEvent.touches[0] if originalEvent? and 'touches' of originalEvent
     {left, top} = @container.offset()
+    left += parseFloat @container.css 'padding-left'
+    left += parseFloat @container.css 'border-left-width'
+    top += parseFloat @container.css 'padding-top'
+    top += parseFloat @container.css 'border-top-width'
     x: e.pageX - left, y: e.pageY - top
 
 
