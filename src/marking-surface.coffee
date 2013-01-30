@@ -158,7 +158,10 @@ class Tool extends BaseClass
     @trigger 'deselect', arguments
 
   destroy: ->
+    super
+
     @deleteButton.off()
+    @deleteButton.remove()
 
     @shapeSet.animate
       opacity: 0
@@ -168,8 +171,6 @@ class Tool extends BaseClass
       'ease-in'
       =>
         @shapeSet.remove() # This also unbinds all events.
-        @deleteButton.remove()
-        super
 
   mouseOffset: ->
     @surface.mouseOffset arguments...
@@ -260,6 +261,7 @@ class MarkingSurface extends BaseClass
     return unless e.target in [@container.get(0), @paper.canvas, @image.node]
     return if e.isDefaultPrevented()
 
+    $(document.activeElement).blur()
     @container.focus()
 
     e.preventDefault()
@@ -309,6 +311,8 @@ class MarkingSurface extends BaseClass
     @selection.onInitialDrag e
 
   onKeyDown: (e) ->
+    return if $(e.target).is 'input, textarea, select, button'
+
     if e.which in [8, 46] # Backspace and delete
       e.preventDefault()
       @selection?.mark.destroy()
