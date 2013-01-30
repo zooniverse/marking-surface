@@ -65,7 +65,7 @@ class Tool extends BaseClass
     @mark.on 'change', => @render arguments...
     @mark.on 'destroy', => @destroy arguments...
 
-    @deleteButton = $('<button name="delete-button">&times;</button>')
+    @deleteButton = $('<button name="delete-mark">&times;</button>')
     @deleteButton.css position: 'absolute'
     @deleteButton.on 'click', => @onClickDelete arguments...
     @deleteButton.appendTo @surface.container
@@ -104,19 +104,18 @@ class Tool extends BaseClass
     type = e.type
     target = e.target || e.srcElement
 
-    for name, shape of @
-      break if shape?.node is target
-      name = ''
-      shape = null
+    shape = @surface.paper.getById target.raphaelid
 
-    shape ?= target
+    for property, value of @
+      isArray = value instanceof Array or value instanceof @shapeSet.constructor
+      if (value is shape) or (isArray and shape in value)
+        name = property
 
     @["on #{type}"]?.call @, e, shape
     @["on #{type} #{name}"]?.call @, e, shape if name
 
-    if type is 'mouseover'
-      setTimeout =>
-        body.css cursor: @cursors?[name] || @cursors?['*'] || ''
+    if type is 'mouseover' and name
+      body.css cursor: @cursors?[name] || ''
 
     if type is 'mouseout'
       body.css cursor: ''
@@ -177,6 +176,9 @@ class Tool extends BaseClass
 
   render: ->
     # @shapeSet.attr cx: @mark.position
+    # @deleteButton.css
+    #   left: @mark.position
+    #   top: @mark.position
 
 
 class MarkingSurface extends BaseClass
@@ -301,6 +303,15 @@ class MarkingSurface extends BaseClass
     if e.which in [8, 46] # Backspace and delete
       e.preventDefault()
       @selection?.mark.destroy()
+    else if e.which is 9 and @selection? # Tab
+      e.preventDefault()
+
+      if e.shiftKey
+        @tools.unshift @tools.pop()
+      else
+        @tools.push @tools.shift()
+
+      @tools[@tools.length - 1].select()
 
   onFocus: ->
     @selection?.select()
