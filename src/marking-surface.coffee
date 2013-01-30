@@ -7,20 +7,21 @@ body = $(document.body)
 
 MOUSE_EVENTS = ['mousedown', 'mouseover', 'mousemove', 'mouseout', 'mouseup']
 
+
 class BaseClass
-  jQueryInstance: null
+  jQueryEventProxy: null
 
   constructor: (params = {}) ->
     @[property] = value for own property, value of params when property of @
-    @jQueryInstance = $(@)
+    @jQueryEventProxy = $({})
 
   destroy: ->
-    @trigger 'destroyed'
+    @trigger 'destroy'
     @off()
 
   for method in ['on', 'one', 'trigger', 'off'] then do (method) =>
     @::[method] = ->
-      @jQueryInstance[method] arguments...
+      @jQueryEventProxy[method] arguments...
 
 
 class Mark extends BaseClass
@@ -36,10 +37,11 @@ class Mark extends BaseClass
     @trigger 'change', property, value unless fromMany
 
   toJSON: ->
-    result = {@type}
+    result = {}
 
-    for own property, value of @
-      continue if property[...'jQuery'.length] is 'jQuery'
+    for property, value of @
+      continue if property is 'jQueryEventProxy'
+      continue if typeof value is 'function'
       result[property] = value
 
     result
@@ -48,118 +50,141 @@ class Mark extends BaseClass
 class Tool extends BaseClass
   @Mark: Mark
 
-  mark: null
-  markDefaults: null
-  surface: null
-
   cursors: null
 
+  mark: null
+  markDefaults: null
+
+  surface: null
   shapeSet: null
 
   constructor: ->
     super
-    @shapeSet ?= @surface.paper.set()
 
     @mark ?= new @constructor.Mark
-    @mark.set @markDefaults if @markDefaults
-    @mark.on 'change', $.proxy @, 'render'
-    @mark.on 'destroyed', $.proxy @, 'destroy'
+    @mark.set @markDefaults if @markDefaults?
+    @mark.on 'change', => @render arguments...
+    @mark.on 'destroy', => @destroy arguments...
 
     @deleteButton = $('<button name="delete-button">&times;</button>')
     @deleteButton.css position: 'absolute'
-    @deleteButton.on 'click', $.proxy @, 'onClickDelete'
+    @deleteButton.on 'click', => @onClickDelete arguments...
     @deleteButton.appendTo @surface.container
 
+    @shapeSet ?= @surface.paper.set()
+
+    # Wait for shapes to be added in an overridden constructor.
     setTimeout =>
-      @shapeSet[eventName] $.proxy @, 'handleEvents' for eventName in MOUSE_EVENTS
+      for eventName in MOUSE_EVENTS
+        @shapeSet[eventName] =>
+          @handleEvents arguments...
 
   addShape: (type, params...) ->
     attributes = params.pop() if typeof params[params.length - 1] is 'object'
 
     shape = @surface.paper[type.toLowerCase()] params...
     shape.attr attributes
+
     @shapeSet.push shape
     shape
 
-  onClickDelete: (e) ->
-    @mark.destroy()
-
   onInitialClick: (e) ->
     @trigger 'initial-click', [e]
+
+    @onFirstClick e
+
+  onInitialDrag: (e) ->
     doc.one 'mouseup touchend', (e) =>
       @trigger 'initial-drag', [e]
 
-  onInitialDrag: (e) ->
-    # Override this to change some value of the mark.
+    @onFirstDrag e
+
+  # Override this if drawing the tool requires multiple drag steps (e.g. axes).
+  isComplete: ->
+    true
 
   handleEvents: (e) ->
     return if @surface.disabled
+
     type = e.type
     target = e.target || e.srcElement
 
-    for name, shape of @ when shape in @shapeSet
-      break if shape.node is target
+    for name, shape of @
+      break if shape?.node is target
       name = ''
       shape = null
 
-    @["on #{type}"]?.call @, arguments..., target
-    @["on #{type} #{name}"]?.call @, arguments..., target if name
+    shape ?= target
+
+    @["on #{type}"]?.call @, e, shape
+    @["on #{type} #{name}"]?.call @, e, shape if name
 
     if type is 'mouseover'
       setTimeout =>
-        body.css cursor: @cursors?[name]
+        body.css cursor: @cursors?[name] || @cursors?['*'] || ''
 
     if type is 'mouseout'
       body.css cursor: ''
 
     if type in ['mousedown', 'touchstart']
-      setTimeout ($.proxy @, 'select'), 100
       e.preventDefault()
 
-      onDrag = $.proxy @, 'on drag' if 'on drag' of @
-      onNamedDrag = $.proxy @, "on drag #{name}" if "on drag #{name}" of @
+      @select()
 
-      if onDrag?
+      if 'on drag' of @
+        onDrag = => @['on drag'] arguments..., shape
         doc.on 'mousemove touchmove', onDrag
         doc.one 'mouseup touchend', =>
           doc.off 'mousemove touchmove', onDrag
 
-      if onNamedDrag?
+      if name and "on drag #{name}" of @
+        onNamedDrag = => @["on drag #{name}"] arguments..., shape
         doc.on 'mousemove touchmove', onNamedDrag
         doc.one 'mouseup touchend', =>
           doc.off 'mousemove touchmove', onNamedDrag
 
-  render: ->
-    # Override this to redraw the shape based on the current state of the mark.
+  onClickDelete: (e) ->
+    @mark.destroy()
 
   select: ->
     @deleteButton.show()
     @shapeSet.toFront()
-    @trigger 'selected', arguments
+    @trigger 'select', arguments
 
   deselect: ->
     @deleteButton.hide()
-    @trigger 'deselected', arguments
+    @trigger 'deselect', arguments
 
   destroy: ->
-    @shapeSet["un#{eventName}"] $.proxy @, 'handleEvents' for eventName in MOUSE_EVENTS
     @deleteButton.off()
 
     @shapeSet.animate
-      transform: '...s0.01'
+      opacity: 0
+      r: 0
+      'stroke-width': 0
       250
-      'ease-out'
+      'ease-in'
       =>
-        @shapeSet.remove()
+        @shapeSet.remove() # This also unbinds all events.
         @deleteButton.remove()
         super
 
-  isComplete: ->
-    true
+  mouseOffset: ->
+    @surface.mouseOffset arguments...
+
+  onFirstClick: (e) ->
+    # @mark.set position: @mouseOffset(e).x
+
+  onFirstDrag: (e) ->
+    # @mark.set position: @mouseOffset(e).x
+
+  render: ->
+    # @shapeSet.attr cx: @mark.position
 
 
 class MarkingSurface extends BaseClass
   tool: Tool
+
   container: null
   className: 'marking-surface'
   width: 480
@@ -241,7 +266,7 @@ class MarkingSurface extends BaseClass
       @tools.push tool
       @marks.push mark
 
-      tool.on 'selected', =>
+      tool.on 'select', =>
         @selection?.deselect()
 
         index = i for t, i in @tools when t is tool
@@ -250,15 +275,15 @@ class MarkingSurface extends BaseClass
 
         @selection = tool
 
-      tool.on 'deselected', =>
+      tool.on 'deselect', =>
         @selection = null
 
-      tool.on 'destroyed', =>
+      tool.on 'destroy', =>
         index = i for t, i in @tools when t is tool
         @tools.splice index, 1
         @tools[@tools.length - 1]?.select() if tool is @selection
 
-      mark.on 'destroyed', =>
+      mark.on 'destroy', =>
         index = i for m, i in @marks when m is mark
         @marks.splice index, 1
 
