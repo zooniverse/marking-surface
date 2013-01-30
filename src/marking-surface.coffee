@@ -20,8 +20,7 @@ class BaseClass
     @off()
 
   for method in ['on', 'one', 'trigger', 'off'] then do (method) =>
-    @::[method] = ->
-      @jQueryEventProxy[method] arguments...
+    @::[method] = -> @jQueryEventProxy[method] arguments...
 
 
 class Mark extends BaseClass
@@ -76,8 +75,7 @@ class Tool extends BaseClass
     # Wait for shapes to be added in an overridden constructor.
     setTimeout =>
       for eventName in MOUSE_EVENTS
-        @shapeSet[eventName] =>
-          @handleEvents arguments...
+        @shapeSet[eventName] => @handleEvents arguments...
 
   addShape: (type, params...) ->
     attributes = params.pop() if typeof params[params.length - 1] is 'object'
@@ -90,13 +88,10 @@ class Tool extends BaseClass
 
   onInitialClick: (e) ->
     @trigger 'initial-click', [e]
-
     @onFirstClick e
 
   onInitialDrag: (e) ->
-    doc.one 'mouseup touchend', (e) =>
-      @trigger 'initial-drag', [e]
-
+    doc.one 'mouseup touchend', (e) => @trigger 'initial-drag', [e]
     @onFirstDrag e
 
   # Override this if drawing the tool requires multiple drag steps (e.g. axes).
@@ -147,11 +142,13 @@ class Tool extends BaseClass
     @mark.destroy()
 
   select: ->
+    @shapeSet.attr opacity: 1
     @deleteButton.show()
     @shapeSet.toFront()
     @trigger 'select', arguments
 
   deselect: ->
+    @shapeSet.attr opacity: 0.5
     @deleteButton.hide()
     @trigger 'deselect', arguments
 
@@ -187,8 +184,8 @@ class MarkingSurface extends BaseClass
 
   container: null
   className: 'marking-surface'
-  width: 480
-  height: 320
+  width: 400
+  height: 300
   background: ''
 
   paper: null
@@ -211,7 +208,8 @@ class MarkingSurface extends BaseClass
     @container = $(@container)
     @container.addClass @className
     @container.attr tabindex: 0
-    @container.on 'blur', $.proxy @, 'onBlur'
+    @container.on 'blur', => @onBlur arguments...
+    @container.on 'focus', => @onFocus arguments...
 
     unless @container.parents().length is 0
       @width = @container.width() || @width unless 'width' of params
@@ -219,21 +217,17 @@ class MarkingSurface extends BaseClass
 
     @paper ?= Raphael @container.get(0), @width, @height
     @image = @paper.image @background, 0, 0, @width, @height
-    # win.on 'resize', $.proxy @, 'resize'
-    # setTimeout $.proxy @, 'resize'
 
     @marks ?= []
     @tools ?= []
 
     disable() if @disabled
 
-    @container.on 'mousedown touchstart', $.proxy @, 'onMouseDown'
-    @container.on 'mousemove touchmove', $.proxy @, 'onMouseMove'
-    @container.on 'keydown', $.proxy @, 'onKeyDown'
+    @container.on 'mousedown touchstart', => @onMouseDown arguments...
+    @container.on 'mousemove touchmove', => @onMouseMove arguments...
+    @container.on 'keydown', => @onKeyDown arguments...
 
-  resize: ->
-    @width = @container.width()
-    @height = @container.height()
+  resize: (@width, @height) ->
     @paper.setSize @width, @height
     @image.attr {@width, @height}
 
@@ -267,7 +261,7 @@ class MarkingSurface extends BaseClass
       @marks.push mark
 
       tool.on 'select', =>
-        @selection?.deselect()
+        @selection?.deselect() unless @selection is tool
 
         index = i for t, i in @tools when t is tool
         @tools.splice index, 1
@@ -292,11 +286,13 @@ class MarkingSurface extends BaseClass
     else
       tool = @selection
 
+    tool.select()
     tool.onInitialClick e
 
-    doc.on 'mousemove touchmove', $.proxy @, 'onDrag'
+    onDrag = => @onDrag arguments...
+    doc.on 'mousemove touchmove', onDrag
     doc.one 'mouseup touchend', =>
-      doc.off 'mousemove touchmove', $.proxy @, 'onDrag'
+      doc.off 'mousemove touchmove', onDrag
 
   onDrag: (e) ->
     @selection.onInitialDrag e
@@ -305,6 +301,9 @@ class MarkingSurface extends BaseClass
     if e.which in [8, 46] # Backspace and delete
       e.preventDefault()
       @selection?.mark.destroy()
+
+  onFocus: ->
+    @selection?.select()
 
   onBlur: ->
     return if @container.has document.activeElement
@@ -322,6 +321,7 @@ class MarkingSurface extends BaseClass
     @container.removeClass 'disabled'
 
   destroy: ->
+    @container.off().remove()
     mark.destroy() for mark in @marks
     super
 
