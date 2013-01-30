@@ -57,6 +57,8 @@ class Tool extends BaseClass
   surface: null
   shapeSet: null
 
+  clicks: 0
+
   constructor: ->
     super
 
@@ -71,6 +73,8 @@ class Tool extends BaseClass
     @deleteButton.appendTo @surface.container
 
     @shapeSet ?= @surface.paper.set()
+
+    @initialize arguments...
 
     # Wait for shapes to be added in an overridden constructor.
     setTimeout =>
@@ -89,6 +93,7 @@ class Tool extends BaseClass
   onInitialClick: (e) ->
     @trigger 'initial-click', [e]
     @onFirstClick e
+    @clicks += 1
 
   onInitialDrag: (e) ->
     doc.one 'mouseup touchend', (e) => @trigger 'initial-drag', [e]
@@ -96,7 +101,7 @@ class Tool extends BaseClass
 
   # Override this if drawing the tool requires multiple drag steps (e.g. axes).
   isComplete: ->
-    true
+    @clicks is 1
 
   handleEvents: (e) ->
     return if @surface.disabled
@@ -139,6 +144,7 @@ class Tool extends BaseClass
 
   onClickDelete: (e) ->
     @mark.destroy()
+    @surface.container.focus()
 
   select: ->
     @shapeSet.attr opacity: 1
@@ -167,6 +173,9 @@ class Tool extends BaseClass
 
   mouseOffset: ->
     @surface.mouseOffset arguments...
+
+  initialize: ->
+    # @addShape 'circle'
 
   onFirstClick: (e) ->
     # @mark.set position: @mouseOffset(e).x
