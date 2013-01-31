@@ -106,41 +106,39 @@ class Tool extends BaseClass
   handleEvents: (e) ->
     return if @surface.disabled
 
-    type = e.type
-    target = e.target || e.srcElement
-
+    eventName = e.type
+    target = e.target || e.srcElement # For IE
     shape = @surface.paper.getById target.raphaelid
+    name = '*'
 
     for property, value of @
       isArray = value instanceof Array or value instanceof @shapeSet.constructor
       if (value is shape) or (isArray and shape in value)
         name = property
 
-    @["on #{type}"]?.call @, e, shape
-    @["on #{type} #{name}"]?.call @, e, shape if name
+    @["on #{eventName}"]?.call @, e, shape
+    @["on #{eventName} #{name}"]?.call @, e, shape
 
-    if type is 'mouseover' and name
-      body.css cursor: @cursors?[name] || ''
+    switch eventName
+      when 'mouseover'
+        @surface.container.css cursor: @cursors?[name]
 
-    if type is 'mouseout'
-      body.css cursor: ''
+      when 'mouseout'
+        @surface.container.css cursor: ''
 
-    if type in ['mousedown', 'touchstart']
-      e.preventDefault()
+      when 'mousedown', 'touchstart'
+        e.preventDefault()
+        @select()
 
-      @select()
+        if 'on drag' of @
+          onDrag = => @['on drag'] arguments..., shape
+          doc.on 'mousemove touchmove', onDrag
+          doc.one 'mouseup touchend', => doc.off 'mousemove touchmove', onDrag
 
-      if 'on drag' of @
-        onDrag = => @['on drag'] arguments..., shape
-        doc.on 'mousemove touchmove', onDrag
-        doc.one 'mouseup touchend', =>
-          doc.off 'mousemove touchmove', onDrag
-
-      if name and "on drag #{name}" of @
-        onNamedDrag = => @["on drag #{name}"] arguments..., shape
-        doc.on 'mousemove touchmove', onNamedDrag
-        doc.one 'mouseup touchend', =>
-          doc.off 'mousemove touchmove', onNamedDrag
+        if name and "on drag #{name}" of @
+          onNamedDrag = => @["on drag #{name}"] arguments..., shape
+          doc.on 'mousemove touchmove', onNamedDrag
+          doc.one 'mouseup touchend', => doc.off 'mousemove touchmove', onNamedDrag
 
   onClickDelete: (e) ->
     @mark.destroy()
@@ -176,15 +174,19 @@ class Tool extends BaseClass
     @surface.mouseOffset arguments...
 
   initialize: ->
+    # E.g.
     # @addShape 'circle'
 
   onFirstClick: (e) ->
+    # E.g.
     # @mark.set position: @mouseOffset(e).x
 
   onFirstDrag: (e) ->
+    # E.g.
     # @mark.set position: @mouseOffset(e).x
 
   render: ->
+    # E.g.
     # @shapeSet.attr cx: @mark.position
     # @deleteButton.css
     #   left: @mark.position
@@ -295,6 +297,7 @@ class MarkingSurface extends BaseClass
         @marks.splice index, 1
 
       tool.select()
+      @trigger 'create-mark', [mark, tool]
 
     else
       tool = @selection
