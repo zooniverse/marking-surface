@@ -1,9 +1,7 @@
 $ = window.jQuery
 Raphael = window.Raphael
 
-win = $(window)
 doc = $(document)
-body = $(document.body)
 
 MOUSE_EVENTS = ['mousedown', 'mouseover', 'mousemove', 'mouseout', 'mouseup']
 
@@ -140,6 +138,9 @@ class Tool extends BaseClass
           doc.on 'mousemove touchmove', onNamedDrag
           doc.one 'mouseup touchend', => doc.off 'mousemove touchmove', onNamedDrag
 
+  mouseOffset: ->
+    @surface.mouseOffset arguments...
+
   onClickDelete: (e) ->
     @mark.destroy()
     @surface.container.focus()
@@ -169,9 +170,6 @@ class Tool extends BaseClass
       'ease-in'
       =>
         @shapeSet.remove() # This also unbinds all events.
-
-  mouseOffset: ->
-    @surface.mouseOffset arguments...
 
   initialize: ->
     # E.g.
@@ -367,4 +365,4 @@ MarkingSurface.Mark = Mark
 MarkingSurface.Tool = Tool
 
 window.MarkingSurface = MarkingSurface
-module.exports = MarkingSurface if module?
+module?.exports = MarkingSurface if module?
