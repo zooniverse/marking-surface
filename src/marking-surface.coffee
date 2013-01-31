@@ -206,8 +206,8 @@ class MarkingSurface extends BaseClass
   tools: null
 
   zoomBy: 1
-  zoomX: 0
-  zoomY: 0
+  panX: 0
+  panY: 0
 
   selection: null
 
@@ -243,18 +243,23 @@ class MarkingSurface extends BaseClass
     @paper.setSize @width, @height
     @image.attr {@width, @height}
 
-  zoom: (@zoomBy = @zoomBy, @zoomX = @zoomX, @zoomY = @zoomY) ->
-    @zoomX = Math.min @width, @zoomX
-    @zoomY = Math.min @height, @zoomY
-    @paper.setViewBox @zoomX, @zoomY, @width / @zoomBy, @height / @zoomBy
+  zoom: (@zoomBy = 1) ->
+    @pan()
+
+  pan: (@panX = @panX, @panY = @panY) ->
+    @panX = Math.min @panX, @width, @width - (@width / @zoomBy)
+    @panY = Math.min @panY, @height, @height - (@height / @zoomBy)
+
+    @paper.setViewBox @panX, @panY, @width / @zoomBy, @height / @zoomBy
+
     tool.render() for tool in @tools
 
   onMouseMove: (e) ->
     return if @zoomBy is 1
     {x, y} = @mouseOffset e
-    @zoomX = (@width - (@width / @zoomBy)) * (x / @width)
-    @zoomY = (@height - (@height / @zoomBy)) * (y / @height)
-    @zoom()
+    @panX = (@width - (@width / @zoomBy)) * (x / @width)
+    @panY = (@height - (@height / @zoomBy)) * (y / @height)
+    @pan()
 
   onMouseDown: (e) ->
     return if @disabled

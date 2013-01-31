@@ -54,7 +54,7 @@ zoomSlider.on 'change', ->
 noZoomButton = $('#no-zoom')
 noZoomButton.on 'click', ->
   zoomSlider.val 1
-  ms.zoom 1, 0, 0
+  ms.zoom 1
 
 ms.container.appendTo 'body'
 
