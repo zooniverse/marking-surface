@@ -330,7 +330,7 @@ class MarkingSurface extends BaseClass
       else
         @tools.push @tools.shift()
 
-      @tools[@tools.length - 1].select()
+      @tools[@tools.length - 1]?.select()
 
   onFocus: ->
     @selection?.select()
