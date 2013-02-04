@@ -18,7 +18,8 @@ class BaseClass
     @off()
 
   for method in ['on', 'one', 'trigger', 'off'] then do (method) =>
-    @::[method] = -> @jQueryEventProxy[method] arguments...
+    @::[method] = ->
+      @jQueryEventProxy[method] arguments...
 
 
 class Mark extends BaseClass
@@ -44,8 +45,70 @@ class Mark extends BaseClass
     result
 
 
+class ToolControls extends BaseClass
+  tool: null
+
+  el: null
+  handle: null
+  label: null
+  deleteButton: null
+
+  template: '''
+    <div class="marking-tool-controls">
+      <span class="handle"></span>
+      <span class="label"></span>
+      <button name="delete-mark">&times;</button>
+    </div>
+  '''
+
+  constructor: ->
+    super
+
+    @el = $(@template)
+    @handle = @el.find '.handle'
+    @label = @el.find '.label'
+    @deleteButton = @el.find 'button[name="delete-mark"]'
+
+    @el.on 'mousedown', =>
+      @onMouseDown arguments...
+
+    @el.on 'click', 'button[name="delete-mark"]', =>
+      @onClickDelete arguments...
+
+  onMarkChange: ->
+    @label.html @tool.mark.label
+
+  moveTo: (x, y) ->
+    [x, y] = x if x instanceof Array
+
+    # User margins to avoid problems with a parent's padding.
+    @el.css
+      left: 0
+      'margin-left': x
+      'margin-top': y
+      position: 'absolute'
+      top: 0
+
+  onMouseDown: (e) ->
+    @tool.select()
+
+  onClickDelete: ->
+    @tool.mark.destroy()
+
+  select: ->
+    @el.addClass 'selected'
+
+  deselect: ->
+    @el.removeClass 'selected'
+
+  destroy: ->
+    @el.off()
+    @el.remove()
+
+
 class Tool extends BaseClass
   @Mark: Mark
+  @Controls: ToolControls
 
   cursors: null
 
@@ -55,6 +118,8 @@ class Tool extends BaseClass
   surface: null
   shapeSet: null
 
+  controls: null
+
   clicks: 0
 
   constructor: ->
@@ -62,22 +127,25 @@ class Tool extends BaseClass
 
     @mark ?= new @constructor.Mark
     @mark.set @markDefaults if @markDefaults?
-    @mark.on 'change', => @render arguments...
-    @mark.on 'destroy', => @destroy arguments...
 
-    @deleteButton = $('<button name="delete-mark">&times;</button>')
-    @deleteButton.css position: 'absolute'
-    @deleteButton.on 'click', => @onClickDelete arguments...
-    @deleteButton.appendTo @surface.container
+    @mark.on 'change', =>
+      @onMarkChange arguments...
+
+    @mark.on 'destroy', =>
+      @destroy arguments...
 
     @shapeSet ?= @surface.paper.set()
+
+    @controls = new @constructor.Controls tool: @
+    @controls.el.appendTo @surface.container
 
     @initialize arguments...
 
     # Wait for shapes to be added in an overridden constructor.
     setTimeout =>
       for eventName in MOUSE_EVENTS
-        @shapeSet[eventName] => @handleEvents arguments...
+        @shapeSet[eventName] =>
+          @handleEvents arguments...
 
   addShape: (type, params...) ->
     attributes = params.pop() if typeof params[params.length - 1] is 'object'
@@ -91,11 +159,14 @@ class Tool extends BaseClass
   onInitialClick: (e) ->
     @trigger 'initial-click', [e]
     @onFirstClick e
-    @clicks += 1
 
   onInitialDrag: (e) ->
-    doc.one 'mouseup touchend', (e) => @trigger 'initial-drag', [e]
     @onFirstDrag e
+
+  onInitialRelease: (e) ->
+    @clicks += 1
+    @trigger 'initial-release', [e]
+    @onFirstRelease arguments...
 
   # Override this if drawing the tool requires multiple drag steps (e.g. axes).
   isComplete: ->
@@ -115,6 +186,7 @@ class Tool extends BaseClass
         name = property
 
     @["on #{eventName}"]?.call @, e, shape
+
     @["on #{eventName} #{name}"]?.call @, e, shape
 
     switch eventName
@@ -141,26 +213,29 @@ class Tool extends BaseClass
   mouseOffset: ->
     @surface.mouseOffset arguments...
 
+  onMarkChange: ->
+    @controls.onMarkChange arguments...
+    @render arguments...
+
   onClickDelete: (e) ->
     @mark.destroy()
     @surface.container.focus()
 
   select: ->
+    @controls.select arguments...
     @shapeSet.attr opacity: 1
-    @deleteButton.show()
     @shapeSet.toFront()
     @trigger 'select', arguments
 
   deselect: ->
+    @controls.deselect arguments...
     @shapeSet.attr opacity: 0.5
-    @deleteButton.hide()
     @trigger 'deselect', arguments
 
   destroy: ->
     super
 
-    @deleteButton.off()
-    @deleteButton.remove()
+    @controls.destroy()
 
     @shapeSet.animate
       opacity: 0
@@ -183,10 +258,12 @@ class Tool extends BaseClass
     # E.g.
     # @mark.set position: @mouseOffset(e).x
 
+  onFirstRelease: (e) ->
+
   render: ->
     # E.g.
     # @shapeSet.attr cx: @mark.position
-    # @deleteButton.css
+    # @controls.css
     #   left: @mark.position
     #   top: @mark.position
 
@@ -219,7 +296,7 @@ class MarkingSurface extends BaseClass
     @container ?= document.createElement 'div'
     @container = $(@container)
     @container.addClass @className
-    @container.attr tabindex: 0
+    @container.attr tabindex: 0, unselectable: true
     @container.on 'blur', => @onBlur arguments...
     @container.on 'focus', => @onFocus arguments...
 
@@ -228,7 +305,9 @@ class MarkingSurface extends BaseClass
       @height = @container.height() || @height unless 'height' of params
 
     @paper ?= Raphael @container.get(0), @width, @height
-    @image = @paper.image @background, 0, 0, @width, @height
+    @image = @paper.image 'about:blank', 0, 0, @width, @height
+
+    setTimeout => @image.attr src: @background
 
     @marks ?= []
     @tools ?= []
@@ -311,10 +390,14 @@ class MarkingSurface extends BaseClass
     onDrag = => @onDrag arguments...
     doc.on 'mousemove touchmove', onDrag
     doc.one 'mouseup touchend', =>
+      @onRelease arguments...
       doc.off 'mousemove touchmove', onDrag
 
   onDrag: (e) ->
     @selection.onInitialDrag e
+
+  onRelease: (e) ->
+    @selection.onInitialRelease e
 
   onKeyDown: (e) ->
     return if $(e.target).is 'input, textarea, select, button'
@@ -367,6 +450,7 @@ class MarkingSurface extends BaseClass
 
 
 MarkingSurface.Mark = Mark
+MarkingSurface.ToolControls = ToolControls
 MarkingSurface.Tool = Tool
 
 window.MarkingSurface = MarkingSurface
