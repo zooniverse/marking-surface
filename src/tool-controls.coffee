@@ -18,23 +18,34 @@ class ToolControls extends BaseClass
     super
 
     @el = $(@template)
+
     @handle = @el.find '.handle'
     @label = @el.find '.label'
     @deleteButton = @el.find 'button[name="delete-mark"]'
 
     @el.on 'mousedown', =>
-      @onMouseDown arguments...
+      @tool.select()
 
     @el.on 'click', 'button[name="delete-mark"]', =>
       @onClickDelete arguments...
 
-  onMarkChange: ->
-    @label.html @tool.mark.label
+    @tool.on 'select', =>
+      @onToolSelect arguments...
+
+    @tool.on 'deselect', =>
+      @onToolDeselect arguments...
+
+    @tool.mark.on 'change', =>
+      @label.html @tool.mark.label if 'label' of @tool.mark
+      @render()
+
+    @tool.on 'destroy', =>
+      @destroy()
 
   moveTo: (x, y) ->
     [x, y] = x if x instanceof Array
 
-    # User margins to avoid problems with a parent's padding.
+    # Use margins to avoid problems with a parent's padding.
     @el.css
       left: 0
       'margin-left': x
@@ -42,18 +53,18 @@ class ToolControls extends BaseClass
       position: 'absolute'
       top: 0
 
-  onMouseDown: (e) ->
-    @tool.select()
+  onToolSelect: ->
+    @el.addClass 'selected'
+
+  onToolDeselect: ->
+    @el.removeClass 'selected'
 
   onClickDelete: ->
     @tool.mark.destroy()
 
-  select: ->
-    @el.addClass 'selected'
-
-  deselect: ->
-    @el.removeClass 'selected'
-
   destroy: ->
     @el.off()
     @el.remove()
+
+  render: =>
+    # Do whatever makes sense here.

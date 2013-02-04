@@ -106,29 +106,21 @@ class Tool extends BaseClass
     @surface.mouseOffset arguments...
 
   onMarkChange: ->
-    @controls.onMarkChange arguments...
     @render arguments...
 
-  onClickDelete: (e) ->
-    @mark.destroy()
-    @surface.container.focus()
-
   select: ->
-    @controls.select arguments...
     @shapeSet.attr opacity: 1
     @shapeSet.toFront()
     @trigger 'select', arguments
 
   deselect: ->
-    @controls.deselect arguments...
     @shapeSet.attr opacity: 0.5
     @trigger 'deselect', arguments
 
   destroy: ->
     super
 
-    @controls.destroy()
-
+    @surface.container.focus()
     @shapeSet.animate
       opacity: 0
       r: 0
@@ -155,6 +147,4 @@ class Tool extends BaseClass
   render: ->
     # E.g.
     # @shapeSet.attr cx: @mark.position
-    # @controls.css
-    #   left: @mark.position
-    #   top: @mark.position
+    # @controls.moveTo @mark.position, @mark.position
