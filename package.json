@@ -5,6 +5,6 @@
   "devDependencies": {
     "bower": "~0.6.8",
     "coffee-script": "1.4.x",
-    "silver-server": "0.0.x"
+    "silver-server": "0.1.x"
   }
 }
