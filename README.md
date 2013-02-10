@@ -33,18 +33,23 @@ A `Tool` watches a `Mark`, calling `render` when the mark changes. In MVC terms,
 
 If you need a subclass of `Mark`, you can associate it with a tool by changing the tool class's `Mark` property.
 
-You should create all the shapes you'll need in the `constructor` using the `createShape` method to ensure that events are attached properly.
+```
+class PointTool extends Tool
+  @Mark: Point
+```
+
+You should create all the shapes you'll need in the `initialize` method using `createShape` to ensure that events are attached properly.
 
 ```
-constructor: ->
-  super
+initialize: ->
   @spot = @createShape 'circle', 0, 0, 10, 10, fill: red
 ```
 
 There are a few important methods to extend:
 
-* `onInitialClick` fires when the mouse is first pressed on the marking surface.
-* `onInitialDrag` is fired when dragging during the initial click.
+* `onFirstClick` fires when the mouse is first pressed on the marking surface.
+* `onFirstDrag` is fired when dragging during an initial click.
+* `onFirstRelease` is fired when releaseing after an initial click.
 * `render` should reposition the shapes according to the properties of the tool's mark.
 * `select` should change the view so it's apparent that this tool is selected (e.g. a thicker stroke), `deselect` the opposite.
 
