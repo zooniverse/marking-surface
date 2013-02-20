@@ -7,20 +7,28 @@
       .marking-surface {
         border: 1px dashed red;
         display: inline-block;
+        position: relative;
       }
     </style>
   </head>
 
   <body>
     <div><label><input id="disabled" type="checkbox" /> Disabled</label></div>
+
     <div>
       <label><input id="zoom" type="range" min="1" max="3" value="1" step="any" /> Zoom</label>
       <button id="no-zoom">&times;</button>
     </div>
 
+    <div>
+      <button name="tool" value="point">Point</button>
+      <button name="tool" value="axes">Axes</button>
+    </div>
+
     <script src="../components/jquery/jquery.js"></script>
     <script src="../components/raphael/raphael.js"></script>
     <script src="../lib/marking-surface.js"></script>
+    <script src="../lib/tools/axes.js"></script>
     <script src="./js/main.js"></script>
   </body>
 </html>

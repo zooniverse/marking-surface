@@ -1,6 +1,6 @@
 Raphael = window.Raphael
 MarkingSurface = window.MarkingSurface
-{Tool} = MarkingSurface
+{Tool, AxesTool} = MarkingSurface
 
 class PointTool extends Tool
   circle: null
@@ -43,7 +43,7 @@ demoImage = 'http://www.seafloorexplorer.org/images/field-guide/fish.jpg'
 ms = new MarkingSurface tool: PointTool, background: demoImage
 
 disabledCheckbox = $('#disabled')
-disabledCheckbox.on 'change': ->
+disabledCheckbox.on 'change', ->
   checked = !!disabledCheckbox.attr 'checked'
   ms[if checked then 'disable' else 'enable']()
 
@@ -55,6 +55,10 @@ noZoomButton = $('#no-zoom')
 noZoomButton.on 'click', ->
   zoomSlider.val 1
   ms.zoom 1
+
+tools = axes: AxesTool, point: PointTool
+$('button[name="tool"]').on 'click', ({target}) ->
+  ms.tool = tools[$(target).val()]
 
 ms.container.appendTo 'body'
 

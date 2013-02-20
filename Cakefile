@@ -1,7 +1,5 @@
 {spawn} = require 'child_process'
 
-DEFAULT_PORT = 4567
-
 run = ->
   child = spawn arguments...
   child.stdout.on 'data', process.stdout.write.bind process.stdout
@@ -19,9 +17,7 @@ sources = [
 
 option '-p', '--port [PORT]', 'Port on which to run the dev server'
 
-task 'watch', 'Watch changes during development', ->
-  run 'coffee', ['--watch', '--compile', '--join', './lib/marking-surface.js', sources...]
-
-task 'serve', 'Run a dev server', (options) ->
-  invoke 'watch'
-  run 'silver', ['server', '--port', options.port || process.env.PORT || DEFAULT_PORT]
+task 'serve', 'Run a dev server', ->
+  run 'coffee', ['--watch', '--join', './lib/marking-surface.js', '--compile', sources...]
+  run 'coffee', ['--watch', '--output', './lib/tools', '--compile', './src/tools']
+  run 'silver', ['server', '--port', process.env.PORT || 4567]
