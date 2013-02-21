@@ -1,5 +1,6 @@
 {Tool} = window.MarkingSurface
 $ = window.jQuery
+Raphael = window.Raphael
 
 class AxesTool extends Tool
   cross: null
@@ -39,17 +40,18 @@ class AxesTool extends Tool
     for point, i in ['p0', 'p1', 'p2', 'p3']
       @dots[i].attr cx: @mark[point][0], cy: @mark[point][1]
 
-    @cross.attr path: [
-      "M #{@mark.p0[0]} #{@mark.p0[1]}"
-      "L #{@mark.p1[0]} #{@mark.p1[1]}"
-      "M #{@mark.p2[0]} #{@mark.p2[1]}"
-      "L #{@mark.p3[0]} #{@mark.p3[1]}"
-    ].join ','
+    majorPath = "M #{@mark.p0[0]} #{@mark.p0[1]}, L #{@mark.p1[0]} #{@mark.p1[1]}"
+    minorPath = "M #{@mark.p2[0]} #{@mark.p2[1]}, L #{@mark.p3[0]} #{@mark.p3[1]}"
 
-    @controls.moveTo [
-      (@mark.p0[0] + @mark.p1[0] + @mark.p2[0] + @mark.p3[0]) / 4
-      (@mark.p0[1] + @mark.p1[1] + @mark.p2[1] + @mark.p3[1]) / 4
-    ]
+    @cross.attr path: "#{majorPath}, #{minorPath}"
+
+    [intersection] = Raphael.pathIntersection majorPath, minorPath
+
+    intersection ?=
+      x: (@mark.p0[0] + @mark.p1[0]) / 2
+      y: (@mark.p0[1] + @mark.p1[1]) / 2
+
+    @controls.moveTo intersection.x, intersection.y if intersection?
 
 window.MarkingSurface.AxesTool = AxesTool
 module?.exports = AxesTool
