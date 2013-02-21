@@ -46,18 +46,20 @@ class ToolControls extends BaseClass
     [x, y] = x if x instanceof Array
 
     if x > @tool.surface.width / 2
-      x -= @el.width()
       @el.addClass 'to-the-left'
+      @el.css
+        left: ''
+        position: 'absolute'
+        right: @tool.surface.width - x
+        top: y
+
     else
       @el.removeClass 'to-the-left'
-
-    # Use margins to avoid problems with a parent's padding.
-    @el.css
-      left: 0
-      'margin-left': x
-      'margin-top': y
-      position: 'absolute'
-      top: 0
+      @el.css
+        left: x
+        position: 'absolute'
+        right: ''
+        top: y
 
   onToolSelect: ->
     @el.addClass 'selected'
