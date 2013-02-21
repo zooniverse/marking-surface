@@ -45,6 +45,12 @@ class ToolControls extends BaseClass
   moveTo: (x, y) ->
     [x, y] = x if x instanceof Array
 
+    if x > @tool.surface.width / 2
+      x -= @el.width()
+      @el.addClass 'to-the-left'
+    else
+      @el.removeClass 'to-the-left'
+
     # Use margins to avoid problems with a parent's padding.
     @el.css
       left: 0
