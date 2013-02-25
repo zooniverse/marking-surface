@@ -107,6 +107,7 @@ class MarkingSurface extends BaseClass
       mark.on 'destroy', =>
         index = i for m, i in @marks when m is mark
         @marks.splice index, 1
+        @trigger 'destroy-mark', [mark]
 
       tool.select()
       @trigger 'create-mark', [mark, tool]
