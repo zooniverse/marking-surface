@@ -1,6 +1,6 @@
 {
   "name": "marking-surface",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "main": "./index.js",
   "devDependencies": {
     "bower": "~0.6.8",

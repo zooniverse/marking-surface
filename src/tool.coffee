@@ -8,8 +8,8 @@ class Tool extends BaseClass
   markDefaults: null
 
   surface: null
-  shapeSet: null
 
+  shapeSet: null
   controls: null
 
   clicks: 0
@@ -33,17 +33,14 @@ class Tool extends BaseClass
 
     @initialize arguments...
 
-    # Wait for shapes to be added in an overridden constructor.
-    setTimeout =>
-      for eventName in MOUSE_EVENTS
-        @shapeSet[eventName] =>
-          @handleEvents arguments...
-
   addShape: (type, params...) ->
     attributes = params.pop() if typeof params[params.length - 1] is 'object'
 
     shape = @surface.paper[type.toLowerCase()] params...
     shape.attr attributes
+
+    for eventName in MOUSE_EVENTS
+      shape[eventName] => @handleEvents arguments...
 
     @shapeSet.push shape
     shape
