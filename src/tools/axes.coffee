@@ -2,6 +2,8 @@
 $ = window.jQuery
 Raphael = window.Raphael
 
+dotRadius = if 'Touch' of window then 20 else 5
+
 class AxesTool extends Tool
   cross: null
   dots: null
@@ -15,8 +17,11 @@ class AxesTool extends Tool
 
   initialize: ->
     @cross = @addShape 'path', 'M 0 0', stroke: 'red', 'stroke-width': 3
-    @dots = for i in [0...4]
-      @addShape 'circle', 0, 0, 8, fill: 'red', stroke: 'white', 'stroke-width': 2
+
+    dotShapes = for i in [0...4]
+      @addShape 'circle', 0, 0, dotRadius, fill: 'black', stroke: 'red', 'stroke-width': 3
+
+    @dots = @surface.paper.set dotShapes
 
   onFirstClick: (e) ->
     {x, y} = @mouseOffset e
