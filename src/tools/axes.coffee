@@ -52,11 +52,13 @@ class AxesTool extends Tool
 
     [intersection] = Raphael.pathIntersection majorPath, minorPath
 
+    @cross.attr 'stroke-dasharray': if intersection? then '' else '.'
+
     intersection ?=
       x: (@mark.p0[0] + @mark.p1[0]) / 2
       y: (@mark.p0[1] + @mark.p1[1]) / 2
 
-    @controls.moveTo intersection.x, intersection.y if intersection?
+    @controls.moveTo intersection.x, intersection.y
 
 window.MarkingSurface.AxesTool = AxesTool
 module?.exports = AxesTool
