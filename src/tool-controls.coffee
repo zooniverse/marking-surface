@@ -23,10 +23,11 @@ class ToolControls extends BaseClass
     @label = @el.find '.label'
     @deleteButton = @el.find 'button[name="delete-mark"]'
 
-    @el.on 'mousedown', =>
+    @el.on START, =>
       @tool.select()
 
-    @el.on 'click', 'button[name="delete-mark"]', =>
+    @el.on 'click', 'button[name="delete-mark"]', (e) =>
+      e.preventDefault()
       @onClickDelete arguments...
 
     @tool.on 'select', =>

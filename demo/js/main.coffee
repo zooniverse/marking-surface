@@ -40,7 +40,7 @@ class PointTool extends Tool
     @circle.attr 'stroke-width', 0
 
 demoImage = 'http://www.seafloorexplorer.org/images/field-guide/fish.jpg'
-ms = new MarkingSurface tool: PointTool, background: demoImage
+ms = new MarkingSurface tool: AxesTool, background: demoImage
 
 disabledCheckbox = $('#disabled')
 disabledCheckbox.on 'change', ->

@@ -44,8 +44,8 @@ class MarkingSurface extends BaseClass
 
     disable() if @disabled
 
-    @container.on 'mousedown touchstart', => @onMouseDown arguments...
-    @container.on 'mousemove touchmove', => @onMouseMove arguments...
+    @container.on START, => @onMouseDown arguments...
+    @container.on MOVE, => @onMouseMove arguments...
     @container.on 'keydown', => @onKeyDown arguments...
 
   resize: (@width, @height) ->
@@ -75,10 +75,10 @@ class MarkingSurface extends BaseClass
     return unless e.target in [@container.get(0), @paper.canvas, @image.node]
     return if e.isDefaultPrevented()
 
+    e.preventDefault()
+
     $(document.activeElement).blur()
     @container.focus()
-
-    e.preventDefault()
 
     if not @selection? or @selection.isComplete()
       tool = new @tool surface: @
@@ -119,24 +119,26 @@ class MarkingSurface extends BaseClass
     tool.onInitialClick e
 
     onDrag = => @onDrag arguments...
-    doc.on 'mousemove touchmove', onDrag
-    doc.one 'mouseup touchend', =>
+    doc.on MOVE, onDrag
+    doc.one END, =>
       @onRelease arguments...
-      doc.off 'mousemove touchmove', onDrag
+      doc.off MOVE, onDrag
 
   onDrag: (e) ->
+    e.preventDefault()
     @selection.onInitialDrag e
 
   onRelease: (e) ->
+    e.preventDefault()
     @selection.onInitialRelease e
 
   onKeyDown: (e) ->
     return if $(e.target).is 'input, textarea, select, button'
 
-    if e.which in [8, 46] # Backspace and delete
+    if e.which in [BACKSPACE, DELETE]
       e.preventDefault()
       @selection?.mark.destroy()
-    else if e.which is 9 and @selection? # Tab
+    else if e.which is TAB and @selection?
       e.preventDefault()
 
       if e.shiftKey

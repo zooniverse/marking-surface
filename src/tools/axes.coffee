@@ -2,7 +2,7 @@
 $ = window.jQuery
 Raphael = window.Raphael
 
-dotRadius = if 'Touch' of window then 20 else 5
+dotRadius = if 'Touch' of window then 10 else 5
 
 class AxesTool extends Tool
   cross: null

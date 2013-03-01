@@ -1,3 +1,8 @@
+MOUSE_EVENTS = '''
+  mousedown mouseover mousemove mouseout mouseup
+  touchstart touchmove touchend
+'''.split /\s+/
+
 class Tool extends BaseClass
   @Mark: Mark
   @Controls: ToolControls
@@ -85,19 +90,19 @@ class Tool extends BaseClass
       when 'mouseout'
         @surface.container.css cursor: ''
 
-      when 'mousedown', 'touchstart'
+      when START
         e.preventDefault()
         @select()
 
         if 'on drag' of @
           onDrag = => @['on drag'] arguments..., shape
-          doc.on 'mousemove touchmove', onDrag
-          doc.one 'mouseup touchend', => doc.off 'mousemove touchmove', onDrag
+          doc.on MOVE, onDrag
+          doc.one END, => doc.off MOVE, onDrag
 
         if name and "on drag #{name}" of @
           onNamedDrag = => @["on drag #{name}"] arguments..., shape
-          doc.on 'mousemove touchmove', onNamedDrag
-          doc.one 'mouseup touchend', => doc.off 'mousemove touchmove', onNamedDrag
+          doc.on MOVE, onNamedDrag
+          doc.one END, => doc.off MOVE, onNamedDrag
 
   mouseOffset: ->
     @surface.mouseOffset arguments...
