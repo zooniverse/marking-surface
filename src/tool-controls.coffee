@@ -35,6 +35,9 @@ class ToolControls extends BaseClass
       return if @tool.surface.disabled
       @onToolSelect arguments...
 
+    @tool.on 'initial-release', =>
+      @el.toggleClass 'complete', @tool.isComplete()
+
     @tool.on 'deselect', =>
       return if @tool.surface.disabled
       @onToolDeselect arguments...
