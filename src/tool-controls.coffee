@@ -27,13 +27,16 @@ class ToolControls extends BaseClass
       @tool.select()
 
     @el.on 'click', 'button[name="delete-mark"]', (e) =>
+      return if @tool.surface.disabled
       e.preventDefault()
       @onClickDelete arguments...
 
     @tool.on 'select', =>
+      return if @tool.surface.disabled
       @onToolSelect arguments...
 
     @tool.on 'deselect', =>
+      return if @tool.surface.disabled
       @onToolDeselect arguments...
 
     @tool.mark.on 'change', =>
