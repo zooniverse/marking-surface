@@ -176,7 +176,7 @@ class MarkingSurface extends BaseClass
     e = originalEvent.touches[0] if originalEvent? and 'touches' of originalEvent
     {left, top} = @container.offset()
     left += parseFloat @container.css 'padding-left'
-    left += parseFloat @container.css 'border-left-width'
+    left += (parseFloat @container.css 'border-left-width') || 0
     top += parseFloat @container.css 'padding-top'
-    top += parseFloat @container.css 'border-top-width'
+    top += (parseFloat @container.css 'border-top-width') || 0
     x: e.pageX - left, y: e.pageY - top
