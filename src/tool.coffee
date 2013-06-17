@@ -19,6 +19,9 @@ class Tool extends BaseClass
 
   clicks: 0
 
+  renderFps: 30
+  renderTimeout: NaN
+
   constructor: ->
     super
 
@@ -108,7 +111,8 @@ class Tool extends BaseClass
     @surface.mouseOffset arguments...
 
   onMarkChange: ->
-    @render arguments...
+    return if @renderTimeout
+    @renderTimeout = setTimeout (=> @render arguments...; @renderTimeout = NaN), 1000 / @renderFps
 
   select: ->
     @shapeSet.attr opacity: 1
