@@ -3,7 +3,8 @@ Raphael = window.Raphael
 
 doc = $(document)
 
-TOUCH = 'Touch' of window
+# Disable touch temporarily for new Chrome.
+TOUCH = false # 'Touch' of window
 [START, MOVE, END] = if TOUCH
   ['touchstart', 'touchmove', 'touchend']
 else
