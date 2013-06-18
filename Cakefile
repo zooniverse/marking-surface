@@ -6,13 +6,13 @@ run = ->
   child.stderr.on 'data', process.stderr.write.bind process.stderr
 
 sources = [
-  'src/constants'
-  'src/base-class'
-  'src/mark'
-  'src/tool-controls'
-  'src/tool'
-  'src/marking-surface'
-  'src/exports'
+  'src/constants.coffee'
+  'src/base-class.coffee'
+  'src/mark.coffee'
+  'src/tool-controls.coffee'
+  'src/tool.coffee'
+  'src/marking-surface.coffee'
+  'src/exports.coffee'
 ]
 
 option '-p', '--port [PORT]', 'Port on which to run the dev server'
