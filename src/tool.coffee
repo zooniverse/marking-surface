@@ -93,19 +93,19 @@ class Tool extends BaseClass
       when 'mouseout'
         @surface.container.css cursor: ''
 
-      when START
+      when 'mousedown', 'touchstart'
         e.preventDefault()
         @select()
 
         if 'on drag' of @
           onDrag = => @['on drag'] arguments..., shape
-          doc.on MOVE, onDrag
-          doc.one END, => doc.off MOVE, onDrag
+          doc.on 'mousemove touchmove', onDrag
+          doc.one 'mouseup touchend', => doc.off 'mousemove touchmove', onDrag
 
         if name and "on drag #{name}" of @
           onNamedDrag = => @["on drag #{name}"] arguments..., shape
-          doc.on MOVE, onNamedDrag
-          doc.one END, => doc.off MOVE, onNamedDrag
+          doc.on 'mousemove touchmove', onNamedDrag
+          doc.one 'mouseup touchend', => doc.off 'mousemove touchmove', onNamedDrag
 
   mouseOffset: ->
     @surface.mouseOffset arguments...

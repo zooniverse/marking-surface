@@ -35,17 +35,18 @@ class MarkingSurface extends BaseClass
       @height = @container.height() || @height unless 'height' of params
 
     @paper ?= Raphael @container.get(0), @width, @height
-    @image = @paper.image 'about:blank', 0, 0, @width, @height
 
-    setTimeout => @image.attr src: @background
+    @image = @paper.image 'about:blank', 0, 0, @width, @height
+    setTimeout => @image.attr src: @background if @background
 
     @marks ?= []
     @tools ?= []
 
     disable() if @disabled
 
-    @container.on START, => @onMouseDown arguments...
-    @container.on MOVE, => @onMouseMove arguments...
+    @container.on 'mousedown touchstart', => @onMouseDown arguments...
+    @container.on 'mousemove touchmove', => @onMouseMove arguments...
+
     @container.on 'keydown', => @onKeyDown arguments...
 
   resize: (@width, @height) ->
@@ -100,6 +101,7 @@ class MarkingSurface extends BaseClass
         @selection = null
 
       tool.on 'destroy', =>
+        tool.deselect()
         index = i for t, i in @tools when t is tool
         @tools.splice index, 1
         @tools[@tools.length - 1]?.select() if tool is @selection
@@ -119,10 +121,10 @@ class MarkingSurface extends BaseClass
     tool.onInitialClick e
 
     onDrag = => @onDrag arguments...
-    doc.on MOVE, onDrag
-    doc.one END, =>
+    doc.on 'mousemove touchmove', onDrag
+    doc.one 'mouseup touchend', =>
       @onRelease arguments...
-      doc.off MOVE, onDrag
+      doc.off 'mousemove touchmove', onDrag
 
   onDrag: (e) ->
     e.preventDefault()
