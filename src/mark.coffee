@@ -3,7 +3,7 @@ class Mark extends BaseClass
     if typeof property is 'string'
       setter = @["set #{property}"]
       @[property] = if setter? then setter.call @, value else value
-      @trigger 'change', property, value
+      @trigger 'change', [property, value]
 
     else
       map = property

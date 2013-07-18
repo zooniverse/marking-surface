@@ -62,30 +62,39 @@ class ToolControls extends BaseClass
     @el.style.top = if top? then "#{top}px" else ''
     @el.style.bottom = if bottom? then "#{bottom}px" else ''
     @el.style.display = if hidden then 'none' else ''
+    null
 
   onMouseDown: =>
     return if @tool.surface.disabled
     @tool.select()
+    null
 
   onClickDelete: (e) =>
     return if @tool.surface.disabled
     e.preventDefault()
     @tool.mark.destroy()
+    null
 
   onToolSelect: =>
     @el.classList.add 'selected'
+    null
 
   onToolDeselect: =>
     @el.classList.remove 'selected'
+    null
 
   onToolDestroy: =>
     @destroy()
+    null
 
   destroy: ->
+    super
     removeEvent @el, 'mousedown', @onMouseDown
     removeEvent @deleteButton, 'click', @onClickDelete
     @el.parentNode.removeChild @el
+    null
 
   render: =>
     # Do whatever makes sense here.
     @label?.innerHTML = @tool.mark._label if '_label' of @tool.mark
+    null
