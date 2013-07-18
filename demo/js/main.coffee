@@ -34,7 +34,7 @@ class PointTool extends Tool
 # demoImage = 'http://www.seafloorexplorer.org/images/field-guide/fish.jpg'
 
 ms = new MarkingSurface
-  tool: PointTool
+  tool: AxesTool
   width: 640
   height: 480
 
@@ -52,9 +52,9 @@ noZoomButton.on 'click', ->
   zoomSlider.val 1
   ms.zoom 1
 
-# tools = axes: AxesTool, point: PointTool
-# $('button[name="tool"]').on 'click', ({target}) ->
-#   ms.tool = tools[$(target).val()]
+tools = axes: AxesTool, point: PointTool
+$('button[name="tool"]').on 'click', ({target}) ->
+  ms.tool = tools[$(target).val()]
 
 document.body.appendChild ms.container
 

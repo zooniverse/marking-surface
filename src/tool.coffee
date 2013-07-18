@@ -36,7 +36,9 @@ class Tool extends BaseClass
 
     @initialize arguments...
 
+    @mark.silent = true
     @mark.set @markDefaults if @markDefaults?
+    @mark.silent = false
 
   addShape: ->
     @group.addShape arguments...
@@ -55,7 +57,6 @@ class Tool extends BaseClass
     @onFirstRelease e
 
   handleEvents: (e) =>
-    console.log 'Handling tool event', e.type, e.target
     return if @surface.disabled
 
     eventName = e.type
@@ -63,13 +64,20 @@ class Tool extends BaseClass
     target = e.target || e.srcElement # For IE
 
     for property, value of @
-      if value?.el is target
+      match = value?.el is target
+
+      if value instanceof Array
+        match ||= valueItem?.el is target for valueItem in value
+
+      if match
         name = property
         target = value
 
+    console.log 'Handling', {name}, {target}
+
     @["on #{eventName}"]?.call @, e
 
-    @["on #{eventName} #{name}"]?.call @, e, target
+    @["on #{eventName} #{name}"]?.call @, e
 
     switch eventName
       when 'mouseover'
@@ -87,6 +95,8 @@ class Tool extends BaseClass
         endEvent = if eventName is 'mousedown' then 'mouseup' else 'touchend'
 
         if 'on drag' of @
+          @["on drag"] e
+
           addEvent document, dragEvent, @['on drag']
 
           onEnd = =>
@@ -96,6 +106,8 @@ class Tool extends BaseClass
           addEvent document, endEvent, onEnd
 
         if "on drag #{name}" of @
+          @["on drag #{name}"] e
+
           addEvent document, dragEvent, @["on drag #{name}"]
 
           onNamedEnd = =>
