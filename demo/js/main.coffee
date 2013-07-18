@@ -1,50 +1,45 @@
-Raphael = window.Raphael
 MarkingSurface = window.MarkingSurface
 {Tool, AxesTool} = MarkingSurface
 
 class PointTool extends Tool
-  circle: null
-  markDefaults: type: 'point'
+  cursors:
+    circle: 'move'
 
-  cursors: circle: 'move'
+  markDefaults:
+    _label: 'Point'
 
-  constructor: ->
-    super
-    @hr = @addShape 'rect', -20, -1, 40, 2, fill: 'green', 'stroke-width': 0
-    @vr = @addShape 'rect', -1, -20, 2, 40, fill: 'blue', 'stroke-width': 0
-    @circle = @addShape 'circle', 0, 0, 10, fill: 'red', 'stroke-width': 0
+  initialize: ->
+    @hr = @addShape 'line', x1: 0, y1: -20, x2: 0, y2: 20, stroke: 'red', strokeWidth: 2
+    @vr = @addShape 'line', x1: -20, y1: 0, x2: 20, y2: 0, stroke: 'red', strokeWidth: 2
+    @circle = @addShape 'circle', cx: 0, cy: 0, r: 10, fill: 'rgba(255, 0, 0, 0.25)', stroke: 'red', strokeWidth: 2
 
   onInitialClick: (e) ->
-    super
     @['on drag circle'] e
 
   onInitialDrag: (e) ->
-    super
     @['on drag circle'] e
 
-  'on drag circle': (e) ->
-    offset = @surface.mouseOffset e
-    @mark.set @surface.mouseOffset e
+  'on drag circle': (e) =>
+    console.log 'Dragging circle'
+    offset = @surface.pointerOffset e
+    @mark.set offset
 
   render: ->
-    super
-    @circle.attr r: 10 / @surface.zoomBy
-    @shapeSet.transform "t #{@mark.x} #{@mark.y}"
+    @circle.attr r: 10 / @surface.zoomBy, strokeWidth: 2 / @surface.zoomBy
+    @hr.attr strokeWidth: 2 / @surface.zoomBy
+    @vr.attr strokeWidth: 2 / @surface.zoomBy
+    @group.attr 'transform', "translate(#{@mark.get 'x', 'y'})"
 
-  select: ->
-    super
-    @circle.attr 'stroke-width', 3
+# demoImage = 'http://www.seafloorexplorer.org/images/field-guide/fish.jpg'
 
-  deselect: ->
-    super
-    @circle.attr 'stroke-width', 0
-
-demoImage = 'http://www.seafloorexplorer.org/images/field-guide/fish.jpg'
-ms = new MarkingSurface tool: AxesTool, background: demoImage
+ms = new MarkingSurface
+  tool: PointTool
+  width: 640
+  height: 480
 
 disabledCheckbox = $('#disabled')
 disabledCheckbox.on 'change', ->
-  checked = !!disabledCheckbox.attr 'checked'
+  checked = !!disabledCheckbox.prop 'checked'
   ms[if checked then 'disable' else 'enable']()
 
 zoomSlider = $('#zoom')
@@ -56,10 +51,10 @@ noZoomButton.on 'click', ->
   zoomSlider.val 1
   ms.zoom 1
 
-tools = axes: AxesTool, point: PointTool
-$('button[name="tool"]').on 'click', ({target}) ->
-  ms.tool = tools[$(target).val()]
+# tools = axes: AxesTool, point: PointTool
+# $('button[name="tool"]').on 'click', ({target}) ->
+#   ms.tool = tools[$(target).val()]
 
-ms.container.appendTo 'body'
+document.body.appendChild ms.container
 
 window.ms = ms

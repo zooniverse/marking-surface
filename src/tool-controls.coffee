@@ -2,84 +2,82 @@ class ToolControls extends BaseClass
   tool: null
 
   el: null
-  handle: null
+  className: 'marking-tool-controls'
   label: null
   deleteButton: null
 
   template: '''
-    <div class="marking-tool-controls">
-      <span class="handle"></span>
-      <span class="label"></span>
-      <button name="delete-mark">&times;</button>
-    </div>
+    <span class="tool-label"></span>
+    <button name="delete-mark">&times;</button>
   '''
 
   constructor: ->
     super
 
-    @el = $(@template)
+    @el = document.createElement 'div'
+    @el.classList.add @className
+    @el.classList.add @constructor::className
+    @el.innerHTML = (@template? @) || @template
 
-    @handle = @el.find '.handle'
-    @label = @el.find '.label'
-    @deleteButton = @el.find 'button[name="delete-mark"]'
+    @label = @el.querySelector '.tool-label'
+    @deleteButton = @el.querySelector 'button[name="delete-mark"]'
 
-    @el.on START, =>
-      @tool.select()
+    addEvent @el, 'mousedown', @onMouseDown
+    addEvent @deleteButton, 'click', @onClickDelete
 
-    @el.on 'click', 'button[name="delete-mark"]', (e) =>
-      return if @tool.surface.disabled
-      e.preventDefault()
-      @onClickDelete arguments...
-
-    @tool.on 'select', =>
-      return if @tool.surface.disabled
-      @onToolSelect arguments...
+    @tool.on 'select', @onToolSelect
 
     @tool.on 'initial-release', =>
-      @el.toggleClass 'complete', @tool.isComplete()
+      @el.classList.add 'complete' if @tool.isComplete()
 
-    @tool.on 'deselect', =>
-      return if @tool.surface.disabled
-      @onToolDeselect arguments...
+    @tool.mark.on 'change', @render
 
-    @tool.mark.on 'change', =>
-      @label.html @tool.mark.label if 'label' of @tool.mark
-      @render()
+    @tool.on 'deselect', @onToolDeselect
 
-    @tool.on 'destroy', =>
-      @destroy()
+    @tool.on 'destroy', @onToolDestroy
 
   moveTo: (x, y) ->
-    [x, y] = x if x instanceof Array
+    # [x, y] = x if x instanceof Array
 
-    if x > @tool.surface.width / 2
-      @el.addClass 'to-the-left'
-      @el.css
-        left: ''
-        position: 'absolute'
-        right: @tool.surface.width - x
-        top: y
+    # if x > @tool.surface.width / 2
+    #   @el.classList.add 'to-the-left'
+    #   @el.css
+    #     left: ''
+    #     position: 'absolute'
+    #     right: @tool.surface.width - x
+    #     top: y
 
-    else
-      @el.removeClass 'to-the-left'
-      @el.css
-        left: x
-        position: 'absolute'
-        right: ''
-        top: y
+    # else
+    #   @el.classList.remove 'to-the-left'
+    #   @el.css
+    #     left: x
+    #     position: 'absolute'
+    #     right: ''
+    #     top: y
 
-  onToolSelect: ->
-    @el.addClass 'selected'
+  onMouseDown: =>
+    return if @tool.surface.disabled
+    @tool.select()
 
-  onToolDeselect: ->
-    @el.removeClass 'selected'
-
-  onClickDelete: ->
+  onClickDelete: (e) =>
+    return if @tool.surface.disabled
+    e.preventDefault()
     @tool.mark.destroy()
 
+  onToolSelect: =>
+    @el.classList.add 'selected'
+
+  onToolDeselect: =>
+    @el.classList.remove 'selected'
+
+  onToolDestroy: =>
+    @destroy()
+
   destroy: ->
-    @el.off()
-    @el.remove()
+    removeEvent @el, 'mousedown', @onMouseDown
+    removeEvent @deleteButton, 'click', @onClickDelete
+    @el.parentNode.removeChild @el
 
   render: =>
     # Do whatever makes sense here.
+    @label.innerHTML = @tool.mark._label if '_label' of @tool.mark

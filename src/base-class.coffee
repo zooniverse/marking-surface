@@ -1,9 +1,12 @@
+jQuery = window.jQuery
+# TODO: Remove jQuery dependency.
+
 class BaseClass
   jQueryEventProxy: null
 
   constructor: (params = {}) ->
     @[property] = value for own property, value of params when property of @
-    @jQueryEventProxy = $({})
+    @jQueryEventProxy = new jQuery {}
 
   destroy: ->
     @trigger 'destroy'

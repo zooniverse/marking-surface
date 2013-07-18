@@ -6,8 +6,9 @@ run = ->
   child.stderr.on 'data', process.stderr.write.bind process.stderr
 
 sources = [
-  'src/constants'
+  'src/util'
   'src/base-class'
+  'src/svg'
   'src/mark'
   'src/tool-controls'
   'src/tool'
