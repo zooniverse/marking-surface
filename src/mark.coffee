@@ -1,14 +1,13 @@
 class Mark extends BaseClass
-  set: (property, value, {fromMany} = {}) ->
+  set: (property, value) ->
     if typeof property is 'string'
       setter = @["set #{property}"]
       @[property] = if setter? then setter.call @, value else value
+      @trigger 'change', property, value
 
     else
       map = property
-      @set property, value, fromMany: true for property, value of map
-
-    @trigger 'change', property, value unless fromMany
+      @set property, value for property, value of map
 
     null
 

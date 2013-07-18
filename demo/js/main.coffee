@@ -29,6 +29,7 @@ class PointTool extends Tool
     @hr.attr strokeWidth: 2 / @surface.zoomBy
     @vr.attr strokeWidth: 2 / @surface.zoomBy
     @group.attr 'transform', "translate(#{@mark.get 'x', 'y'})"
+    @controls.moveTo (@mark.get 'x', 'y')...
 
 # demoImage = 'http://www.seafloorexplorer.org/images/field-guide/fish.jpg'
 

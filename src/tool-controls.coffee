@@ -23,7 +23,7 @@ class ToolControls extends BaseClass
     @deleteButton = @el.querySelector 'button[name="delete-mark"]'
 
     addEvent @el, 'mousedown', @onMouseDown
-    addEvent @deleteButton, 'click', @onClickDelete
+    addEvent @deleteButton, 'click', @onClickDelete if @deleteButton?
 
     @tool.on 'select', @onToolSelect
 
@@ -37,23 +37,31 @@ class ToolControls extends BaseClass
     @tool.on 'destroy', @onToolDestroy
 
   moveTo: (x, y) ->
-    # [x, y] = x if x instanceof Array
+    {zoomBy, panX, panY, width, height} = @tool.surface
 
-    # if x > @tool.surface.width / 2
-    #   @el.classList.add 'to-the-left'
-    #   @el.css
-    #     left: ''
-    #     position: 'absolute'
-    #     right: @tool.surface.width - x
-    #     top: y
+    @el.style.position = 'absolute'
 
-    # else
-    #   @el.classList.remove 'to-the-left'
-    #   @el.css
-    #     left: x
-    #     position: 'absolute'
-    #     right: ''
-    #     top: y
+    [left, right] = if x < width / 2
+      @el.classList.remove 'to-the-left'
+      [(x * zoomBy) - (panX * zoomBy), null]
+    else
+      @el.classList.add 'to-the-left'
+      [null, width - ((x * zoomBy) - (panX * zoomBy))]
+
+    [top, bottom] = if y < height / 2
+      @el.classList.remove 'from-the-bottom'
+      [(y * zoomBy) - (panY * zoomBy), null]
+    else
+      @el.classList.add 'from-the-bottom'
+      [null, height - ((y * zoomBy) - (panY * zoomBy))]
+
+    hidden = left < 0 or right < 0 or top < 0 or bottom < 0
+
+    @el.style.left = if left? then "#{left}px" else ''
+    @el.style.right = if right? then "#{right}px" else ''
+    @el.style.top = if top? then "#{top}px" else ''
+    @el.style.bottom = if bottom? then "#{bottom}px" else ''
+    @el.style.display = if hidden then 'none' else ''
 
   onMouseDown: =>
     return if @tool.surface.disabled
@@ -80,4 +88,4 @@ class ToolControls extends BaseClass
 
   render: =>
     # Do whatever makes sense here.
-    @label.innerHTML = @tool.mark._label if '_label' of @tool.mark
+    @label?.innerHTML = @tool.mark._label if '_label' of @tool.mark
