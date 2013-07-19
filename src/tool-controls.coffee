@@ -51,15 +51,16 @@ class ToolControls extends BaseClass
       [null, height - ((y * zoomBy) - (panY * zoomBy))]
 
     hidden = left < 0 or right < 0 or top < 0 or bottom < 0
+    hidden ||= left > width or right > width or top > height or bottom > height
 
-    @el.style.left = if left? then "#{left}px" else ''
-    @el.style.right = if right? then "#{right}px" else ''
-    @el.style.top = if top? then "#{top}px" else ''
-    @el.style.bottom = if bottom? then "#{bottom}px" else ''
-    @el.style.display = if hidden then 'none' else ''
+    @el.style.left    = if left?   then "#{left}px"   else ''
+    @el.style.right   = if right?  then "#{right}px"  else ''
+    @el.style.top     = if top?    then "#{top}px"    else ''
+    @el.style.bottom  = if bottom? then "#{bottom}px" else ''
+    @el.style.display = if hidden  then 'none'        else ''
 
     @el.setAttribute 'horizontal-direction', if left? then 'right' else 'left'
-    @el.setAttribute 'vertical-direction', if top? then 'down' else 'up'
+    @el.setAttribute 'vertical-direction',   if top?  then 'down'  else 'up'
 
     null
 
