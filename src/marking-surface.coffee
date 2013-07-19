@@ -10,7 +10,7 @@ class MarkingSurface extends BaseClass
   height: NaN
 
   zoomBy: 1
-  zoomSnapTolerance = 0.05
+  zoomSnapTolerance: 0.05
 
   panX: 0
   panY: 0
@@ -55,7 +55,7 @@ class MarkingSurface extends BaseClass
     null
 
   zoom: (@zoomBy = 1) ->
-    @zoomBy = 1 if 1 - @zoomSnapTolerance < @zoomBy < 1 + @zoomSnapTolerance
+    @zoomBy = 1 if @zoomBy < 1 + @zoomSnapTolerance
     @pan()
     null
 
@@ -74,6 +74,14 @@ class MarkingSurface extends BaseClass
     @panX = (@width - (@width / @zoomBy)) * (x / @width)
     @panY = (@height - (@height / @zoomBy)) * (y / @height)
     @pan()
+    null
+
+  onTouchStart: (e) =>
+    @onMouseDown e if e.touches.length is 1
+    null
+
+  onTouchMove: (e) =>
+    @onMouseMove e
     null
 
   onMouseDown: (e) =>

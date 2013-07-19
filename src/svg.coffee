@@ -11,7 +11,7 @@ class SVG
     [tagName, classes...] = tagName.split '.'
 
     @el = document.createElementNS SVG_NS, tagName
-    @el.classList.add className for className in classes
+    @attr 'class', classes.join ' '
     @attr attributes
 
   attr: (attribute, value) ->
