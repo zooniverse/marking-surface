@@ -27,8 +27,7 @@ class MarkingSurface extends BaseClass
 
     @container ?= document.createElement 'div'
 
-    @container.classList.add @constructor::className
-    @container.classList.add @className
+    @container.className = @className
     @container.setAttribute 'tabindex', @tabIndex
     @container.setAttribute 'unselectable', true
 
@@ -159,7 +158,6 @@ class MarkingSurface extends BaseClass
     return if @disabled
     @disabled = true
     @container.setAttribute 'disabled', 'disabled'
-    @container.classList.add 'disabled'
     @selection?.deselect()
     null
 
@@ -167,7 +165,6 @@ class MarkingSurface extends BaseClass
     return unless @disabled
     @disabled = false
     @container.removeAttribute 'disabled'
-    @container.classList.remove 'disabled'
     null
 
   destroy: ->

@@ -15,8 +15,7 @@ class ToolControls extends BaseClass
     super
 
     @el = document.createElement 'div'
-    @el.classList.add @className
-    @el.classList.add @constructor::className
+    @el.className = @className
     @el.innerHTML = (@template? @) || @template
 
     @label = @el.querySelector '.tool-label'
@@ -28,7 +27,7 @@ class ToolControls extends BaseClass
     @tool.on 'select', @onToolSelect
 
     @tool.on 'initial-release', =>
-      @el.classList.add 'complete' if @tool.isComplete()
+      @el.setAttribute 'complete', 'complete' if @tool.isComplete()
 
     @tool.mark.on 'change', @render
 
@@ -42,17 +41,13 @@ class ToolControls extends BaseClass
     @el.style.position = 'absolute'
 
     [left, right] = if x < width / 2
-      @el.classList.remove 'to-the-left'
       [(x * zoomBy) - (panX * zoomBy), null]
     else
-      @el.classList.add 'to-the-left'
       [null, width - ((x * zoomBy) - (panX * zoomBy))]
 
     [top, bottom] = if y < height / 2
-      @el.classList.remove 'from-the-bottom'
       [(y * zoomBy) - (panY * zoomBy), null]
     else
-      @el.classList.add 'from-the-bottom'
       [null, height - ((y * zoomBy) - (panY * zoomBy))]
 
     hidden = left < 0 or right < 0 or top < 0 or bottom < 0
@@ -62,6 +57,10 @@ class ToolControls extends BaseClass
     @el.style.top = if top? then "#{top}px" else ''
     @el.style.bottom = if bottom? then "#{bottom}px" else ''
     @el.style.display = if hidden then 'none' else ''
+
+    @el.setAttribute 'horizontal-direction', if left? then 'right' else 'left'
+    @el.setAttribute 'vertical-direction', if top? then 'down' else 'up'
+
     null
 
   onMouseDown: =>
@@ -76,11 +75,11 @@ class ToolControls extends BaseClass
     null
 
   onToolSelect: =>
-    @el.classList.add 'selected'
+    @el.setAttribute 'selected', 'selected'
     null
 
   onToolDeselect: =>
-    @el.classList.remove 'selected'
+    @el.removeAttribute 'selected'
     null
 
   onToolDestroy: =>

@@ -1,5 +1,4 @@
-unless 'classList' of document.body
-  throw new Error 'MarkingSurface requires `classList` or a polyfill'
+# TODO: Add keyboard support.
 
 # BACKSPACE = 8
 # DELETE = 46
