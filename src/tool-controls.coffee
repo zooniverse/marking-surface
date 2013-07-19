@@ -22,8 +22,8 @@ class ToolControls extends BaseClass
     @label = @el.querySelector '.tool-label'
     @deleteButton = @el.querySelector 'button[name="delete-mark"]'
 
-    addEvent @el, 'mousedown', @onMouseDown
-    addEvent @deleteButton, 'click', @onClickDelete if @deleteButton?
+    @el.addEventListener 'mousedown', @onMouseDown, false
+    @deleteButton.addEventListener 'click', @onClickDelete, false if @deleteButton?
 
     @tool.on 'select', @onToolSelect
 
@@ -89,8 +89,8 @@ class ToolControls extends BaseClass
 
   destroy: ->
     super
-    removeEvent @el, 'mousedown', @onMouseDown
-    removeEvent @deleteButton, 'click', @onClickDelete
+    @el.removeEventListener 'mousedown', @onMouseDown, false
+    @deleteButton.removeEventListener 'click', @onClickDelete, false
     @el.parentNode.removeChild @el
     null
 

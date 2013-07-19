@@ -32,7 +32,7 @@ class Tool extends BaseClass
     @group = @surface.svg.addShape 'g.tool'
 
     for eventName in events
-      addEvent @group.el, eventName, @handleEvents
+      @group.el.addEventListener eventName, @handleEvents, false
 
     @initialize arguments...
 
@@ -95,24 +95,24 @@ class Tool extends BaseClass
         if 'on drag' of @
           @["on drag"] e
 
-          addEvent document, dragEvent, @['on drag']
+          document.addEventListener dragEvent, @['on drag'], false
 
           onEnd = =>
-            removeEvent document, dragEvent, @['on drag']
-            removeEvent document, endEvent, onEnd
+            document.removeEventListener dragEvent, @['on drag'], false
+            document.removeEventListener endEvent, onEnd, false
 
-          addEvent document, endEvent, onEnd
+          document.addEventListener endEvent, onEnd, false
 
         if "on drag #{name}" of @
           @["on drag #{name}"] e
 
-          addEvent document, dragEvent, @["on drag #{name}"]
+          document.addEventListener dragEvent, @["on drag #{name}"], false
 
           onNamedEnd = =>
-            removeEvent document, dragEvent, @["on drag #{name}"]
-            removeEvent document, endEvent, onNamedEnd
+            document.removeEventListener dragEvent, @["on drag #{name}"], false
+            document.removeEventListener endEvent, onNamedEnd, false
 
-          addEvent document, endEvent, onNamedEnd
+          document.addEventListener endEvent, onNamedEnd, false
 
   onMarkChange: =>
     @render arguments...
@@ -137,7 +137,7 @@ class Tool extends BaseClass
     super
 
     for eventName in events
-      removeEvent @group.el, eventName, @handleEvents
+      @group.el.removeEventListener eventName, @handleEvents, false
 
     # TODO: Animate this out.
     @group.remove()

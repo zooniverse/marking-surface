@@ -32,10 +32,10 @@ class MarkingSurface extends BaseClass
     @container.setAttribute 'tabindex', @tabIndex
     @container.setAttribute 'unselectable', true
 
-    addEvent @container, 'mousedown', @onMouseDown
-    addEvent @container, 'mousemove', @onMouseMove
-    addEvent @container, 'touchstart', @onTouchStart
-    addEvent @container, 'touchmove', @onTouchMove
+    @container.addEventListener 'mousedown', @onMouseDown, false
+    @container.addEventListener 'mousemove', @onMouseMove, false
+    @container.addEventListener 'touchstart', @onTouchStart, false
+    @container.addEventListener 'touchmove', @onTouchMove, false
 
     if @container.parentNode?
       @width ||= @container.clientWidth
@@ -87,9 +87,7 @@ class MarkingSurface extends BaseClass
   onMouseDown: (e) =>
     return if @disabled
     return if e.defaultPrevented
-
-    for element in elementAndParents e.target
-      return if element.classList?.contains @tool.Controls::className
+    return if e.target in @container.querySelectorAll ".#{ToolControls::className}, .#{ToolControls::className} *"
 
     e.preventDefault()
 
@@ -137,8 +135,8 @@ class MarkingSurface extends BaseClass
 
     dragEvent = if e.type is 'mousedown' then 'mousemove' else 'touchmove'
     releaseEvent = if e.type is 'mousedown' then 'mouseup' else 'touchend'
-    addEvent document, dragEvent, @onDrag
-    addEvent document, releaseEvent, @onRelease
+    document.addEventListener dragEvent, @onDrag, false
+    document.addEventListener releaseEvent, @onRelease, false
 
     null
 
@@ -151,8 +149,8 @@ class MarkingSurface extends BaseClass
   onRelease: (e) =>
     e.preventDefault()
     dragEvent = if e.type is 'mouseup' then 'mousemove' else 'touchmove'
-    removeEvent document, dragEvent, @onDrag
-    removeEvent document, e.type, @onRelease
+    document.removeEventListener dragEvent, @onDrag, false
+    document.removeEventListener e.type, @onRelease, false
 
     @selection?.onInitialRelease arguments...
     null
@@ -174,17 +172,21 @@ class MarkingSurface extends BaseClass
 
   destroy: ->
     mark.destroy() for mark in @marks
-    removeEvent @container, 'mousedown', @onMouseDown, false
-    removeEvent @container, 'mousemove', @onMouseMove, false
-    removeEvent @container, 'touchstart', @onTouchStart, false
-    removeEvent @container, 'touchmove', @onTouchMove, false
+    @container.removeEventListener 'mousedown', @onMouseDown, false
+    @container.removeEventListener 'mousemove', @onMouseMove, false
+    @container.removeEventListener 'touchstart', @onTouchStart, false
+    @container.removeEventListener 'touchmove', @onTouchMove, false
     null
 
   pointerOffset: (e) ->
     originalEvent = e.originalEvent if 'originalEvent' of e
     e = originalEvent.touches[0] if originalEvent? and 'touches' of originalEvent
 
-    elements = elementAndParents @container
+    elements = []
+    currentElement = @container
+    while currentElement?
+      elements.push currentElement
+      currentElement = currentElement.parentNode
 
     left = 0
     top = 0
