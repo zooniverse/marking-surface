@@ -40,6 +40,9 @@ class ToolControls extends BaseClass
 
     @el.style.position = 'absolute'
 
+    panX *= width - (width / zoomBy)
+    panY *= height - (height / zoomBy)
+
     [left, right] = if x < width / 2
       [(x * zoomBy) - (panX * zoomBy), null]
     else

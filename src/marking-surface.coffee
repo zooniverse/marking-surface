@@ -12,8 +12,8 @@ class MarkingSurface extends BaseClass
   zoomBy: 1
   zoomSnapTolerance: 0.05
 
-  panX: 0
-  panY: 0
+  panX: 0.5
+  panY: 0.5
 
   tools: null
   selection: null
@@ -54,15 +54,21 @@ class MarkingSurface extends BaseClass
     null
 
   zoom: (@zoomBy = 1) ->
-    @zoomBy = 1 if @zoomBy < 1 + @zoomSnapTolerance
+    if @zoomBy < 1 + @zoomSnapTolerance
+      @zoomBy = 1
+      @panX = @constructor::panX
+      @panY = @constructor::panY
+
     @pan()
     null
 
   pan: (@panX = @panX, @panY = @panY) ->
-    @panX = Math.min @panX, @width, @width - (@width / @zoomBy)
-    @panY = Math.min @panY, @height, @height - (@height / @zoomBy)
+    minX = (@width - (@width / @zoomBy)) * @panX
+    minY = (@height - (@height / @zoomBy)) * @panY
+    width = @width / @zoomBy
+    height = @height / @zoomBy
 
-    @svg.attr 'viewBox', "#{@panX} #{@panY} #{@width / @zoomBy} #{@height / @zoomBy}"
+    @svg.attr 'viewBox', "#{minX} #{minY} #{width} #{height}"
 
     tool.render() for tool in @tools
     null
@@ -70,9 +76,7 @@ class MarkingSurface extends BaseClass
   onMouseMove: (e) =>
     return if @zoomBy is 1
     {x, y} = @pointerOffset e
-    @panX = (@width - (@width / @zoomBy)) * (x / @width)
-    @panY = (@height - (@height / @zoomBy)) * (y / @height)
-    @pan()
+    @pan x / @width, y / @height
     null
 
   onTouchStart: (e) =>
