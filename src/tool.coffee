@@ -73,8 +73,6 @@ class Tool extends BaseClass
         name = property
         target = value
 
-    console.log 'Handling', {name}, {target}
-
     @["on #{eventName}"]?.call @, e
 
     @["on #{eventName} #{name}"]?.call @, e
