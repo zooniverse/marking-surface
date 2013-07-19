@@ -1,29 +1,29 @@
 class BaseClass
-  events: null
+  _events: null
 
   constructor: (params = {}) ->
     @[property] = value for own property, value of params when property of @
-    @events = {}
+    @_events = {}
 
   on: (eventName, handler) ->
-    @events[eventName] ?= []
-    @events[eventName].push handler
+    @_events[eventName] ?= []
+    @_events[eventName].push handler
     null
 
   trigger: (eventName, args) ->
-    handler.apply @, args || [] for handler in @events[eventName] || []
+    handler.apply @, args || [] for handler in @_events[eventName] || []
     null
 
   off: (eventName, handler) ->
     if eventName? and handler?
-      for h, i in @events[eventName] when h is handler
-        (@events[eventName] || []).splice i, 1
+      for h, i in @_events[eventName] when h is handler
+        (@_events[eventName] || []).splice i, 1
         return
 
     else if eventName?
-      (@events[eventName] || []).splice 0
+      (@_events[eventName] || []).splice 0
     else
-      delete @events[property] for property of @events
+      delete @_events[property] for property of @_events
 
     null
 

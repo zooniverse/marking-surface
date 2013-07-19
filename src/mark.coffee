@@ -24,11 +24,10 @@ class Mark extends BaseClass
   toJSON: ->
     result = {}
 
-    for property, value of @
-      continue if property is 'jQueryEventProxy'
-      continue if typeof value is 'function'
+    for own property, value of @
       continue if (property.charAt 0) is '_'
-      getter = @["get #{property}"]
-      result[property] = @get property
+      continue if typeof value is 'function'
+      gottenValue = @get property
+      result[property] = gottenValue
 
     result

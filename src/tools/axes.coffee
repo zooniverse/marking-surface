@@ -7,6 +7,7 @@ class AxesTool extends Tool
   dots: null
 
   markDefaults:
+    type: 'AXES'
     p0: [-(dotRadius * 2), -(dotRadius * 2)], p1: [-(dotRadius * 2), -(dotRadius * 2)]
     p2: [-(dotRadius * 2), -(dotRadius * 2)], p3: [-(dotRadius * 2), -(dotRadius * 2)]
 

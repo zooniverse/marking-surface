@@ -36,9 +36,7 @@ class Tool extends BaseClass
 
     @initialize arguments...
 
-    @mark.silent = true
     @mark.set @markDefaults if @markDefaults?
-    @mark.silent = false
 
   addShape: ->
     @group.addShape arguments...

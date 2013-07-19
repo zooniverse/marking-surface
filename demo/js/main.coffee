@@ -6,6 +6,7 @@ class PointTool extends Tool
     circle: 'move'
 
   markDefaults:
+    type: 'POINT'
     _label: 'Point'
 
   initialize: ->
@@ -20,7 +21,6 @@ class PointTool extends Tool
     @['on drag circle'] e
 
   'on drag circle': (e) =>
-    console.log 'Dragging circle'
     offset = @surface.pointerOffset e
     @mark.set offset
 
