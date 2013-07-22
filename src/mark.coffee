@@ -8,7 +8,7 @@ class Mark extends BaseClass
       map = property
       @set property, value, fromMany: true for property, value of map
 
-    @trigger 'change', [property, value] unless fromMany
+    @trigger 'change', [property, value] unless fromMany or (property.charAt 0) is '_'
     null
 
   get: (properties...) ->

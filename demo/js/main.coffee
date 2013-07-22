@@ -34,7 +34,7 @@ class PointTool extends Tool
 # demoImage = 'http://www.seafloorexplorer.org/images/field-guide/fish.jpg'
 
 ms = new MarkingSurface
-  tool: AxesTool
+  tool: PointTool
   width: 640
   height: 480
 

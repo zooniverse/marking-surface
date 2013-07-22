@@ -18,6 +18,9 @@ class Tool extends BaseClass
 
   drags: 0
 
+  renderFps: 60
+  renderTimeout: NaN
+
   constructor: ->
     super
 
@@ -113,8 +116,9 @@ class Tool extends BaseClass
           document.addEventListener endEvent, onNamedEnd, false
 
   onMarkChange: =>
+    return unless isNaN @renderTimeout
     @render arguments...
-    null
+    @renderTimeout = setTimeout (=> @render arguments; @renderTimeout = NaN), 1000 / @renderFps
 
   onMarkDestory: =>
     @destroy arguments...
