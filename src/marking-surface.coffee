@@ -3,20 +3,22 @@ class MarkingSurface extends BaseClass
 
   container: null
   className: 'marking-surface'
-  width: 400
-  height: 300
-  background: ''
+  tabIndex: 0
 
-  paper: null
-  image: null
-  marks: null
-  tools: null
+  svg: null
+  width: NaN
+  height: NaN
 
   zoomBy: 1
-  panX: 0
-  panY: 0
+  zoomSnapTolerance: 0.05
 
+  panX: 0.5
+  panY: 0.5
+
+  tools: null
   selection: null
+
+  marks: null
 
   disabled: false
 
@@ -24,161 +26,177 @@ class MarkingSurface extends BaseClass
     super
 
     @container ?= document.createElement 'div'
-    @container = $(@container)
-    @container.addClass @className
-    @container.attr tabindex: 0, unselectable: true
-    @container.on 'blur', => @onBlur arguments...
-    @container.on 'focus', => @onFocus arguments...
 
-    unless @container.parents().length is 0
-      @width = @container.width() || @width unless 'width' of params
-      @height = @container.height() || @height unless 'height' of params
+    @container.className = @className
+    @container.setAttribute 'tabindex', @tabIndex
+    @container.setAttribute 'unselectable', true
 
-    @paper ?= Raphael @container.get(0), @width, @height
+    @container.addEventListener 'mousedown', @onMouseDown, false
+    @container.addEventListener 'mousemove', @onMouseMove, false
+    @container.addEventListener 'touchstart', @onTouchStart, false
+    @container.addEventListener 'touchmove', @onTouchMove, false
 
-    @image = @paper.image 'about:blank', 0, 0, @width, @height
-    setTimeout => @image.attr src: @background if @background
+    if @container.parentNode?
+      @width ||= @container.clientWidth
+      @height ||= @container.clientHeight
+
+    @svg ?= new SVG {@width, @height}
+    @svg.el.style.display = 'block' # This is okay since it's always contained.
+    @container.appendChild @svg.el
 
     @marks ?= []
     @tools ?= []
 
     disable() if @disabled
 
-    @container.on 'mousedown touchstart', => @onMouseDown arguments...
-    @container.on 'mousemove touchmove', => @onMouseMove arguments...
-
-    @container.on 'keydown', => @onKeyDown arguments...
-
-  resize: (@width, @height) ->
-    @paper.setSize @width, @height
-    @image.attr {@width, @height}
+  resize: (@width = @width, @height = @height) ->
+    @svg.attr {@width, @height}
+    null
 
   zoom: (@zoomBy = 1) ->
+    if @zoomBy < 1 + @zoomSnapTolerance
+      @zoomBy = 1
+      @panX = @constructor::panX
+      @panY = @constructor::panY
+
     @pan()
+    null
 
   pan: (@panX = @panX, @panY = @panY) ->
-    @panX = Math.min @panX, @width, @width - (@width / @zoomBy)
-    @panY = Math.min @panY, @height, @height - (@height / @zoomBy)
+    minX = (@width - (@width / @zoomBy)) * @panX
+    minY = (@height - (@height / @zoomBy)) * @panY
+    width = @width / @zoomBy
+    height = @height / @zoomBy
 
-    @paper.setViewBox @panX, @panY, @width / @zoomBy, @height / @zoomBy
+    @svg.attr 'viewBox', "#{minX} #{minY} #{width} #{height}"
 
     tool.render() for tool in @tools
+    null
 
-  onMouseMove: (e) ->
+  onMouseMove: (e) =>
     return if @zoomBy is 1
-    {x, y} = @mouseOffset e
-    @panX = (@width - (@width / @zoomBy)) * (x / @width)
-    @panY = (@height - (@height / @zoomBy)) * (y / @height)
-    @pan()
+    {x, y} = @pointerOffset e
+    @pan x / @width, y / @height
+    null
 
-  onMouseDown: (e) ->
+  onTouchStart: (e) =>
+    @onMouseDown e if e.touches.length is 1
+    null
+
+  onTouchMove: (e) =>
+    @onMouseMove e
+    null
+
+  onMouseDown: (e) =>
     return if @disabled
-    return unless e.target in [@container.get(0), @paper.canvas, @image.node]
-    return if e.isDefaultPrevented()
+    return if e.defaultPrevented
+    return if e.target in @container.querySelectorAll ".#{ToolControls::className}, .#{ToolControls::className} *"
 
     e.preventDefault()
 
-    $(document.activeElement).blur()
-    @container.focus()
-
     if not @selection? or @selection.isComplete()
-      tool = new @tool surface: @
-      mark = tool.mark
+      if @tool?
+        tool = new @tool surface: @
+        mark = tool.mark
 
-      @tools.push tool
-      @marks.push mark
-
-      tool.on 'select', =>
-        @selection?.deselect() unless @selection is tool
-
-        index = i for t, i in @tools when t is tool
-        @tools.splice index, 1
         @tools.push tool
+        @marks.push mark
 
-        @selection = tool
+        tool.on 'select', =>
+          return if @selection is tool
 
-      tool.on 'deselect', =>
-        @selection = null
+          @selection?.deselect()
 
-      tool.on 'destroy', =>
-        tool.deselect()
-        index = i for t, i in @tools when t is tool
-        @tools.splice index, 1
-        @tools[@tools.length - 1]?.select() if tool is @selection
+          index = i for t, i in @tools when t is tool
+          @tools.splice index, 1
+          @tools.push tool
 
-      mark.on 'destroy', =>
-        index = i for m, i in @marks when m is mark
-        @marks.splice index, 1
-        @trigger 'destroy-mark', [mark]
+          @selection = tool
 
-      tool.select()
-      @trigger 'create-mark', [mark, tool]
+        tool.on 'deselect', =>
+          @selection = null
+
+        tool.on 'destroy', =>
+          index = i for t, i in @tools when t is tool
+          @tools.splice index, 1
+          @tools[@tools.length - 1]?.select() if tool is @selection
+
+        mark.on 'destroy', =>
+          index = i for m, i in @marks when m is mark
+          @marks.splice index, 1
+          @trigger 'destroy-mark', [mark]
+
+        tool.select()
+        @trigger 'create-mark', [mark, tool]
 
     else
       tool = @selection
 
-    tool.select()
-    tool.onInitialClick e
+    if tool?
+      tool.select()
+      tool.onInitialClick e
 
-    onDrag = => @onDrag arguments...
-    doc.on 'mousemove touchmove', onDrag
-    doc.one 'mouseup touchend', =>
-      @onRelease arguments...
-      doc.off 'mousemove touchmove', onDrag
+    dragEvent = if e.type is 'mousedown' then 'mousemove' else 'touchmove'
+    releaseEvent = if e.type is 'mousedown' then 'mouseup' else 'touchend'
+    document.addEventListener dragEvent, @onDrag, false
+    document.addEventListener releaseEvent, @onRelease, false
 
-  onDrag: (e) ->
+    null
+
+  onDrag: (e) =>
     e.preventDefault()
-    @selection.onInitialDrag e
 
-  onRelease: (e) ->
+    @selection?.onInitialDrag arguments...
+    null
+
+  onRelease: (e) =>
     e.preventDefault()
-    @selection.onInitialRelease e
+    dragEvent = if e.type is 'mouseup' then 'mousemove' else 'touchmove'
+    document.removeEventListener dragEvent, @onDrag, false
+    document.removeEventListener e.type, @onRelease, false
 
-  onKeyDown: (e) ->
-    return if $(e.target).is 'input, textarea, select, button'
-
-    if e.which in [BACKSPACE, DELETE]
-      e.preventDefault()
-      @selection?.mark.destroy()
-    else if e.which is TAB and @selection?
-      e.preventDefault()
-
-      if e.shiftKey
-        @tools.unshift @tools.pop()
-      else
-        @tools.push @tools.shift()
-
-      @tools[@tools.length - 1]?.select()
-
-  onFocus: ->
-    @selection?.select()
-
-  onBlur: ->
-    return if @container.has document.activeElement
-    @selection?.deselect()
+    @selection?.onInitialRelease arguments...
+    null
 
   disable: (e) ->
+    return if @disabled
     @disabled = true
-    @container.attr disabled: true
-    @container.addClass 'disabled'
+    @container.setAttribute 'disabled', 'disabled'
     @selection?.deselect()
+    null
 
   enable: (e) ->
+    return unless @disabled
     @disabled = false
-    @container.attr disabled: false
-    @container.removeClass 'disabled'
+    @container.removeAttribute 'disabled'
+    null
 
   destroy: ->
-    @container.off().remove()
     mark.destroy() for mark in @marks
-    super
+    @container.removeEventListener 'mousedown', @onMouseDown, false
+    @container.removeEventListener 'mousemove', @onMouseMove, false
+    @container.removeEventListener 'touchstart', @onTouchStart, false
+    @container.removeEventListener 'touchmove', @onTouchMove, false
+    null
 
-  mouseOffset: (e) ->
+  pointerOffset: (e) ->
     originalEvent = e.originalEvent if 'originalEvent' of e
     e = originalEvent.touches[0] if originalEvent? and 'touches' of originalEvent
-    {left, top} = @container.offset()
-    left += parseFloat @container.css 'padding-left'
-    left += (parseFloat @container.css 'border-left-width') || 0
-    top += parseFloat @container.css 'padding-top'
-    top += (parseFloat @container.css 'border-top-width') || 0
-    x: e.pageX - left, y: e.pageY - top
+
+    elements = []
+    currentElement = @container
+    while currentElement?
+      elements.push currentElement
+      currentElement = currentElement.parentNode
+
+    left = 0
+    top = 0
+
+    for element in elements
+      left += element.offsetLeft unless isNaN element.offsetLeft
+      top += element.offsetTop unless isNaN element.offsetTop
+
+    x = e.pageX - left
+    y = e.pageY - top
+
+    {x, y}

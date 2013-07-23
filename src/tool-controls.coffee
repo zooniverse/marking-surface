@@ -2,84 +2,102 @@ class ToolControls extends BaseClass
   tool: null
 
   el: null
-  handle: null
+  className: 'marking-tool-controls'
   label: null
   deleteButton: null
 
   template: '''
-    <div class="marking-tool-controls">
-      <span class="handle"></span>
-      <span class="label"></span>
-      <button name="delete-mark">&times;</button>
-    </div>
+    <span class="tool-label"></span>
+    <button name="delete-mark">&times;</button>
   '''
 
   constructor: ->
     super
 
-    @el = $(@template)
+    @el = document.createElement 'div'
+    @el.className = @className
+    @el.innerHTML = (@template? @) || @template
 
-    @handle = @el.find '.handle'
-    @label = @el.find '.label'
-    @deleteButton = @el.find 'button[name="delete-mark"]'
+    @label = @el.querySelector '.tool-label'
+    @deleteButton = @el.querySelector 'button[name="delete-mark"]'
 
-    @el.on 'mousedown touchstart', =>
-      @tool.select()
+    @el.addEventListener 'mousedown', @onMouseDown, false
+    @deleteButton.addEventListener 'click', @onClickDelete, false if @deleteButton?
 
-    @el.on 'click', 'button[name="delete-mark"]', (e) =>
-      return if @tool.surface.disabled
-      e.preventDefault()
-      @onClickDelete arguments...
-
-    @tool.on 'select', =>
-      return if @tool.surface.disabled
-      @onToolSelect arguments...
+    @tool.on 'select', @onToolSelect
 
     @tool.on 'initial-release', =>
-      @el.toggleClass 'complete', @tool.isComplete()
+      @el.setAttribute 'complete', 'complete' if @tool.isComplete()
 
-    @tool.on 'deselect', =>
-      return if @tool.surface.disabled
-      @onToolDeselect arguments...
+    @tool.mark.on 'change', @render
 
-    @tool.mark.on 'change', =>
-      @label.html @tool.mark.label if 'label' of @tool.mark
-      @render()
+    @tool.on 'deselect', @onToolDeselect
 
-    @tool.on 'destroy', =>
-      @destroy()
+    @tool.on 'destroy', @onToolDestroy
 
   moveTo: (x, y) ->
-    [x, y] = x if x instanceof Array
+    {zoomBy, panX, panY, width, height} = @tool.surface
 
-    if x > @tool.surface.width / 2
-      @el.addClass 'to-the-left'
-      @el.css
-        left: ''
-        position: 'absolute'
-        right: @tool.surface.width - x
-        top: y
+    @el.style.position = 'absolute'
 
+    panX *= width - (width / zoomBy)
+    panY *= height - (height / zoomBy)
+
+    [left, right] = if x < width / 2
+      [(x * zoomBy) - (panX * zoomBy), null]
     else
-      @el.removeClass 'to-the-left'
-      @el.css
-        left: x
-        position: 'absolute'
-        right: ''
-        top: y
+      [null, width - ((x * zoomBy) - (panX * zoomBy))]
 
-  onToolSelect: ->
-    @el.addClass 'selected'
+    [top, bottom] = if y < height / 2
+      [(y * zoomBy) - (panY * zoomBy), null]
+    else
+      [null, height - ((y * zoomBy) - (panY * zoomBy))]
 
-  onToolDeselect: ->
-    @el.removeClass 'selected'
+    hidden = left < 0 or right < 0 or top < 0 or bottom < 0
+    hidden ||= left > width or right > width or top > height or bottom > height
 
-  onClickDelete: ->
+    @el.style.left    = if left?   then "#{left}px"   else ''
+    @el.style.right   = if right?  then "#{right}px"  else ''
+    @el.style.top     = if top?    then "#{top}px"    else ''
+    @el.style.bottom  = if bottom? then "#{bottom}px" else ''
+    @el.style.display = if hidden  then 'none'        else ''
+
+    @el.setAttribute 'horizontal-direction', if left? then 'right' else 'left'
+    @el.setAttribute 'vertical-direction',   if top?  then 'down'  else 'up'
+
+    null
+
+  onMouseDown: =>
+    return if @tool.surface.disabled
+    @tool.select()
+    null
+
+  onClickDelete: (e) =>
+    return if @tool.surface.disabled
+    e.preventDefault()
     @tool.mark.destroy()
+    null
+
+  onToolSelect: =>
+    @el.setAttribute 'selected', 'selected'
+    null
+
+  onToolDeselect: =>
+    @el.removeAttribute 'selected'
+    null
+
+  onToolDestroy: =>
+    @destroy()
+    null
 
   destroy: ->
-    @el.off()
-    @el.remove()
+    super
+    @el.removeEventListener 'mousedown', @onMouseDown, false
+    @deleteButton.removeEventListener 'click', @onClickDelete, false
+    @el.parentNode.removeChild @el
+    null
 
   render: =>
     # Do whatever makes sense here.
+    @label?.innerHTML = @tool.mark._label if '_label' of @tool.mark
+    null

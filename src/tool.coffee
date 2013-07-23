@@ -1,23 +1,25 @@
-MOUSE_EVENTS = '''
-  mousedown mouseover mousemove mouseout mouseup
-  touchstart touchmove touchend
-'''.split /\s+/
+events = [
+  'mousedown', 'mouseover', 'mousmove', 'mouseout', 'mouseup'
+  'touchstart', 'touchmove', 'touchend'
+]
 
 class Tool extends BaseClass
   @Mark: Mark
   @Controls: ToolControls
 
+  markDefaults: null
   cursors: null
 
   mark: null
-  markDefaults: null
-
-  surface: null
-
-  shapeSet: null
   controls: null
 
-  clicks: 0
+  group: null
+  surface: null
+
+  drags: 0
+
+  renderFps: 60
+  renderTimeout: NaN
 
   renderFps: 30
   renderTimeout: NaN
@@ -26,115 +28,130 @@ class Tool extends BaseClass
     super
 
     @mark ?= new @constructor.Mark
-    @mark.set @markDefaults if @markDefaults?
 
-    @mark.on 'change', =>
-      @onMarkChange arguments...
-
-    @mark.on 'destroy', =>
-      @destroy arguments...
-
-    @shapeSet ?= @surface.paper.set()
+    @mark.on 'change', @onMarkChange
+    @mark.on 'destroy', @onMarkDestory
 
     @controls = new @constructor.Controls tool: @
-    @controls.el.appendTo @surface.container
+    @surface.container.appendChild @controls.el
+
+    @group = @surface.svg.addShape 'g.tool'
+
+    for eventName in events
+      @group.el.addEventListener eventName, @handleEvents, false
 
     @initialize arguments...
 
-  addShape: (type, params...) ->
-    attributes = params.pop() if typeof params[params.length - 1] is 'object'
+    @mark.set @markDefaults if @markDefaults?
 
-    shape = @surface.paper[type.toLowerCase()] params...
-    shape.attr attributes
-
-    for eventName in MOUSE_EVENTS
-      shape[eventName] => @handleEvents arguments...
-
-    @shapeSet.push shape
-    shape
+  addShape: ->
+    @group.addShape arguments...
 
   onInitialClick: (e) ->
     @trigger 'initial-click', [e]
     @onFirstClick e
 
   onInitialDrag: (e) ->
+    @trigger 'initial-drag', [e]
     @onFirstDrag e
 
   onInitialRelease: (e) ->
-    @clicks += 1
+    @drags += 1
     @trigger 'initial-release', [e]
-    @onFirstRelease arguments...
+    @onFirstRelease e
 
-  # Override this if drawing the tool requires multiple drag steps (e.g. axes).
-  isComplete: ->
-    @clicks is 1
-
-  handleEvents: (e) ->
+  handleEvents: (e) =>
     return if @surface.disabled
 
     eventName = e.type
+    name: '*' # Default for custom cursors
     target = e.target || e.srcElement # For IE
-    shape = @surface.paper.getById target.raphaelid
-    name = '*'
 
     for property, value of @
-      isArray = value instanceof Array or value instanceof @shapeSet.constructor
-      if (value is shape) or (isArray and shape in value)
+      match = value?.el is target
+
+      if value instanceof Array
+        match ||= valueItem?.el is target for valueItem in value
+
+      if match
         name = property
+        target = value
 
-    @["on #{eventName}"]?.call @, e, shape
+    @["on #{eventName}"]?.call @, e
 
-    @["on #{eventName} #{name}"]?.call @, e, shape
+    @["on #{eventName} #{name}"]?.call @, e
 
     switch eventName
       when 'mouseover'
-        @surface.container.css cursor: @cursors?[name]
+        @surface.container.style.cursor = @cursors?[name]
 
       when 'mouseout'
-        @surface.container.css cursor: ''
+        @surface.container.style.cursor = ''
 
       when 'mousedown', 'touchstart'
         e.preventDefault()
+
         @select()
 
+        dragEvent = if eventName is 'mousedown' then 'mousemove' else 'touchmove'
+        endEvent = if eventName is 'mousedown' then 'mouseup' else 'touchend'
+
         if 'on drag' of @
-          onDrag = => @['on drag'] arguments..., shape
-          doc.on 'mousemove touchmove', onDrag
-          doc.one 'mouseup touchend', => doc.off 'mousemove touchmove', onDrag
+          @["on drag"] e
 
-        if name and "on drag #{name}" of @
-          onNamedDrag = => @["on drag #{name}"] arguments..., shape
-          doc.on 'mousemove touchmove', onNamedDrag
-          doc.one 'mouseup touchend', => doc.off 'mousemove touchmove', onNamedDrag
+          document.addEventListener dragEvent, @['on drag'], false
 
-  mouseOffset: ->
-    @surface.mouseOffset arguments...
+          onEnd = =>
+            document.removeEventListener dragEvent, @['on drag'], false
+            document.removeEventListener endEvent, onEnd, false
 
-  onMarkChange: ->
-    return if @renderTimeout
-    @renderTimeout = setTimeout (=> @render arguments...; @renderTimeout = NaN), 1000 / @renderFps
+          document.addEventListener endEvent, onEnd, false
+
+        if "on drag #{name}" of @
+          @["on drag #{name}"] e
+
+          document.addEventListener dragEvent, @["on drag #{name}"], false
+
+          onNamedEnd = =>
+            document.removeEventListener dragEvent, @["on drag #{name}"], false
+            document.removeEventListener endEvent, onNamedEnd, false
+
+          document.addEventListener endEvent, onNamedEnd, false
+
+  onMarkChange: =>
+    return unless isNaN @renderTimeout
+    @render arguments...
+    @renderTimeout = setTimeout (=> @render arguments; @renderTimeout = NaN), 1000 / @renderFps
+
+  onMarkDestory: =>
+    @destroy arguments...
+    null
 
   select: ->
-    @shapeSet.attr opacity: 1
-    @shapeSet.toFront()
+    @group.attr opacity: 1
+    @group.toFront()
     @trigger 'select', arguments
+    null
 
   deselect: ->
-    @shapeSet.attr opacity: 0.5
+    @group.attr opacity: 0.5
     @trigger 'deselect', arguments
+    null
 
-  destroy: ->
+  destroy: =>
     super
 
-    @surface.container.focus()
-    @shapeSet.animate
-      opacity: 0
-      r: 0
-      'stroke-width': 0
-      250
-      'ease-in'
-      =>
-        @shapeSet.remove() # This also unbinds all events.
+    for eventName in events
+      @group.el.removeEventListener eventName, @handleEvents, false
+
+    # TODO: Animate this out.
+    @group.remove()
+
+    @trigger 'destroy', arguments
+    null
+
+  pointerOffset: ->
+    @surface.pointerOffset arguments...
 
   initialize: ->
     # E.g.
@@ -148,9 +165,14 @@ class Tool extends BaseClass
     # E.g.
     # @mark.set position: @mouseOffset(e).x
 
+  isComplete: ->
+    # Override this if drawing the tool requires multiple drag steps (e.g. axes).
+    @drags is 1
+
   onFirstRelease: (e) ->
+    # This is generally less useful.
 
   render: ->
     # E.g.
-    # @shapeSet.attr cx: @mark.position
+    # @circle.attr cx: @mark.position
     # @controls.moveTo @mark.position, @mark.position

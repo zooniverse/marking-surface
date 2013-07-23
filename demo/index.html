@@ -3,32 +3,36 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=450" />
     <title>Marking surface demo</title>
     <style>
+      html {
+        text-align: center;
+      }
+
       .marking-surface {
         border: 1px dashed red;
         display: inline-block;
         position: relative;
       }
+
+      .marking-surface[disabled] {
+        opacity: 0.33;
+      }
     </style>
   </head>
 
   <body>
-    <div><label><input id="disabled" type="checkbox" /> Disabled</label></div>
-
     <div>
-      <label><input id="zoom" type="range" min="1" max="3" value="1" step="any" /> Zoom</label>
+      <label><input id="disabled" type="checkbox" /> Disabled</label>
+      &emsp;&emsp;
+      <label>Zoom<input id="zoom" type="range" min="1" max="3" value="1" step="any" /></label>
       <button id="no-zoom">&times;</button>
-    </div>
-
-    <div>
+      &emsp;&emsp;
       <button name="tool" value="point">Point</button>
       <button name="tool" value="axes">Axes</button>
     </div>
 
     <script src="../components/jquery/jquery.js"></script>
-    <script src="../components/raphael/raphael.js"></script>
     <script src="../lib/marking-surface.js"></script>
     <script src="../lib/tools/axes.js"></script>
     <script src="./js/main.js"></script>
