@@ -1,70 +1,37 @@
 class ToolControls extends BaseClass
   tool: null
 
-  el: null
+  tagName: 'div'
   className: 'marking-tool-controls'
-  label: null
+  deleteButtonName: 'delete-marking-tool'
+  el: null
   deleteButton: null
 
-  template: '''
-    <span class="tool-label"></span>
-    <button name="delete-mark">&times;</button>
-  '''
+  template: """
+    <button name="#{@::deleteButtonName}">&times;</button>
+  """
 
   constructor: ->
     super
 
-    @el = document.createElement 'div'
+    @el = document.createElement @tagName
     @el.className = @className
-    @el.innerHTML = (@template? @) || @template
-
-    @label = @el.querySelector '.tool-label'
-    @deleteButton = @el.querySelector 'button[name="delete-mark"]'
+    @el.style.position = 'absolute'
+    @el.innerHTML = @template
 
     @el.addEventListener 'mousedown', @onMouseDown, false
-    @deleteButton.addEventListener 'click', @onClickDelete, false if @deleteButton?
 
+    @deleteButton = @el.querySelector "button[name='#{@deleteButtonName}']"
+    @deleteButton?.addEventListener 'click', @onClickDelete, false
+
+    @tool.on 'initial-release', @onToolInitialRelease
     @tool.on 'select', @onToolSelect
-
-    @tool.on 'initial-release', =>
-      @el.setAttribute 'complete', 'complete' if @tool.isComplete()
-
-    @tool.mark.on 'change', @render
-
+    @tool.mark.on 'change', @onMarkChange
     @tool.on 'deselect', @onToolDeselect
-
     @tool.on 'destroy', @onToolDestroy
 
-  moveTo: (x, y) ->
-    {zoomBy, panX, panY, width, height} = @tool.surface
-
-    @el.style.position = 'absolute'
-
-    panX *= width - (width / zoomBy)
-    panY *= height - (height / zoomBy)
-
-    [left, right] = if x < width / 2
-      [(x * zoomBy) - (panX * zoomBy), null]
-    else
-      [null, width - ((x * zoomBy) - (panX * zoomBy))]
-
-    [top, bottom] = if y < height / 2
-      [(y * zoomBy) - (panY * zoomBy), null]
-    else
-      [null, height - ((y * zoomBy) - (panY * zoomBy))]
-
-    hidden = left < 0 or right < 0 or top < 0 or bottom < 0
-    hidden ||= left > width or right > width or top > height or bottom > height
-
-    @el.style.left    = if left?   then "#{left}px"   else ''
-    @el.style.right   = if right?  then "#{right}px"  else ''
-    @el.style.top     = if top?    then "#{top}px"    else ''
-    @el.style.bottom  = if bottom? then "#{bottom}px" else ''
-    @el.style.display = if hidden  then 'none'        else ''
-
-    @el.setAttribute 'horizontal-direction', if left? then 'right' else 'left'
-    @el.setAttribute 'vertical-direction',   if top?  then 'down'  else 'up'
-
+  onToolInitialRelease: =>
+    @el.setAttribute 'complete', 'complete' if @tool.isComplete()
     null
 
   onMouseDown: =>
@@ -82,6 +49,10 @@ class ToolControls extends BaseClass
     @el.setAttribute 'selected', 'selected'
     null
 
+  onMarkChange: =>
+    @render arguments...
+    null
+
   onToolDeselect: =>
     @el.removeAttribute 'selected'
     null
@@ -91,13 +62,41 @@ class ToolControls extends BaseClass
     null
 
   destroy: ->
-    super
     @el.removeEventListener 'mousedown', @onMouseDown, false
     @deleteButton.removeEventListener 'click', @onClickDelete, false
     @el.parentNode.removeChild @el
+    super
     null
 
-  render: =>
-    # Do whatever makes sense here.
-    @label?.innerHTML = @tool.mark._label if '_label' of @tool.mark
+  moveTo: (x, y) ->
+    {zoomBy, panX, panY, width, height} = @tool.surface
+
+    panX *= width - (width / zoomBy)
+    panY *= height - (height / zoomBy)
+
+    [left, right] = if x < width / 2
+      [(x * zoomBy) - (panX * zoomBy), null]
+    else
+      [null, width - ((x * zoomBy) - (panX * zoomBy))]
+
+    [top, bottom] = if y < height / 2
+      [(y * zoomBy) - (panY * zoomBy), null]
+    else
+      [null, height - ((y * zoomBy) - (panY * zoomBy))]
+
+    outOfBounds = left < 0 or right < 0 or top < 0 or bottom < 0
+    outOfBounds ||= left > width or right > width or top > height or bottom > height
+
+    @el.style.left    = if left?       then "#{left}px"   else ''
+    @el.style.right   = if right?      then "#{right}px"  else ''
+    @el.style.top     = if top?        then "#{top}px"    else ''
+    @el.style.bottom  = if bottom?     then "#{bottom}px" else ''
+    @el.style.display = if outOfBounds then 'none'        else ''
+
+    @el.setAttribute 'horizontal-direction', if left? then 'right' else 'left'
+    @el.setAttribute 'vertical-direction',   if top?  then 'down'  else 'up'
+
     null
+
+  render: ->
+    # Reflect the state of the tool's mark.
