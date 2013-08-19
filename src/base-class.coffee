@@ -15,13 +15,16 @@ class BaseClass
     null
 
   off: (eventName, handler) ->
-    if eventName? and handler?
-      for h, i in @_events[eventName] when h is handler
-        (@_events[eventName] || []).splice i, 1
-        return
+    if eventName?
+      handlerList = @_events[eventName] || []
 
-    else if eventName?
-      (@_events[eventName] || []).splice 0
+      if handler?
+        for fn, i in handlerList by -1 when fn is handler
+          handlerList.splice i, 1
+
+      else
+        handlerList.splice 0
+
     else
       delete @_events[property] for property of @_events
 
