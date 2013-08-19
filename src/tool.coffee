@@ -1,4 +1,4 @@
-events = [
+POINTER_EVENTS = [
   'mousedown', 'mouseover', 'mousmove', 'mouseout', 'mouseup'
   'touchstart', 'touchmove', 'touchend'
 ]
@@ -8,18 +8,17 @@ class Tool extends BaseClass
   @Controls: ToolControls
 
   markDefaults: null
+
   cursors: null
+
+  surface: null
 
   mark: null
   controls: null
 
   group: null
-  surface: null
 
   drags: 0
-
-  renderFps: 60
-  renderTimeout: NaN
 
   renderFps: 30
   renderTimeout: NaN
@@ -33,11 +32,11 @@ class Tool extends BaseClass
     @mark.on 'destroy', @onMarkDestory
 
     @controls = new @constructor.Controls tool: @
-    @surface.container.appendChild @controls.el
 
-    @group = @surface.svg.addShape 'g.tool'
+    @group = @surface.svg.addShape 'g.marking-tool'
 
-    for eventName in events
+    # Delegate pointer events to the group.
+    for eventName in POINTER_EVENTS
       @group.el.addEventListener eventName, @handleEvents, false
 
     @initialize arguments...
@@ -46,6 +45,8 @@ class Tool extends BaseClass
 
   addShape: ->
     @group.addShape arguments...
+
+  # NOTE: These "initial" events begin on the marking surface.
 
   onInitialClick: (e) ->
     @trigger 'initial-click', [e]
@@ -59,6 +60,10 @@ class Tool extends BaseClass
     @drags += 1
     @trigger 'initial-release', [e]
     @onFirstRelease e
+
+  isComplete: ->
+    # Override this if drawing the tool requires multiple drag steps (e.g. axes).
+    @drags is 1
 
   handleEvents: (e) =>
     return if @surface.disabled
@@ -128,51 +133,43 @@ class Tool extends BaseClass
     null
 
   select: ->
-    @group.attr opacity: 1
     @group.toFront()
     @trigger 'select', arguments
     null
 
   deselect: ->
-    @group.attr opacity: 0.5
     @trigger 'deselect', arguments
     null
 
   destroy: =>
-    super
-
-    for eventName in events
+    for eventName in POINTER_EVENTS
       @group.el.removeEventListener eventName, @handleEvents, false
 
     # TODO: Animate this out.
     @group.remove()
 
-    @trigger 'destroy', arguments
+    super
     null
 
   pointerOffset: ->
     @surface.pointerOffset arguments...
 
   initialize: ->
-    # E.g.
-    # @addShape 'circle'
+    # Add shapes here.
+    # E.g. @mainHandle = @addShape 'circle'
 
   onFirstClick: (e) ->
-    # E.g.
-    # @mark.set position: @mouseOffset(e).x
+    # Usualy, defer to `onFirstDrag`.
+    # E.g. @onFirstDrag arguments...
 
   onFirstDrag: (e) ->
-    # E.g.
-    # @mark.set position: @mouseOffset(e).x
-
-  isComplete: ->
-    # Override this if drawing the tool requires multiple drag steps (e.g. axes).
-    @drags is 1
+    # Usualy, defer to a more general on-drag method.
+    # E.g. @['on drag mainHandle'] arguments...
 
   onFirstRelease: (e) ->
-    # This is generally less useful.
+    # Override this if you need to do some post-create procedure.
 
   render: ->
-    # E.g.
-    # @circle.attr cx: @mark.position
-    # @controls.moveTo @mark.position, @mark.position
+    # Reflect the state of the mark, e.g.:
+    # @mainHandle.attr cx: @mark.x, cy: @mark.y
+    # @controls.moveTo @mark.x, @mark.y

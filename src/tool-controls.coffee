@@ -30,6 +30,8 @@ class ToolControls extends BaseClass
     @tool.on 'deselect', @onToolDeselect
     @tool.on 'destroy', @onToolDestroy
 
+    @tool.surface.container.appendChild @el
+
   onToolInitialRelease: =>
     @el.setAttribute 'complete', 'complete' if @tool.isComplete()
     null
