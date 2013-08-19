@@ -1,17 +1,18 @@
 class MarkingSurface extends BaseClass
   tool: Tool
 
-  container: null
+  width: NaN
+  height: NaN
+
+  el: null
+  tagName: 'div'
   className: 'marking-surface'
   tabIndex: 0
 
   svg: null
-  width: NaN
-  height: NaN
 
   zoomBy: 1
   zoomSnapTolerance: 0.05
-
   panX: 0.5
   panY: 0.5
 
@@ -22,27 +23,27 @@ class MarkingSurface extends BaseClass
 
   disabled: false
 
-  constructor: (params = {}) ->
+  constructor: ->
     super
 
-    @container ?= document.createElement 'div'
+    @el = document.querySelectorAll @el if typeof @el is 'string'
+    @el ?= document.createElement @tagName
+    @el.className = @className
+    @el.setAttribute 'tabindex', @tabIndex
 
-    @container.className = @className
-    @container.setAttribute 'tabindex', @tabIndex
-    @container.setAttribute 'unselectable', true
+    @el.addEventListener 'mousemove', @onMouseMove, false
+    @el.addEventListener 'touchmove', @onTouchMove, false
 
-    @container.addEventListener 'mousedown', @onMouseDown, false
-    @container.addEventListener 'mousemove', @onMouseMove, false
-    @container.addEventListener 'touchstart', @onTouchStart, false
-    @container.addEventListener 'touchmove', @onTouchMove, false
+    @el.addEventListener 'mousedown', @onMouseDown, false
+    @el.addEventListener 'touchstart', @onTouchStart, false
 
-    if @container.parentNode?
-      @width ||= @container.clientWidth
-      @height ||= @container.clientHeight
+    if @el.parentNode?
+      @width ||= @el.clientWidth
+      @height ||= @el.clientHeight
 
     @svg ?= new SVG {@width, @height}
     @svg.el.style.display = 'block' # This is okay since it's always contained.
-    @container.appendChild @svg.el
+    @el.appendChild @svg.el
 
     @marks ?= []
     @tools ?= []
@@ -79,18 +80,14 @@ class MarkingSurface extends BaseClass
     @pan x / @width, y / @height
     null
 
-  onTouchStart: (e) =>
-    @onMouseDown e if e.touches.length is 1
-    null
-
   onTouchMove: (e) =>
-    @onMouseMove e
+    @onMouseMove e # if e.touches.length is 2
     null
 
   onMouseDown: (e) =>
     return if @disabled
     return if e.defaultPrevented
-    return if e.target in @container.querySelectorAll ".#{ToolControls::className}, .#{ToolControls::className} *"
+    return if e.target in @el.querySelectorAll ".#{ToolControls::className}, .#{ToolControls::className} *"
 
     e.preventDefault()
 
@@ -99,35 +96,35 @@ class MarkingSurface extends BaseClass
         tool = new @tool surface: @
         mark = tool.mark
 
-        @tools.push tool
-        @marks.push mark
-
         tool.on 'select', =>
           return if @selection is tool
 
           @selection?.deselect()
 
-          index = i for t, i in @tools when t is tool
-          @tools.splice index, 1
+          removeFrom tool, @tools
           @tools.push tool
 
           @selection = tool
+          @trigger 'select-tool', [@selection]
 
         tool.on 'deselect', =>
           @selection = null
 
         tool.on 'destroy', =>
-          index = i for t, i in @tools when t is tool
-          @tools.splice index, 1
+          removeFrom tool, @tools
+          @trigger 'destroy-tool', [tool]
+
           @tools[@tools.length - 1]?.select() if tool is @selection
 
+        @tools.push tool
+        @trigger 'create-tool', [tool]
+
         mark.on 'destroy', =>
-          index = i for m, i in @marks when m is mark
-          @marks.splice index, 1
+          removeFrom mark, @marks
           @trigger 'destroy-mark', [mark]
 
-        tool.select()
-        @trigger 'create-mark', [mark, tool]
+        @marks.push mark
+        @trigger 'create-mark', [mark]
 
     else
       tool = @selection
@@ -145,7 +142,6 @@ class MarkingSurface extends BaseClass
 
   onDrag: (e) =>
     e.preventDefault()
-
     @selection?.onInitialDrag arguments...
     null
 
@@ -158,25 +154,30 @@ class MarkingSurface extends BaseClass
     @selection?.onInitialRelease arguments...
     null
 
+  onTouchStart: (e) =>
+    @onMouseDown e if e.touches.length is 1
+    null
+
   disable: (e) ->
     return if @disabled
     @disabled = true
-    @container.setAttribute 'disabled', 'disabled'
+    @el.setAttribute 'disabled', 'disabled'
     @selection?.deselect()
     null
 
   enable: (e) ->
     return unless @disabled
     @disabled = false
-    @container.removeAttribute 'disabled'
+    @el.removeAttribute 'disabled'
     null
 
   destroy: ->
-    mark.destroy() for mark in @marks
-    @container.removeEventListener 'mousedown', @onMouseDown, false
-    @container.removeEventListener 'mousemove', @onMouseMove, false
-    @container.removeEventListener 'touchstart', @onTouchStart, false
-    @container.removeEventListener 'touchmove', @onTouchMove, false
+    mark.destroy() for mark in @marks # Tools destroy themselves with their marks.
+    @el.removeEventListener 'mousedown', @onMouseDown, false
+    @el.removeEventListener 'mousemove', @onMouseMove, false
+    @el.removeEventListener 'touchstart', @onTouchStart, false
+    @el.removeEventListener 'touchmove', @onTouchMove, false
+    super
     null
 
   pointerOffset: (e) ->
@@ -184,7 +185,7 @@ class MarkingSurface extends BaseClass
     e = originalEvent.touches[0] if originalEvent? and 'touches' of originalEvent
 
     elements = []
-    currentElement = @container
+    currentElement = @el
     while currentElement?
       elements.push currentElement
       currentElement = currentElement.parentNode

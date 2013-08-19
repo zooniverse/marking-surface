@@ -88,10 +88,10 @@ class Tool extends BaseClass
 
     switch eventName
       when 'mouseover'
-        @surface.container.style.cursor = @cursors?[name]
+        @surface.el.style.cursor = @cursors?[name]
 
       when 'mouseout'
-        @surface.container.style.cursor = ''
+        @surface.el.style.cursor = ''
 
       when 'mousedown', 'touchstart'
         e.preventDefault()

@@ -56,6 +56,6 @@ tools = axes: AxesTool, point: PointTool
 $('button[name="tool"]').on 'click', ({target}) ->
   ms.tool = tools[$(target).val()]
 
-document.body.appendChild ms.container
+document.body.appendChild ms.el
 
 window.ms = ms

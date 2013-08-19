@@ -30,10 +30,10 @@ class ToolControls extends BaseClass
     @tool.on 'deselect', @onToolDeselect
     @tool.on 'destroy', @onToolDestroy
 
-    @tool.surface.container.appendChild @el
+    @tool.surface.el.appendChild @el
 
   onToolInitialRelease: =>
-    @el.setAttribute 'complete', 'complete' if @tool.isComplete()
+    toggleClass @el, 'tool-is-complete', @tool.isComplete()
     null
 
   onMouseDown: =>
@@ -48,7 +48,7 @@ class ToolControls extends BaseClass
     null
 
   onToolSelect: =>
-    @el.setAttribute 'selected', 'selected'
+    toggleClass @el, 'tool-selected', true
     null
 
   onMarkChange: =>
@@ -56,7 +56,7 @@ class ToolControls extends BaseClass
     null
 
   onToolDeselect: =>
-    @el.removeAttribute 'selected'
+    toggleClass @el, 'tool-selected', false
     null
 
   onToolDestroy: =>
@@ -95,8 +95,10 @@ class ToolControls extends BaseClass
     @el.style.bottom  = if bottom?     then "#{bottom}px" else ''
     @el.style.display = if outOfBounds then 'none'        else ''
 
-    @el.setAttribute 'horizontal-direction', if left? then 'right' else 'left'
-    @el.setAttribute 'vertical-direction',   if top?  then 'down'  else 'up'
+    toggleClass @el, 'opens-right', left?
+    toggleClass @el, 'opens-left', right?
+    toggleClass @el, 'opens-down', top?
+    toggleClass @el, 'opens-up', bottom?
 
     null
 

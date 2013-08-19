@@ -19,8 +19,7 @@ class BaseClass
       handlerList = @_events[eventName] || []
 
       if handler?
-        for fn, i in handlerList by -1 when fn is handler
-          handlerList.splice i, 1
+        removeFrom handler, handlerList
 
       else
         handlerList.splice 0
