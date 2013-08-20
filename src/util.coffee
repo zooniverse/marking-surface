@@ -1,9 +1,3 @@
-# TODO: Add keyboard support.
-
-# BACKSPACE = 8
-# DELETE = 46
-# TAB = 9
-
 removeFrom = (item, array) ->
   array.splice i, 1 for thing, i in array by -1 when thing is item
   null

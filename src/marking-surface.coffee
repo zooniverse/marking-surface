@@ -1,3 +1,7 @@
+BACKSPACE = 8
+DELETE = 46
+TAB = 9
+
 class MarkingSurface extends BaseClass
   tool: Tool
 
@@ -36,6 +40,8 @@ class MarkingSurface extends BaseClass
 
     @el.addEventListener 'mousedown', @onMouseDown, false
     @el.addEventListener 'touchstart', @onTouchStart, false
+
+    @el.addEventListener 'keydown', @onKeyDown, false
 
     if @el.parentNode?
       @width ||= @el.clientWidth
@@ -90,6 +96,7 @@ class MarkingSurface extends BaseClass
     return if e.target in @el.querySelectorAll ".#{ToolControls::className}, .#{ToolControls::className} *"
 
     e.preventDefault()
+    @el.focus()
 
     if not @selection? or @selection.isComplete()
       if @tool?
@@ -158,6 +165,32 @@ class MarkingSurface extends BaseClass
     @onMouseDown e if e.touches.length is 1
     null
 
+  onKeyDown: (e) =>
+    return if @disabled
+    return if e.altKey or e.ctrlKey
+    return unless e.which in [BACKSPACE, DELETE, TAB]
+    return unless document.activeElement is @el
+
+    switch e.which
+      when BACKSPACE, DELETE
+        e.preventDefault()
+        @selection?.mark.destroy()
+
+      when TAB
+        e.preventDefault()
+        if e.shiftKey
+          @tools[0]?.select()
+
+        else
+          e.preventDefault()
+          current = @selection
+          next = @tools[@tools.length - 2]
+
+          if next?
+            next.select()
+            removeFrom current, @tools
+            @tools.unshift current
+
   disable: (e) ->
     return if @disabled
     @disabled = true
@@ -177,6 +210,7 @@ class MarkingSurface extends BaseClass
     @el.removeEventListener 'mousemove', @onMouseMove, false
     @el.removeEventListener 'touchstart', @onTouchStart, false
     @el.removeEventListener 'touchmove', @onTouchMove, false
+    @el.removeEventListener 'keydown', @onKeyDown, false
     super
     null
 
