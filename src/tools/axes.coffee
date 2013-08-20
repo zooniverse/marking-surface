@@ -1,4 +1,4 @@
-{Tool} = window.MarkingSurface
+{Tool} = window?.MarkingSurface || require 'marking-surface'
 
 class AxesTool extends Tool
   lines: null

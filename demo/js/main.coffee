@@ -1,5 +1,5 @@
 MarkingSurface = window.MarkingSurface
-{Tool, AxesTool} = MarkingSurface
+{Tool, EllipseTool, AxesTool} = MarkingSurface
 
 class PointTool extends Tool
   hr: null
@@ -41,8 +41,9 @@ class PointTool extends Tool
 # DEMO_IMAGE = 'http://www.seafloorexplorer.org/images/field-guide/fish.jpg'
 
 TOOLS =
-  axes: AxesTool
   point: PointTool
+  ellipse: EllipseTool
+  axes: AxesTool
 
 ms = new MarkingSurface
   tool: TOOLS[$('input[name="tool"]:checked').val()]
