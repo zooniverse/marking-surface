@@ -7,8 +7,6 @@ class Tool extends BaseClass
   @Mark: Mark
   @Controls: ToolControls
 
-  markDefaults: null
-
   cursors: null
 
   surface: null
@@ -40,8 +38,6 @@ class Tool extends BaseClass
       @group.el.addEventListener eventName, @handleEvents, false
 
     @initialize arguments...
-
-    @mark.set @markDefaults if @markDefaults?
 
   addShape: ->
     @group.addShape arguments...
