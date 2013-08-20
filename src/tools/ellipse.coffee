@@ -7,12 +7,14 @@ class EllipseTool extends Tool
   yHandle: null
 
   handleRadius: if !!~navigator.userAgent.indexOf 'iO' then 20 else 10
+  fill: 'rgba(128, 128, 128, 0.1)'
   stroke: 'black'
   strokeWidth: 2
-  handleFill: 'rgba(128, 128, 128, 0.1)'
 
-  defaultRadius: @::handleRadius * 2
+  defaultRadius: 2
   defaultSquash: 0.5
+
+  dragOffsetFromCenter: null
 
   cursors:
     center: 'move'
@@ -20,10 +22,10 @@ class EllipseTool extends Tool
     yHandle: 'move'
 
   initialize: ->
-    @outside = @addShape 'ellipse', fill: 'transparent', stroke: @stroke, strokeWidth: @strokeWidth
-    @center = @addShape 'circle', r: @handleRadius, fill: @handleFill, stroke: @stroke, strokeWidth: @strokeWidth
-    @xHandle = @addShape 'circle', r: @handleRadius, fill: @handleFill, stroke: @stroke, strokeWidth: @strokeWidth
-    @yHandle = @addShape 'circle', r: @handleRadius, fill: @handleFill, stroke: @stroke, strokeWidth: @strokeWidth
+    @outside = @addShape 'ellipse', {@fill, @stroke, @strokeWidth}
+    @center = @addShape 'circle', {r: @handleRadius, @fill, @stroke, @strokeWidth}
+    @xHandle = @addShape 'circle', {r: @handleRadius, @fill, @stroke, @strokeWidth}
+    @yHandle = @addShape 'circle', {r: @handleRadius, @fill, @stroke, @strokeWidth}
 
     @mark.set
       center: [0, 0]
@@ -43,9 +45,28 @@ class EllipseTool extends Tool
     @['on drag xHandle'] e
     @mark.set 'ry', @mark.rx * @defaultSquash
 
+  'on mousedown': (e) ->
+    {x, y} = @pointerOffset e
+    @dragOffsetFromCenter =
+      x: x - @mark.center[0]
+      y: y - @mark.center[1]
+
+  'on touchstart': (e) =>
+    @['on mousedown'] e
+
+  'on drag outside': (e) =>
+    {x, y} = @pointerOffset e
+    @mark.set 'center', [
+      x - @dragOffsetFromCenter.x
+      y - @dragOffsetFromCenter.y
+    ]
+
   'on drag center': (e) =>
     {x, y} = @pointerOffset e
-    @mark.set 'center', [x, y]
+    @mark.set 'center', [
+      x - @dragOffsetFromCenter.x
+      y - @dragOffsetFromCenter.y
+    ]
 
   'on drag xHandle': (e) =>
     {x, y} = @pointerOffset e
@@ -58,6 +79,12 @@ class EllipseTool extends Tool
     @mark.set
       angle: 90 + @getAngle @mark.center[0], @mark.center[1], x, y
       ry: @getHypotenuse @mark.center[0], @mark.center[1], x, y
+
+  'on mouseup': =>
+    @dragOffsetFromCenter = null
+
+  'on touchend': (e) =>
+    @['on mouseup'] e
 
   render: ->
     @group.attr 'transform', "translate(#{@mark.center}) rotate(#{@mark.angle})"

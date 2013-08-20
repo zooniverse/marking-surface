@@ -8,17 +8,15 @@ class Tool extends BaseClass
   @Controls: ToolControls
 
   cursors: null
+  deselectedOpacity: 0.5
+  renderFps: 30
 
   surface: null
-
   mark: null
   controls: null
-
   group: null
 
   drags: 0
-
-  renderFps: 30
   renderTimeout: NaN
 
   constructor: ->
@@ -32,6 +30,10 @@ class Tool extends BaseClass
     @controls = new @constructor.Controls tool: @
 
     @group = @surface.svg.addShape 'g.marking-tool'
+    @group.attr
+      fill: 'transparent'
+      stroke: 'transparent'
+      strokeWidth: 0
 
     # Delegate pointer events to the group.
     for eventName in POINTER_EVENTS
@@ -129,11 +131,13 @@ class Tool extends BaseClass
     null
 
   select: ->
+    @group.attr 'opacity', 1
     @group.toFront()
     @trigger 'select', arguments
     null
 
   deselect: ->
+    @group.attr 'opacity', @deselectedOpacity
     @trigger 'deselect', arguments
     null
 
