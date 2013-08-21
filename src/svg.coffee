@@ -1,9 +1,10 @@
-SVG_NS = 'http://www.w3.org/2000/svg'
-
-CASE_SENSITIVE_ATTRIBUTES = ['viewBox']
-
 NAMESPACES =
+  svg: 'http://www.w3.org/2000/svg'
   xlink: 'http://www.w3.org/1999/xlink'
+
+CASE_SENSITIVE_ATTRIBUTES = [
+  'viewBox'
+]
 
 FILTERS =
   shadow: [
@@ -22,7 +23,11 @@ class SVG
     [tagName, classes...] = tagName.split '.'
     classes = classes.join ' '
 
-    @el = document.createElementNS SVG_NS, tagName
+    [namespace..., tagName] = tagName.split ':'
+    namespace = namespace.join ''
+    namespace ||= 'svg'
+
+    @el = document.createElementNS NAMESPACES[namespace] || null, tagName
 
     @attr 'class', classes if classes
     @attr attributes
@@ -35,9 +40,9 @@ class SVG
         attribute = (attribute.replace /([A-Z])/g, '-$1').toLowerCase()
 
       [namespace..., attribute] = attribute.split ':'
-      namespace = NAMESPACES[namespace[0]] || null
+      namespace = namespace.join ''
 
-      @el.setAttributeNS namespace, attribute, value
+      @el.setAttributeNS NAMESPACES[namespace] || null, attribute, value
 
     # Given an object:
     else
@@ -66,16 +71,20 @@ class SVG
     @el.parentNode.removeChild @el
     null
 
-SVG.FILTERS_CONTAINER = new SVG
+SVG.filtersContainer = new SVG
   id: 'marking-surface-filters-container'
   width: 0
   height: 0
   style: 'bottom: 0; position: absolute; right: 0;'
 
-defs = SVG.FILTERS_CONTAINER.addShape 'defs'
+defs = SVG.filtersContainer.addShape 'defs'
 
-for id, elements of FILTERS
-  filter = defs.addShape 'filter', id: "marking-surface-filter-#{id}"
+SVG.registerFilter = (name, elements) ->
+  FILTERS[name] = elements
+  filter = defs.addShape 'filter', id: "marking-surface-filter-#{name}"
   filter.addShape element, attributes for {element, attributes} in elements
+  null
 
-document.body.appendChild SVG.FILTERS_CONTAINER.el
+SVG.registerFilter name, elements for name, elements of FILTERS
+
+document.body.appendChild SVG.filtersContainer.el
