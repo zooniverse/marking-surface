@@ -38,8 +38,6 @@ class PointTool extends Tool
     @group.attr 'transform', "translate(#{@mark.x}, #{@mark.y})"
     @controls.moveTo @mark.x, @mark.y
 
-# DEMO_IMAGE = 'http://www.seafloorexplorer.org/images/field-guide/fish.jpg'
-
 TOOLS =
   point: PointTool
   ellipse: EllipseTool
@@ -49,6 +47,9 @@ ms = new MarkingSurface
   tool: TOOLS[$('input[name="tool"]:checked').val()]
   width: 640
   height: 480
+
+DEMO_IMAGE = 'http://www.seafloorexplorer.org/images/field-guide/fish.jpg'
+image = ms.addShape 'image', 'xlink:href': DEMO_IMAGE, width: 640, height: 480
 
 container = $('#container')
 container.append ms.el

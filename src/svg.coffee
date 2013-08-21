@@ -2,6 +2,9 @@ SVG_NS = 'http://www.w3.org/2000/svg'
 
 CASE_SENSITIVE_ATTRIBUTES = ['viewBox']
 
+NAMESPACES =
+  xlink: 'http://www.w3.org/1999/xlink'
+
 class SVG
   el: null
 
@@ -24,7 +27,10 @@ class SVG
       unless attribute in CASE_SENSITIVE_ATTRIBUTES
         attribute = (attribute.replace /([A-Z])/g, '-$1').toLowerCase()
 
-      @el.setAttributeNS null, attribute, value
+      [namespace..., attribute] = attribute.split ':'
+      namespace = NAMESPACES[namespace[0]] || null
+
+      @el.setAttributeNS namespace, attribute, value
 
     # Given an object:
     else

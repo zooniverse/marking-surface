@@ -205,6 +205,9 @@ class MarkingSurface extends BaseClass
   getValue: ->
     JSON.stringify @marks
 
+  addShape: ->
+    @svg.addShape arguments...
+
   disable: (e) ->
     return if @disabled
     @disabled = true
@@ -248,7 +251,7 @@ class MarkingSurface extends BaseClass
     originalEvent = e.originalEvent if 'originalEvent' of e
     e = originalEvent.touches[0] if originalEvent? and 'touches' of originalEvent
 
-    {left, top} = @offsetAtLastMousedown
+    {left, top} = @offsetAtLastMousedown || @elOffset()
     x = e.pageX - left
     y = e.pageY - top
 
