@@ -6,7 +6,7 @@ CASE_SENSITIVE_ATTRIBUTES = [
   'viewBox'
 ]
 
-FILTERS =
+filters =
   shadow: [
     {element: 'feOffset', attributes: {in: 'SourceAlpha', dx: 0.5, dy: 1.5, result: 'offOut'}}
     {element: 'feBlend', attributes: {in: 'SourceGraphic', in2: 'offOut'}}
@@ -51,9 +51,9 @@ class SVG
 
     null
 
-  filter: (filter) ->
-    @attr 'filter', if filter?
-      "url(#marking-surface-filter-#{filter})"
+  filter: (name) ->
+    @attr 'filter', if name?
+      "url(#marking-surface-filter-#{name})"
     else
       ''
 
@@ -80,11 +80,11 @@ SVG.filtersContainer = new SVG
 defs = SVG.filtersContainer.addShape 'defs'
 
 SVG.registerFilter = (name, elements) ->
-  FILTERS[name] = elements
+  filters[name] = elements
   filter = defs.addShape 'filter', id: "marking-surface-filter-#{name}"
   filter.addShape element, attributes for {element, attributes} in elements
   null
 
-SVG.registerFilter name, elements for name, elements of FILTERS
+SVG.registerFilter name, elements for name, elements of filters
 
 document.body.appendChild SVG.filtersContainer.el
