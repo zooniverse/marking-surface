@@ -50,6 +50,13 @@ ms = new MarkingSurface
   width: 640
   height: 480
 
+container = $('#container')
+container.append ms.el
+
+marks = $('#marks')
+ms.on 'change', ->
+  marks.val ms.getValue()
+
 disabledCheckbox = $('#disabled')
 disabledCheckbox.on 'change', ->
   checked = !!disabledCheckbox.prop 'checked'
@@ -67,5 +74,4 @@ noZoomButton.on 'click', ->
 $('input[name="tool"]').on 'change', ({target}) ->
   ms.tool = TOOLS[$(target).val()]
 
-document.body.appendChild ms.el
 window.ms = ms
