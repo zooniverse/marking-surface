@@ -57,6 +57,7 @@ ms = new MarkingSurface
   height: 480
 
 getImageSize DEMO_IMAGE, (width, height) ->
+  ms.resize width, height
   ms.addShape 'image', 'xlink:href': DEMO_IMAGE, width: width, height: height
 
 container = $('#container')
