@@ -1,6 +1,12 @@
 MarkingSurface = window.MarkingSurface
 {Tool, EllipseTool, AxesTool} = MarkingSurface
 
+getImageSize = (src, callback) ->
+  img = new Image
+  img.src = src
+  img.onload = ->
+    callback img.width, img.height
+
 class PointTool extends Tool
   hr: null
   vr: null
@@ -43,13 +49,15 @@ TOOLS =
   ellipse: EllipseTool
   axes: AxesTool
 
+DEMO_IMAGE = 'http://www.seafloorexplorer.org/images/field-guide/fish.jpg'
+
 ms = new MarkingSurface
   tool: TOOLS[$('input[name="tool"]:checked').val()]
   width: 640
   height: 480
 
-DEMO_IMAGE = 'http://www.seafloorexplorer.org/images/field-guide/fish.jpg'
-image = ms.addShape 'image', 'xlink:href': DEMO_IMAGE, width: 640, height: 480
+getImageSize DEMO_IMAGE, (width, height) ->
+  ms.addShape 'image', 'xlink:href': DEMO_IMAGE, width: width, height: height
 
 container = $('#container')
 container.append ms.el

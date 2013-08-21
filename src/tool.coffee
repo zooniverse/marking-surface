@@ -14,6 +14,7 @@ class Tool extends BaseClass
   surface: null
   mark: null
   controls: null
+  root: null
   group: null
 
   drags: 0
@@ -29,7 +30,9 @@ class Tool extends BaseClass
 
     @controls = new @constructor.Controls tool: @
 
-    @group = @surface.svg.addShape 'g.marking-tool'
+    # Apply filters to the root, transform the group.
+    @root = @surface.addShape 'g.marking-tool-root'
+    @group = @root.addShape 'g.marking-tool'
     @group.attr
       fill: 'transparent'
       stroke: 'transparent'

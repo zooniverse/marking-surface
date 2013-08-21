@@ -1,14 +1,14 @@
 {Tool} = window?.MarkingSurface || require 'marking-surface'
 
 class EllipseTool extends Tool
+  path: null
   outside: null
-  center: null
   xHandle: null
   yHandle: null
 
   handleRadius: if !!~navigator.userAgent.indexOf 'iO' then 20 else 10
   fill: 'rgba(128, 128, 128, 0.1)'
-  stroke: 'black'
+  stroke: 'red'
   strokeWidth: 2
 
   defaultRadius: 2
@@ -17,13 +17,13 @@ class EllipseTool extends Tool
   dragOffsetFromCenter: null
 
   cursors:
-    center: 'move'
     xHandle: 'move'
     yHandle: 'move'
 
   initialize: ->
+    @root.filter 'shadow'
+    @path = @addShape 'path', {d: 'M 0 0', @stroke, @strokeWidth, strokeDasharray: [@strokeWidth * 4, @strokeWidth * 4]}
     @outside = @addShape 'ellipse', {@fill, @stroke, @strokeWidth}
-    @center = @addShape 'circle', {r: @handleRadius, @fill, @stroke, @strokeWidth}
     @xHandle = @addShape 'circle', {r: @handleRadius, @fill, @stroke, @strokeWidth}
     @yHandle = @addShape 'circle', {r: @handleRadius, @fill, @stroke, @strokeWidth}
 
@@ -61,13 +61,6 @@ class EllipseTool extends Tool
       y - @dragOffsetFromCenter.y
     ]
 
-  'on drag center': (e) =>
-    {x, y} = @pointerOffset e
-    @mark.set 'center', [
-      x - @dragOffsetFromCenter.x
-      y - @dragOffsetFromCenter.y
-    ]
-
   'on drag xHandle': (e) =>
     {x, y} = @pointerOffset e
     @mark.set
@@ -88,6 +81,7 @@ class EllipseTool extends Tool
 
   render: ->
     @group.attr 'transform', "translate(#{@mark.center}) rotate(#{@mark.angle})"
+    @path.attr 'd', "M 0 #{-@mark.ry} L 0 0 M #{@mark.rx} 0 L 0 0"
     @outside.attr rx: @mark.rx, ry: @mark.ry
     @xHandle.attr 'cx', @mark.rx
     @yHandle.attr 'cy', -@mark.ry

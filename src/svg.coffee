@@ -5,6 +5,9 @@ CASE_SENSITIVE_ATTRIBUTES = ['viewBox']
 NAMESPACES =
   xlink: 'http://www.w3.org/1999/xlink'
 
+FILTERS =
+  shadow: 'marking-surface-shadow'
+
 class SVG
   el: null
 
@@ -17,7 +20,8 @@ class SVG
     classes = classes.join ' '
 
     @el = document.createElementNS SVG_NS, tagName
-    @attr 'class', classes
+
+    @attr 'class', classes if classes
     @attr attributes
 
   attr: (attribute, value) ->
@@ -39,6 +43,12 @@ class SVG
 
     null
 
+  filter: (filter) ->
+    @attr 'filter', if filter?
+      "url(##{FILTERS[filter]})"
+    else
+      ''
+
   addShape: (tagName, attributes) ->
     # Added shapes are automatically added as children, useful for SVG roots and groups.
     shape = new @constructor tagName, attributes
@@ -52,3 +62,17 @@ class SVG
   remove: ->
     @el.parentNode.removeChild @el
     null
+
+FILTERS_CONTAINER = new SVG
+  id: 'marking-surface-filters-container'
+  width: 0
+  height: 0
+  style: 'bottom: 0; position: absolute; right: 0;'
+
+defs = FILTERS_CONTAINER.addShape 'defs'
+
+shadow = defs.addShape 'filter', id: FILTERS.shadow
+shadow.addShape 'feOffset', in: 'SourceAlpha', dx: '1', dy: '2', result: 'offOut'
+shadow.addShape 'feBlend', in: 'SourceGraphic', in2: 'offOut'
+
+document.body.appendChild FILTERS_CONTAINER.el
