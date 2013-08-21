@@ -27,6 +27,8 @@ class MarkingSurface extends BaseClass
 
   disabled: false
 
+  offsetAtLastMousedown: null
+
   constructor: ->
     super
 
@@ -98,6 +100,9 @@ class MarkingSurface extends BaseClass
     e.preventDefault()
     @el.focus()
 
+    # Presuming the element won't move mid-drag
+    @offsetAtLastMousedown = @elOffset()
+
     if not @selection? or @selection.isComplete()
       if @tool?
         tool = new @tool surface: @
@@ -126,12 +131,18 @@ class MarkingSurface extends BaseClass
         @tools.push tool
         @trigger 'create-tool', [tool]
 
+        mark.on 'change', =>
+          @trigger 'change', [mark]
+
         mark.on 'destroy', =>
           removeFrom mark, @marks
           @trigger 'destroy-mark', [mark]
+          @trigger 'change', [mark]
 
         @marks.push mark
         @trigger 'create-mark', [mark]
+
+        @trigger 'change', []
 
     else
       tool = @selection
@@ -191,6 +202,9 @@ class MarkingSurface extends BaseClass
             removeFrom current, @tools
             @tools.unshift current
 
+  getValue: ->
+    JSON.stringify @marks
+
   disable: (e) ->
     return if @disabled
     @disabled = true
@@ -214,23 +228,27 @@ class MarkingSurface extends BaseClass
     super
     null
 
+  elOffset: ->
+    left = 0
+    top = 0
+
+    currentElement = @el
+    while currentElement?
+      left += currentElement.offsetLeft unless isNaN currentElement.offsetLeft
+      top += currentElement.offsetTop unless isNaN currentElement.offsetTop
+      currentElement = currentElement.offsetParent
+      console.log currentElement
+
+    left += parseFloat getComputedStyle(document.body.parentNode).marginLeft
+    top += parseFloat getComputedStyle(document.body.parentNode).marginTop
+
+    {left, top}
+
   pointerOffset: (e) ->
     originalEvent = e.originalEvent if 'originalEvent' of e
     e = originalEvent.touches[0] if originalEvent? and 'touches' of originalEvent
 
-    elements = []
-    currentElement = @el
-    while currentElement?
-      elements.push currentElement
-      currentElement = currentElement.parentNode
-
-    left = 0
-    top = 0
-
-    for element in elements
-      left += element.offsetLeft unless isNaN element.offsetLeft
-      top += element.offsetTop unless isNaN element.offsetTop
-
+    {left, top} = @offsetAtLastMousedown
     x = e.pageX - left
     y = e.pageY - top
 
