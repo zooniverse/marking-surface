@@ -6,7 +6,10 @@ NAMESPACES =
   xlink: 'http://www.w3.org/1999/xlink'
 
 FILTERS =
-  shadow: 'marking-surface-shadow'
+  shadow: [
+    {element: 'feOffset', attributes: {in: 'SourceAlpha', dx: 0.5, dy: 1.5, result: 'offOut'}}
+    {element: 'feBlend', attributes: {in: 'SourceGraphic', in2: 'offOut'}}
+  ]
 
 class SVG
   el: null
@@ -45,7 +48,7 @@ class SVG
 
   filter: (filter) ->
     @attr 'filter', if filter?
-      "url(##{FILTERS[filter]})"
+      "url(#marking-surface-filter-#{filter})"
     else
       ''
 
@@ -63,16 +66,16 @@ class SVG
     @el.parentNode.removeChild @el
     null
 
-FILTERS_CONTAINER = new SVG
+SVG.FILTERS_CONTAINER = new SVG
   id: 'marking-surface-filters-container'
   width: 0
   height: 0
   style: 'bottom: 0; position: absolute; right: 0;'
 
-defs = FILTERS_CONTAINER.addShape 'defs'
+defs = SVG.FILTERS_CONTAINER.addShape 'defs'
 
-shadow = defs.addShape 'filter', id: FILTERS.shadow
-shadow.addShape 'feOffset', in: 'SourceAlpha', dx: '1', dy: '2', result: 'offOut'
-shadow.addShape 'feBlend', in: 'SourceGraphic', in2: 'offOut'
+for id, elements of FILTERS
+  filter = defs.addShape 'filter', id: "marking-surface-filter-#{id}"
+  filter.addShape element, attributes for {element, attributes} in elements
 
-document.body.appendChild FILTERS_CONTAINER.el
+document.body.appendChild SVG.FILTERS_CONTAINER.el
