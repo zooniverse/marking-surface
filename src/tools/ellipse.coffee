@@ -8,7 +8,7 @@ class EllipseTool extends Tool
 
   handleRadius: if !!~navigator.userAgent.indexOf 'iO' then 20 else 10
   fill: 'rgba(128, 128, 128, 0.1)'
-  stroke: 'red'
+  stroke: 'white'
   strokeWidth: 2
 
   defaultRadius: 2

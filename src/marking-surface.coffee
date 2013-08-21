@@ -50,7 +50,7 @@ class MarkingSurface extends BaseClass
       @height ||= @el.clientHeight
 
     @svg ?= new SVG {@width, @height}
-    @svg.el.style.display = 'block' # This is okay since it's always contained.
+    @svg.el.style.overflow = 'hidden' # For IE
     @el.appendChild @svg.el
 
     @marks ?= []
