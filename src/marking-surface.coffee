@@ -240,7 +240,6 @@ class MarkingSurface extends BaseClass
       left += currentElement.offsetLeft unless isNaN currentElement.offsetLeft
       top += currentElement.offsetTop unless isNaN currentElement.offsetTop
       currentElement = currentElement.offsetParent
-      console.log currentElement
 
     left += parseFloat getComputedStyle(document.body.parentNode).marginLeft
     top += parseFloat getComputedStyle(document.body.parentNode).marginTop
