@@ -1,5 +1,5 @@
 MarkingSurface = window.MarkingSurface
-{Tool, RectangleTool, EllipseTool, AxesTool} = MarkingSurface
+{Tool, RectangleTool, EllipseTool, AxesTool, TranscriptionTool} = MarkingSurface
 
 getImageSize = (src, callback) ->
   img = new Image
@@ -49,6 +49,7 @@ TOOLS =
   rectangle: RectangleTool
   ellipse: EllipseTool
   axes: AxesTool
+  transcription: TranscriptionTool
 
 DEMO_IMAGE = 'http://www.seafloorexplorer.org/images/field-guide/fish.jpg'
 

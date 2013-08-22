@@ -70,18 +70,18 @@ class ToolControls extends BaseClass
     super
     null
 
-  moveTo: (x, y) ->
+  moveTo: (x, y, dontTryAndBeClever = false) ->
     {zoomBy, panX, panY, width, height} = @tool.surface
 
     panX *= width - (width / zoomBy)
     panY *= height - (height / zoomBy)
 
-    [left, right] = if x < width / 2
+    [left, right] = if dontTryAndBeClever or x < width / 2
       [(x * zoomBy) - (panX * zoomBy), null]
     else
       [null, width - ((x * zoomBy) - (panX * zoomBy))]
 
-    [top, bottom] = if y < height / 2
+    [top, bottom] = if dontTryAndBeClever or y < height / 2
       [(y * zoomBy) - (panY * zoomBy), null]
     else
       [null, height - ((y * zoomBy) - (panY * zoomBy))]

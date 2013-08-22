@@ -23,10 +23,10 @@ class RectangleTool extends Tool
   initialize: ->
     @root.filter 'shadow'
     @outside = @addShape 'rect', {@fill, @stroke, @strokeWidth}
-    @topLeftHandle = @addShape 'rect', width: @handleSize, height: @handleSize, fill: @stroke
-    @topRightHandle = @addShape 'rect', width: @handleSize, height: @handleSize, fill: @stroke
-    @bottomRightHandle = @addShape 'rect', width: @handleSize, height: @handleSize, fill: @stroke
-    @bottomLeftHandle = @addShape 'rect', width: @handleSize, height: @handleSize, fill: @stroke
+    @topLeftHandle = @addShape 'rect', {width: @handleSize, height: @handleSize, @fill, @stroke, @strokeWidth}
+    @topRightHandle = @addShape 'rect', {width: @handleSize, height: @handleSize, @fill, @stroke, @strokeWidth}
+    @bottomRightHandle = @addShape 'rect', {width: @handleSize, height: @handleSize, @fill, @stroke, @strokeWidth}
+    @bottomLeftHandle = @addShape 'rect', {width: @handleSize, height: @handleSize, @fill, @stroke, @strokeWidth}
 
     @mark.set
       left: 0
@@ -131,7 +131,10 @@ class RectangleTool extends Tool
     @bottomRightHandle.attr x: @mark.left + (@mark.width - @handleSize), y: @mark.top + (@mark.height - @handleSize)
     @bottomLeftHandle.attr x: @mark.left, y: @mark.top + (@mark.height - @handleSize)
 
-    @controls.moveTo (@mark.left + (@mark.left + @mark.width)) / 2, (@mark.top + (@mark.top + @mark.height)) / 2
+    @positionControls()
+
+  positionControls: ->
+    @controls.moveTo @mark.left + @mark.width, @mark.top, true
 
 window?.MarkingSurface.RectangleTool = RectangleTool
 module?.exports = RectangleTool
