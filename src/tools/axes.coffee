@@ -4,24 +4,28 @@ class AxesTool extends Tool
   lines: null
   dots: null
 
-  dotRadius: if !!~navigator.userAgent.indexOf 'iO' then 20 else 10
-  color: [127, 255, 0]
+  handleRadius: if !!~navigator.userAgent.indexOf 'iO' then 20 else 10
+  fill: 'rgba(128, 128, 128, 0.1)'
+  stroke: 'white'
+  strokeWidth: 2
 
   cursors:
     'dots': 'move'
 
   initialize: ->
+    @root.filter 'shadow'
+
     @lines = for i in [0...2]
-      @addShape 'line', stroke: "rgb(#{@color})", strokeWidth: 2
+      @addShape 'line', {@stroke, @strokeWidth}
 
     @dots = for i in [0...4]
-      @addShape 'circle', r: @dotRadius, fill: "rgba(#{@color}, 0.25)", stroke: "rgb(#{@color})", strokeWidth: 2
+      @addShape 'circle', {r: @handleRadius, @fill, @stroke, @strokeWidth}
 
     @mark.set
-      p0: [-(@dotRadius * 2), -(@dotRadius * 2)]
-      p1: [-(@dotRadius * 2), -(@dotRadius * 2)]
-      p2: [-(@dotRadius * 2), -(@dotRadius * 2)]
-      p3: [-(@dotRadius * 2), -(@dotRadius * 2)]
+      p0: [-(@handleRadius * 2), -(@handleRadius * 2)]
+      p1: [-(@handleRadius * 2), -(@handleRadius * 2)]
+      p2: [-(@handleRadius * 2), -(@handleRadius * 2)]
+      p3: [-(@handleRadius * 2), -(@handleRadius * 2)]
 
   onFirstClick: (e) ->
     {x, y} = @pointerOffset e
