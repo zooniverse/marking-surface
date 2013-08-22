@@ -12,7 +12,7 @@ class MarkingSurface extends BaseClass
   tagName: 'div'
   className: 'marking-surface'
   tabIndex: 0
-  cursor: 'crosshair'
+  defaultCursor: 'crosshair'
 
   svg: null
 
@@ -51,7 +51,7 @@ class MarkingSurface extends BaseClass
       @height ||= @el.clientHeight
 
     @svg ?= new SVG {@width, @height}
-    @el.style.cursor = @cursor
+    @el.style.cursor = @defaultCursor
     @svg.el.style.display = 'block' # This is okay since it's always contained.
     @svg.el.style.overflow = 'hidden' # For IE
     @el.appendChild @svg.el

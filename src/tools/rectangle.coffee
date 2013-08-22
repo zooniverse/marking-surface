@@ -15,11 +15,11 @@ class RectangleTool extends Tool
 
   defaultSize: 10
 
-  mouseDownCoords = null
-  mouseOffsetFromShape: null
+  startCoords = null
+  pointerOffsetFromShape: null
 
   cursors:
-    outside: 'grab'
+    outside: 'move'
     handles: 'move'
 
   initialize: ->
@@ -32,7 +32,7 @@ class RectangleTool extends Tool
     @bottomRightHandle = @addShape 'rect', {width: @handleSize, height: @handleSize, @fill, @stroke, @strokeWidth}
     @bottomLeftHandle = @addShape 'rect', {width: @handleSize, height: @handleSize, @fill, @stroke, @strokeWidth}
 
-    handles = [@topLeftHandle, @topRightHandle, @bottomRightHandle, @bottomLeftHandle]
+    @handles = [@topLeftHandle, @topRightHandle, @bottomRightHandle, @bottomLeftHandle]
 
     @mark.set
       left: 0
@@ -40,76 +40,58 @@ class RectangleTool extends Tool
       width: @defaultSize
       height: @defaultSize
 
-  'on mousedown': (e) ->
-    @mouseDownCoords = @pointerOffset e
+  'on *start outside': (e) ->
+    @startCoords = @pointerOffset e
+    @pointerOffsetFromShape =
+      x: @startCoords.x - @mark.left
+      y: @startCoords.y - @mark.top
 
-  'on mousedown outside': ->
-    @mouseOffsetFromShape =
-      x: @mouseDownCoords.x - @mark.left
-      y: @mouseDownCoords.y - @mark.top
-
-  'on touchstart': (e) ->
-    @['on mousedown'] e
-
-  'on drag outside': (e) =>
+  'on drag outside': (e) ->
     {x, y} = @pointerOffset e
-
     @mark.set
-      left: x - @mouseOffsetFromShape.x
-      top: y - @mouseOffsetFromShape.y
+      left: x - @pointerOffsetFromShape.x
+      top: y - @pointerOffsetFromShape.y
 
   onFirstClick: (e) ->
-    @['on mousedown'] e
+    @startCoords = @pointerOffset e
 
     @mark.set
-      left: @mouseDownCoords.x - (@defaultSize / 2)
-      top: @mouseDownCoords.y - (@defaultSize / 2)
+      left: @startCoords.x - (@defaultSize / 2)
+      top: @startCoords.y - (@defaultSize / 2)
 
   onFirstDrag: (e) ->
-    @dragFromHandle e
+    @['on drag handles'] e
 
-  'on mousedown topLeftHandle': (e) =>
-    @mouseDownCoords =
+  'on *start topLeftHandle': (e) ->
+    @startCoords =
       x: @mark.left + @mark.width
       y: @mark.top + @mark.height
 
-  'on mousedown topRightHandle': (e) =>
-    @mouseDownCoords =
+  'on *start topRightHandle': (e) ->
+    @startCoords =
       x: @mark.left
       y: @mark.top + @mark.height
 
-  'on mousedown bottomRightHandle': (e) =>
-    @mouseDownCoords =
+  'on *start bottomRightHandle': (e) ->
+    @startCoords =
       x: @mark.left
       y: @mark.top
 
-  'on mousedown bottomLeftHandle': (e) =>
-    @mouseDownCoords =
+  'on *start bottomLeftHandle': (e) ->
+    @startCoords =
       x: @mark.left + @mark.width
       y: @mark.top
 
-  'on drag topLeftHandle': (e) =>
-    @dragFromHandle e
-
-  'on drag topRightHandle': (e) =>
-    @dragFromHandle e
-
-  'on drag bottomRightHandle': (e) =>
-    @dragFromHandle e
-
-  'on drag bottomLeftHandle': (e) =>
-    @dragFromHandle e
-
-  dragFromHandle: (e) =>
+  'on drag handles': (e) ->
     {x, y} = @pointerOffset e
 
-    dragMethod = if x < @mouseDownCoords.x and y < @mouseDownCoords.y
+    dragMethod = if x < @startCoords.x and y < @startCoords.y
       'dragFromTopLeft'
-    else if x >= @mouseDownCoords.x and y < @mouseDownCoords.y
+    else if x >= @startCoords.x and y < @startCoords.y
       'dragFromTopRight'
-    else if x >= @mouseDownCoords.x and y >= @mouseDownCoords.y
+    else if x >= @startCoords.x and y >= @startCoords.y
       'dragFromBottomRight'
-    else if x < @mouseDownCoords.x and y >= @mouseDownCoords.y
+    else if x < @startCoords.x and y >= @startCoords.y
       'dragFromBottomLeft'
 
     @[dragMethod] e
@@ -153,12 +135,6 @@ class RectangleTool extends Tool
       left: x
       width: @mark.width + (@mark.left - x)
       height: y - @mark.top
-
-  'on mouseup': =>
-    @mouseOffsetFromShape = null
-
-  'on touchend': (e) =>
-    @['on mouseup'] e
 
   render: ->
     @outside.attr

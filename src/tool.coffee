@@ -1,5 +1,5 @@
 POINTER_EVENTS = [
-  'mousedown', 'mouseover', 'mousemove', 'mouseout', 'mouseup'
+  'mousedown', 'mouseover', 'XXX_mousemove', 'mouseout', 'mouseup'
   'touchstart', 'touchmove', 'touchend'
 ]
 
@@ -69,61 +69,77 @@ class Tool extends BaseClass
   handleEvents: (e) =>
     return if @surface.disabled
 
-
     eventName = e.type
-    name: '*' # Default for custom cursors
-    target = e.target || e.srcElement # For IE
+    target = e.target || e.srcElement # srcElement is for IE.
 
-    for property, value of @
-      match = value?.el is target
+    matchingNames = []
+    for own property, value of @
+      if value?.el is target
+        matchingNames.push property
 
-      if value instanceof Array
-        match ||= valueItem?.el is target for valueItem in value
-
-      if match
-        name = property
-        target = value
+      else
+        if value instanceof Array
+          for valueItem in value
+            if valueItem?.el is target
+              matchingNames.push property
+              break
 
     @["on #{eventName}"]?.call @, e
-
-    @["on #{eventName} #{name}"]?.call @, e
+    @["on #{eventName} #{name}"]?.call @, e for name in matchingNames
 
     switch eventName
       when 'mouseover'
         @surface.el.style.cursor = @cursors?[name]
 
-      when 'mouseout'
-        @surface.el.style.cursor = @surface.cursor
+      when 'mousemove', 'touchmove'
+        @['on *move']?.call @, e
+        @["on *move #{name}"]?.call @, e for name in matchingNames
 
       when 'mousedown', 'touchstart'
-        e.preventDefault()
+        e.preventDefault() # Prevent the surface from starting a new tool.
 
         @select()
 
-        dragEvent = if eventName is 'mousedown' then 'mousemove' else 'touchmove'
+        @['on *start']?.call @, e
+
+        moveEvent = if eventName is 'mousedown' then 'mousemove' else 'touchmove'
         endEvent = if eventName is 'mousedown' then 'mouseup' else 'touchend'
 
         if 'on drag' of @
           @["on drag"] e
 
-          document.addEventListener dragEvent, @['on drag'], false
+          moveHandler = (e) =>
+            @['on drag'] e
 
-          onEnd = =>
-            document.removeEventListener dragEvent, @['on drag'], false
-            document.removeEventListener endEvent, onEnd, false
+          endHandler = =>
+            document.removeEventListener moveEvent, moveHandler, false
+            document.removeEventListener endEvent, endHandler, false
 
-          document.addEventListener endEvent, onEnd, false
+          document.addEventListener moveEvent, moveHandler, false
+          document.addEventListener endEvent, endHandler, false
 
-        if "on drag #{name}" of @
-          @["on drag #{name}"] e
+        for name in matchingNames then do (name) =>
+          @["on *start #{name}"]?.call @, e
 
-          document.addEventListener dragEvent, @["on drag #{name}"], false
+          if "on drag #{name}" of @
+            @["on drag #{name}"] e
 
-          onNamedEnd = =>
-            document.removeEventListener dragEvent, @["on drag #{name}"], false
-            document.removeEventListener endEvent, onNamedEnd, false
+            namedMoveHandler = (e) =>
+              @["on drag #{name}"] e
 
-          document.addEventListener endEvent, onNamedEnd, false
+            namedEndHandler = =>
+              document.removeEventListener moveEvent, namedMoveHandler, false
+              document.removeEventListener endEvent, namedEndHandler, false
+
+            document.addEventListener moveEvent, namedMoveHandler, false
+            document.addEventListener endEvent, namedEndHandler, false
+
+      when 'mouseup', 'touchend'
+        @['on *end']?.call @, e
+        @["on *end #{name}"]?.call @, e
+
+      when 'mouseout'
+        @surface.el.style.cursor = @surface.defaultCursor
 
   onMarkChange: =>
     return unless isNaN @renderTimeout
