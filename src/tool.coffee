@@ -92,7 +92,7 @@ class Tool extends BaseClass
         @surface.el.style.cursor = @cursors?[name]
 
       when 'mouseout'
-        @surface.el.style.cursor = ''
+        @surface.el.style.cursor = @surface.cursor
 
       when 'mousedown', 'touchstart'
         e.preventDefault()
