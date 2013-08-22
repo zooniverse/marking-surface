@@ -2,6 +2,7 @@
 
 class RectangleTool extends Tool
   outside: null
+  handles: null
   topLeftHandle: null
   topRightHandle: null
   bottomRightHandle: null
@@ -22,11 +23,16 @@ class RectangleTool extends Tool
 
   initialize: ->
     @root.filter 'shadow'
+
     @outside = @addShape 'rect', {@fill, @stroke, @strokeWidth}
+
     @topLeftHandle = @addShape 'rect', {width: @handleSize, height: @handleSize, @fill, @stroke, @strokeWidth}
     @topRightHandle = @addShape 'rect', {width: @handleSize, height: @handleSize, @fill, @stroke, @strokeWidth}
     @bottomRightHandle = @addShape 'rect', {width: @handleSize, height: @handleSize, @fill, @stroke, @strokeWidth}
     @bottomLeftHandle = @addShape 'rect', {width: @handleSize, height: @handleSize, @fill, @stroke, @strokeWidth}
+
+    @handles = []
+    @handles.push @topLeftHandle, @topRightHandle, @bottomRightHandle, @bottomLeftHandle
 
     @mark.set
       left: 0
@@ -53,20 +59,23 @@ class RectangleTool extends Tool
     @onFirstDrag e
 
   onFirstDrag: (e) ->
+    @['on drag handles'] e
+
+  'on drag handles': (e) =>
     {x, y} = @pointerOffset e
 
     dragMethod = if x < @creationCoords.x and y < @creationCoords.y
-      'on drag topLeftHandle'
+      'onDragTopLeftHandle'
     else if x >= @creationCoords.x and y < @creationCoords.y
-      'on drag topRightHandle'
+      'onDragTopRightHandle'
     else if x >= @creationCoords.x and y >= @creationCoords.y
-      'on drag bottomRightHandle'
+      'onDragBottomRightHandle'
     else if x < @creationCoords.x and y >= @creationCoords.y
-      'on drag bottomLeftHandle'
+      'onDragBottomLeftHandle'
 
     @[dragMethod] e
 
-  'on drag topLeftHandle': (e) =>
+  onDragTopLeftHandle: (e) =>
     {x, y} = @pointerOffset e
     x -= @handleSize / 2
     y -= @handleSize / 2
@@ -77,7 +86,7 @@ class RectangleTool extends Tool
       width: @mark.width + (@mark.left - x)
       height: @mark.height + (@mark.top - y)
 
-  'on drag topRightHandle': (e) =>
+  onDragTopRightHandle: (e) =>
     {x, y} = @pointerOffset e
     x += @handleSize / 2
     y -= @handleSize / 2
@@ -87,7 +96,7 @@ class RectangleTool extends Tool
       width: x - @mark.left
       height: @mark.height + (@mark.top - y)
 
-  'on drag bottomRightHandle': (e) =>
+  onDragBottomRightHandle: (e) =>
     {x, y} = @pointerOffset e
     x += @handleSize / 2
     y += @handleSize / 2
@@ -96,7 +105,7 @@ class RectangleTool extends Tool
       width: x - @mark.left
       height: y - @mark.top
 
-  'on drag bottomLeftHandle': (e) =>
+  onDragBottomLeftHandle: (e) =>
     {x, y} = @pointerOffset e
     x -= @handleSize / 2
     y += @handleSize / 2
