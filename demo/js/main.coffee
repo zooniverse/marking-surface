@@ -1,5 +1,5 @@
 MarkingSurface = window.MarkingSurface
-{Tool, EllipseTool, AxesTool} = MarkingSurface
+{Tool, RectangleTool, EllipseTool, AxesTool} = MarkingSurface
 
 getImageSize = (src, callback) ->
   img = new Image
@@ -46,6 +46,7 @@ class PointTool extends Tool
 
 TOOLS =
   point: PointTool
+  rectangle: RectangleTool
   ellipse: EllipseTool
   axes: AxesTool
 
