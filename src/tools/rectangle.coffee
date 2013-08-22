@@ -46,7 +46,7 @@ class RectangleTool extends Tool
       x: @startCoords.x - @mark.left
       y: @startCoords.y - @mark.top
 
-  'on drag outside': (e) ->
+  'on *drag outside': (e) ->
     {x, y} = @pointerOffset e
     @mark.set
       left: x - @pointerOffsetFromShape.x
@@ -60,7 +60,7 @@ class RectangleTool extends Tool
       top: @startCoords.y - (@defaultSize / 2)
 
   onFirstDrag: (e) ->
-    @['on drag handles'] e
+    @['on *drag handles'] e
 
   'on *start topLeftHandle': (e) ->
     @startCoords =
@@ -82,7 +82,7 @@ class RectangleTool extends Tool
       x: @mark.left + @mark.width
       y: @mark.top
 
-  'on drag handles': (e) ->
+  'on *drag handles': (e) ->
     {x, y} = @pointerOffset e
 
     dragMethod = if x < @startCoords.x and y < @startCoords.y

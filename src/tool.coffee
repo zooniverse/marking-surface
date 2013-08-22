@@ -105,11 +105,11 @@ class Tool extends BaseClass
         moveEvent = if eventName is 'mousedown' then 'mousemove' else 'touchmove'
         endEvent = if eventName is 'mousedown' then 'mouseup' else 'touchend'
 
-        if 'on drag' of @
-          @["on drag"] e
+        if 'on *drag' of @
+          @["on *drag"] e
 
           moveHandler = (e) =>
-            @['on drag'] e
+            @['on *drag'] e
 
           endHandler = =>
             document.removeEventListener moveEvent, moveHandler, false
@@ -121,11 +121,11 @@ class Tool extends BaseClass
         for name in matchingNames then do (name) =>
           @["on *start #{name}"]?.call @, e
 
-          if "on drag #{name}" of @
-            @["on drag #{name}"] e
+          if "on *drag #{name}" of @
+            @["on *drag #{name}"] e
 
             namedMoveHandler = (e) =>
-              @["on drag #{name}"] e
+              @["on *drag #{name}"] e
 
             namedEndHandler = =>
               document.removeEventListener moveEvent, namedMoveHandler, false

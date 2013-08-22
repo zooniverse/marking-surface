@@ -45,7 +45,7 @@ class AxesTool extends Tool
     @drags is 2
 
   downedDotIndex: NaN
-  'on drag dots': (e) =>
+  'on *drag dots': (e) =>
     if e.type in ['mousedown', 'touchstart']
       @downedDotIndex = i for s, i in @dots when s.el is e.target
 

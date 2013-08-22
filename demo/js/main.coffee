@@ -27,9 +27,9 @@ class PointTool extends Tool
     @onInitialDrag e
 
   onInitialDrag: (e) ->
-    @['on drag circle'] e
+    @['on *drag circle'] e
 
-  'on drag circle': (e) =>
+  'on *drag circle': (e) =>
     offset = @pointerOffset e
     @mark.set offset
 

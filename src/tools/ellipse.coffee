@@ -42,7 +42,7 @@ class EllipseTool extends Tool
       ry: @defaultRadius * @defaultSquash
 
   onFirstDrag: (e) ->
-    @['on drag xHandle'] e
+    @['on *drag xHandle'] e
     @mark.set 'ry', @mark.rx * @defaultSquash
 
   'on mousedown': (e) ->
@@ -54,20 +54,20 @@ class EllipseTool extends Tool
   'on touchstart': (e) =>
     @['on mousedown'] e
 
-  'on drag outside': (e) =>
+  'on *drag outside': (e) =>
     {x, y} = @pointerOffset e
     @mark.set 'center', [
       x - @dragOffsetFromCenter.x
       y - @dragOffsetFromCenter.y
     ]
 
-  'on drag xHandle': (e) =>
+  'on *drag xHandle': (e) =>
     {x, y} = @pointerOffset e
     @mark.set
       angle: @getAngle @mark.center[0], @mark.center[1], x, y
       rx: @getHypotenuse @mark.center[0], @mark.center[1], x, y
 
-  'on drag yHandle': (e) =>
+  'on *drag yHandle': (e) =>
     {x, y} = @pointerOffset e
     @mark.set
       angle: 90 + @getAngle @mark.center[0], @mark.center[1], x, y
