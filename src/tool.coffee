@@ -1,5 +1,5 @@
 POINTER_EVENTS = [
-  'mousedown', 'mouseover', 'mousmove', 'mouseout', 'mouseup'
+  'mousedown', 'mouseover', 'mousemove', 'mouseout', 'mouseup'
   'touchstart', 'touchmove', 'touchend'
 ]
 
@@ -68,6 +68,7 @@ class Tool extends BaseClass
 
   handleEvents: (e) =>
     return if @surface.disabled
+
 
     eventName = e.type
     name: '*' # Default for custom cursors
