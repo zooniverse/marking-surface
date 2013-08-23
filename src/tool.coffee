@@ -3,6 +3,13 @@ POINTER_EVENTS = [
   'touchstart', 'touchmove', 'touchend'
 ]
 
+[PREFIXED_GRAB, PREFIXED_GRABBING] = if 'webkitMatchesSelector' of document.body
+  ['-webkit-grab', '-webkit-grabbing']
+else if 'mozMatchesSelector' of document.body
+  ['-moz-grab', '-moz-grabbing']
+else
+  ['move', 'move']
+
 class Tool extends BaseClass
   @Mark: Mark
   @Controls: ToolControls
@@ -89,13 +96,23 @@ class Tool extends BaseClass
 
     switch eventName
       when 'mouseover'
-        @surface.el.style.cursor = @cursors?[name]
+        # Firefox wants to trigger then when the mouse moves, which replaces the grabbing cursor.
+        unless @surface.el.style.cursor is PREFIXED_GRABBING
+          if @cursors? then for name in matchingNames
+            if @cursors[name] is '*grab'
+              @surface.el.style.cursor = PREFIXED_GRAB
+            else
+              @surface.el.style.cursor = @cursors[name]
 
       when 'mousemove', 'touchmove'
         @['on *move']?.call @, e
         @["on *move #{name}"]?.call @, e for name in matchingNames
 
       when 'mousedown', 'touchstart'
+        if @surface.el.style.cursor is PREFIXED_GRAB
+          @surface.el.style.cursor = PREFIXED_GRABBING
+          document.body.cursor = document.body.cursor
+
         e.preventDefault() # Prevent the surface from starting a new tool.
 
         @select()
@@ -135,6 +152,9 @@ class Tool extends BaseClass
             document.addEventListener endEvent, namedEndHandler, false
 
       when 'mouseup', 'touchend'
+        if @surface.el.style.cursor is PREFIXED_GRABBING
+          @surface.el.style.cursor = PREFIXED_GRAB
+
         @['on *end']?.call @, e
         @["on *end #{name}"]?.call @, e
 

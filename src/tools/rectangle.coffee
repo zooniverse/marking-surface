@@ -19,7 +19,7 @@ class RectangleTool extends Tool
   pointerOffsetFromShape: null
 
   cursors:
-    outside: 'move'
+    outside: '*grab'
     handles: 'move'
 
   initialize: ->
