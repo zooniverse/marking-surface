@@ -1,10 +1,10 @@
 {
   "name": "marking-surface",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "main": "./index.js",
   "devDependencies": {
-    "bower": "~0.6.8",
-    "coffee-script": "~1.6.2",
+    "bower": "~1.2.3",
+    "coffee-script": "~1.6.3",
     "easy-exec": "~0.0.1",
     "silver-server": "~0.1.1"
   }
