@@ -1,5 +1,5 @@
 POINTER_EVENTS = [
-  'mousedown', 'mouseover', 'XXX_mousemove', 'mouseout', 'mouseup'
+  'mousedown', 'mouseover', 'mousemove', 'mouseout', 'mouseup'
   'touchstart', 'touchmove', 'touchend'
 ]
 
