@@ -9,7 +9,7 @@ class MarkingSurface extends BaseClass
   height: NaN
 
   el: null
-  tagName: 'div'
+  tagName: 'span'
   className: 'marking-surface'
   tabIndex: 0
   defaultCursor: 'crosshair'
@@ -46,14 +46,17 @@ class MarkingSurface extends BaseClass
 
     @el.addEventListener 'keydown', @onKeyDown, false
 
+    @el.style.position = 'relative'
+    @el.style.display = 'inline-block'
+    @el.style.overflow = 'hidden'
+
+    @el.style.cursor = @defaultCursor
+
     if @el.parentNode?
       @width ||= @el.clientWidth
       @height ||= @el.clientHeight
 
     @svg ?= new SVG {@width, @height}
-    @el.style.cursor = @defaultCursor
-    @svg.el.style.display = 'block' # This is okay since it's always contained.
-    @svg.el.style.overflow = 'hidden' # For IE
     @el.appendChild @svg.el
 
     @marks ?= []

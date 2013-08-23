@@ -86,14 +86,10 @@ class ToolControls extends BaseClass
     else
       [null, height - ((y * zoomBy) - (panY * zoomBy))]
 
-    outOfBounds = left < 0 or right < 0 or top < 0 or bottom < 0
-    outOfBounds ||= left > width or right > width or top > height or bottom > height
-
     @el.style.left    = if left?       then "#{left}px"   else ''
     @el.style.right   = if right?      then "#{right}px"  else ''
     @el.style.top     = if top?        then "#{top}px"    else ''
     @el.style.bottom  = if bottom?     then "#{bottom}px" else ''
-    @el.style.display = if outOfBounds then 'none'        else ''
 
     toggleClass @el, 'opens-right', left?
     toggleClass @el, 'opens-left', right?
