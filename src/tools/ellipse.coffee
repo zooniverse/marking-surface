@@ -17,6 +17,7 @@ class EllipseTool extends Tool
   dragOffsetFromCenter: null
 
   cursors:
+    outside: '*grab'
     xHandle: 'move'
     yHandle: 'move'
 
