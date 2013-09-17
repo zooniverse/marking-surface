@@ -9,7 +9,7 @@ class MarkingSurface extends BaseClass
   height: NaN
 
   el: null
-  tagName: 'span'
+  tagName: 'div'
   className: 'marking-surface'
   tabIndex: 0
   defaultCursor: 'crosshair'
@@ -107,7 +107,7 @@ class MarkingSurface extends BaseClass
     @el.focus()
 
     # Presuming the element won't move mid-drag
-    @offsetAtLastMousedown = @elOffset()
+    @offsetAtLastMousedown = @el.getBoundingClientRect()
 
     if not @selection? or @selection.isComplete()
       if @tool?
@@ -237,26 +237,11 @@ class MarkingSurface extends BaseClass
     super
     null
 
-  elOffset: ->
-    left = 0
-    top = 0
-
-    currentElement = @el
-    while currentElement?
-      left += currentElement.offsetLeft unless isNaN currentElement.offsetLeft
-      top += currentElement.offsetTop unless isNaN currentElement.offsetTop
-      currentElement = currentElement.offsetParent
-
-    left += parseFloat getComputedStyle(document.body.parentNode).marginLeft
-    top += parseFloat getComputedStyle(document.body.parentNode).marginTop
-
-    {left, top}
-
   pointerOffset: (e) ->
     originalEvent = e.originalEvent if 'originalEvent' of e
     e = originalEvent.touches[0] if originalEvent? and 'touches' of originalEvent
 
-    {left, top} = @offsetAtLastMousedown || @elOffset()
+    {left, top} = @offsetAtLastMousedown || @el.getBoundingClientRect()
     x = e.pageX - left
     y = e.pageY - top
 
