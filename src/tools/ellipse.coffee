@@ -46,14 +46,11 @@ class EllipseTool extends Tool
     @['on *drag xHandle'] e
     @mark.set 'ry', @mark.rx * @defaultSquash
 
-  'on mousedown': (e) ->
+  'on *start': (e) ->
     {x, y} = @pointerOffset e
     @dragOffsetFromCenter =
       x: x - @mark.center[0]
       y: y - @mark.center[1]
-
-  'on touchstart': (e) =>
-    @['on mousedown'] e
 
   'on *drag outside': (e) =>
     {x, y} = @pointerOffset e
@@ -74,11 +71,8 @@ class EllipseTool extends Tool
       angle: 90 + @getAngle @mark.center[0], @mark.center[1], x, y
       ry: @getHypotenuse @mark.center[0], @mark.center[1], x, y
 
-  'on mouseup': =>
+  'on *end': =>
     @dragOffsetFromCenter = null
-
-  'on touchend': (e) =>
-    @['on mouseup'] e
 
   render: ->
     @group.attr 'transform', "translate(#{@mark.center}) rotate(#{@mark.angle})"
