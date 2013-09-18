@@ -12,7 +12,6 @@ class MarkingSurface extends BaseClass
   tagName: 'div'
   className: 'marking-surface'
   tabIndex: 0
-  defaultCursor: 'crosshair'
 
   svg: null
 
@@ -36,6 +35,8 @@ class MarkingSurface extends BaseClass
     @el = document.querySelectorAll @el if typeof @el is 'string'
     @el ?= document.createElement @tagName
     @el.className = @className
+    @el.style.display = 'inline-block'
+    @el.style.position = 'relative' if (getComputedStyle @el).position is 'static'
     @el.setAttribute 'tabindex', @tabIndex
 
     @el.addEventListener 'mousemove', @onMouseMove, false
@@ -45,12 +46,6 @@ class MarkingSurface extends BaseClass
     @el.addEventListener 'touchstart', @onTouchStart, false
 
     @el.addEventListener 'keydown', @onKeyDown, false
-
-    @el.style.position = 'relative'
-    @el.style.display = 'inline-block'
-    @el.style.overflow = 'hidden'
-
-    @el.style.cursor = @defaultCursor
 
     if @el.parentNode?
       @width ||= @el.clientWidth

@@ -159,7 +159,7 @@ class Tool extends BaseClass
         @["on *end #{name}"]?.call @, e
 
       when 'mouseout'
-        @surface.el.style.cursor = @surface.defaultCursor
+        @surface.el.style.cursor = ''
 
   onMarkChange: =>
     return unless isNaN @renderTimeout

@@ -14,6 +14,6 @@ sources = '''
 '''
 
 task 'serve', 'Run a dev server', ->
-  exec "coffee --watch --join ./lib/marking-surface.js --compile #{sources}"
+  exec "coffee --watch --map --join ./lib/marking-surface.js --compile #{sources}"
   exec 'coffee --watch --output ./lib/tools --compile ./src/tools'
   exec "silver server --port #{process.env.PORT || DEFAULT_PORT}"
