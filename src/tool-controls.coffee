@@ -3,27 +3,18 @@ class ToolControls extends BaseClass
 
   tagName: 'div'
   className: 'marking-tool-controls'
-  deleteButtonName: 'delete-marking-tool'
-  el: null
-  deleteButton: null
-
-  template: """
-    <button name="#{@::deleteButtonName}">&times;</button>
-  """
+  template: ''
 
   constructor: ->
     super
 
     @el = document.createElement @tagName
-    @el.className = @className
+    toggleClass @el, @constructor::className, true
+    toggleClass @el, @className, true
     @el.style.position = 'absolute'
-    @el.style.cursor = 'auto'
     @el.innerHTML = @template
 
     @el.addEventListener 'mousedown', @onMouseDown, false
-
-    @deleteButton = @el.querySelector "button[name='#{@deleteButtonName}']"
-    @deleteButton?.addEventListener 'click', @onClickDelete, false
 
     @tool.on 'initial-release', @onToolInitialRelease
     @tool.on 'select', @onToolSelect
@@ -34,7 +25,7 @@ class ToolControls extends BaseClass
     @tool.surface.el.appendChild @el
 
   onToolInitialRelease: =>
-    toggleClass @el, 'tool-is-complete', @tool.isComplete()
+    toggleClass @el, 'tool-complete', @tool.isComplete()
     null
 
   onMouseDown: =>
@@ -42,14 +33,10 @@ class ToolControls extends BaseClass
     @tool.select()
     null
 
-  onClickDelete: (e) =>
-    return if @tool.surface.disabled
-    e.preventDefault()
-    @tool.mark.destroy()
-    null
-
   onToolSelect: =>
     toggleClass @el, 'tool-selected', true
+    @el.parentNode.appendChild @el
+    @open()
     null
 
   onMarkChange: =>
@@ -58,6 +45,7 @@ class ToolControls extends BaseClass
 
   onToolDeselect: =>
     toggleClass @el, 'tool-selected', false
+    @close()
     null
 
   onToolDestroy: =>
@@ -66,7 +54,6 @@ class ToolControls extends BaseClass
 
   destroy: ->
     @el.removeEventListener 'mousedown', @onMouseDown, false
-    @deleteButton?.removeEventListener 'click', @onClickDelete, false
     @el.parentNode.removeChild @el
     super
     null
@@ -98,6 +85,12 @@ class ToolControls extends BaseClass
     toggleClass @el, 'opens-up', bottom?
 
     null
+
+  open: ->
+    # When the tool is selected
+
+  close: ->
+    # When the tool is deselected
 
   render: ->
     # Reflect the state of the tool's mark.

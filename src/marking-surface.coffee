@@ -5,10 +5,9 @@ TAB = 9
 class MarkingSurface extends BaseClass
   tool: Tool
 
-  width: NaN
-  height: NaN
+  width: 0
+  height: 0
 
-  el: null
   tagName: 'div'
   className: 'marking-surface'
   tabIndex: 0
@@ -34,24 +33,23 @@ class MarkingSurface extends BaseClass
 
     @el = document.querySelectorAll @el if typeof @el is 'string'
     @el ?= document.createElement @tagName
-    @el.className = @className
+    toggleClass @el, @constructor::className, true
+    toggleClass @el, @className, true
     @el.style.display = 'inline-block'
     @el.style.position = 'relative' if (getComputedStyle @el).position is 'static'
     @el.setAttribute 'tabindex', @tabIndex
 
     @el.addEventListener 'mousemove', @onMouseMove, false
     @el.addEventListener 'touchmove', @onTouchMove, false
-
     @el.addEventListener 'mousedown', @onMouseDown, false
     @el.addEventListener 'touchstart', @onTouchStart, false
-
     @el.addEventListener 'keydown', @onKeyDown, false
 
     if @el.parentNode?
       @width ||= @el.clientWidth
       @height ||= @el.clientHeight
 
-    @svg ?= new SVG {@width, @height}
+    @svg ?= new SVG {@width, @height, style: 'display: block;'}
     @el.appendChild @svg.el
 
     @marks ?= []
@@ -99,7 +97,6 @@ class MarkingSurface extends BaseClass
     return if e.target in @el.querySelectorAll ".#{ToolControls::className}, .#{ToolControls::className} *"
 
     e.preventDefault()
-    @el.focus()
 
     # Presuming the element won't move mid-drag
     @offsetAtLastMousedown = @el.getBoundingClientRect()
@@ -110,6 +107,8 @@ class MarkingSurface extends BaseClass
         mark = tool.mark
 
         tool.on 'select', =>
+          @el.focus()
+
           return if @selection is tool
 
           @selection?.deselect()
@@ -180,7 +179,6 @@ class MarkingSurface extends BaseClass
   onKeyDown: (e) =>
     return if @disabled
     return if e.altKey or e.ctrlKey
-    return unless e.which in [BACKSPACE, DELETE, TAB]
     return unless document.activeElement is @el
 
     switch e.which
@@ -203,6 +201,8 @@ class MarkingSurface extends BaseClass
             removeFrom current, @tools
             @tools.unshift current
 
+    null
+
   getValue: ->
     JSON.stringify @marks
 
@@ -210,14 +210,12 @@ class MarkingSurface extends BaseClass
     @svg.addShape arguments...
 
   disable: (e) ->
-    return if @disabled
     @disabled = true
     @el.setAttribute 'disabled', 'disabled'
     @selection?.deselect()
     null
 
   enable: (e) ->
-    return unless @disabled
     @disabled = false
     @el.removeAttribute 'disabled'
     null

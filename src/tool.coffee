@@ -39,7 +39,7 @@ class Tool extends BaseClass
 
     # Apply filters to the root, transform the group.
     @root = @surface.addShape 'g.marking-tool-root'
-    @group = @root.addShape 'g.marking-tool'
+    @group = @root.addShape 'g.marking-tool-group'
     @group.attr
       fill: 'transparent'
       stroke: 'transparent'
@@ -47,14 +47,14 @@ class Tool extends BaseClass
 
     # Delegate pointer events to the group.
     for eventName in POINTER_EVENTS
-      @group.el.addEventListener eventName, @handleEvents, false
+      @root.el.addEventListener eventName, @handleEvents, false
 
     @initialize arguments...
 
   addShape: ->
     @group.addShape arguments...
 
-  # NOTE: These "initial" events begin on the marking surface.
+  # NOTE: These "initial" events originate on the marking surface.
 
   onInitialClick: (e) ->
     @trigger 'initial-click', [e]
@@ -171,22 +171,22 @@ class Tool extends BaseClass
     null
 
   select: ->
-    @group.attr 'opacity', 1
-    @group.toFront()
+    @root.attr 'opacity', 1
+    @root.toFront()
     @trigger 'select', arguments
     null
 
   deselect: ->
-    @group.attr 'opacity', @deselectedOpacity
+    @root.attr 'opacity', @deselectedOpacity
     @trigger 'deselect', arguments
     null
 
   destroy: =>
     for eventName in POINTER_EVENTS
-      @group.el.removeEventListener eventName, @handleEvents, false
+      @root.el.removeEventListener eventName, @handleEvents, false
 
     # TODO: Animate this out.
-    @group.remove()
+    @root.remove()
 
     super
     null
@@ -198,15 +198,15 @@ class Tool extends BaseClass
     # Add shapes here.
     # E.g. @mainHandle = @addShape 'circle'
 
-  onFirstClick: (e) ->
+  onFirstClick: ->
     # Usualy, defer to `onFirstDrag`.
     # E.g. @onFirstDrag arguments...
 
-  onFirstDrag: (e) ->
+  onFirstDrag: ->
     # Usualy, defer to a more general on-drag method.
     # E.g. @['on drag mainHandle'] arguments...
 
-  onFirstRelease: (e) ->
+  onFirstRelease: ->
     # Override this if you need to do some post-create procedure.
 
   render: ->
