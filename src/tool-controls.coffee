@@ -17,6 +17,7 @@ class ToolControls extends BaseClass
     @el = document.createElement @tagName
     @el.className = @className
     @el.style.position = 'absolute'
+    @el.style.cursor = 'auto'
     @el.innerHTML = @template
 
     @el.addEventListener 'mousedown', @onMouseDown, false
@@ -65,7 +66,7 @@ class ToolControls extends BaseClass
 
   destroy: ->
     @el.removeEventListener 'mousedown', @onMouseDown, false
-    @deleteButton.removeEventListener 'click', @onClickDelete, false
+    @deleteButton?.removeEventListener 'click', @onClickDelete, false
     @el.parentNode.removeChild @el
     super
     null
@@ -86,10 +87,10 @@ class ToolControls extends BaseClass
     else
       [null, height - ((y * zoomBy) - (panY * zoomBy))]
 
-    @el.style.left    = if left?       then "#{left}px"   else ''
-    @el.style.right   = if right?      then "#{right}px"  else ''
-    @el.style.top     = if top?        then "#{top}px"    else ''
-    @el.style.bottom  = if bottom?     then "#{bottom}px" else ''
+    @el.style.left    = if left?   then "#{Math.floor left}px"   else ''
+    @el.style.right   = if right?  then "#{Math.floor right}px"  else ''
+    @el.style.top     = if top?    then "#{Math.floor top}px"    else ''
+    @el.style.bottom  = if bottom? then "#{Math.floor bottom}px" else ''
 
     toggleClass @el, 'opens-right', left?
     toggleClass @el, 'opens-left', right?

@@ -6,6 +6,10 @@ CASE_SENSITIVE_ATTRIBUTES = [
   'viewBox'
 ]
 
+NON_ATTRIBUTE_PROPERTIES = [
+  'textContent'
+]
+
 filters =
   shadow: [
     {element: 'feOffset', attributes: {in: 'SourceAlpha', dx: 0.5, dy: 1.5, result: 'offOut'}}
@@ -33,19 +37,27 @@ class SVG
     @attr attributes
 
   attr: (attribute, value) ->
-    # Given a key and a value:
     if typeof attribute is 'string'
       # Hyphenate camel-cased keys, unless they're case sensitive.
-      unless attribute in CASE_SENSITIVE_ATTRIBUTES
+      unless attribute in CASE_SENSITIVE_ATTRIBUTES or attribute in NON_ATTRIBUTE_PROPERTIES
         attribute = (attribute.replace /([A-Z])/g, '-$1').toLowerCase()
 
       [namespace..., attribute] = attribute.split ':'
       namespace = namespace.join ''
 
-      @el.setAttributeNS NAMESPACES[namespace] || null, attribute, value
+      if value? # Setter
+        if attribute in NON_ATTRIBUTE_PROPERTIES
+          @el[attribute] = value
+        else
+          @el.setAttributeNS NAMESPACES[namespace] || null, attribute, value
 
-    # Given an object:
-    else
+      else # Getter
+        return if attribute in NON_ATTRIBUTE_PROPERTIES
+          @el[attribute]
+        else
+          @el.getAttributeNS NAMESPACES[namespace] || null, attribute
+
+    else # Given an object to loop through:
       attributes = attribute
       @attr attribute, value for attribute, value of attributes
 
