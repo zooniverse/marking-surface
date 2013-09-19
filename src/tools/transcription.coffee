@@ -4,24 +4,21 @@ class TranscriptionControls extends ToolControls
   constructor: ->
     super
 
-    @deleteButton.style.position = 'absolute'
-    @deleteButton.style.right = '0.5em'
-    @deleteButton.style.top = '-1.5em'
-
     @textarea = document.createElement 'textarea'
     @textarea.style.height = '3em'
     @textarea.style.width = '100%'
-    @textarea.addEventListener 'keydown', @onKeyDown, false
+    @textarea.addEventListener 'input', @onChangeTextarea, false
 
     @el.appendChild @textarea
 
-  onKeyDown: (e) =>
+  onChangeTextarea: (e) =>
     setTimeout =>
       @tool.mark.set 'content', @textarea.value
 
   onToolSelect: ->
     super
     @textarea.style.display = ''
+    setTimeout => @textarea.focus()
 
   onToolDeselect: ->
     super

@@ -5,6 +5,8 @@ class ToolControls extends BaseClass
   className: 'marking-tool-controls'
   template: ''
 
+  isOpen: false
+
   constructor: ->
     super
 
@@ -36,7 +38,8 @@ class ToolControls extends BaseClass
   onToolSelect: =>
     toggleClass @el, 'tool-selected', true
     @el.parentNode.appendChild @el
-    @open()
+    @open() unless @isOpen
+    @isOpen = true
     null
 
   onMarkChange: =>
@@ -45,7 +48,8 @@ class ToolControls extends BaseClass
 
   onToolDeselect: =>
     toggleClass @el, 'tool-selected', false
-    @close()
+    @close() if @isOpen
+    @isOpen = false
     null
 
   onToolDestroy: =>
