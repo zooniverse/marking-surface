@@ -192,7 +192,7 @@ class MarkingSurface extends BaseClass
         else
           e.preventDefault()
           current = @selection
-          next = @tools[@tools.length - 2]
+          next = @tools[Math.max 0, @tools.length - 2]
 
           if next?
             next.select()
