@@ -10,8 +10,9 @@ class BaseClass
     @_events[eventName].push handler
     null
 
-  trigger: (eventName, args) ->
-    handler.apply @, args || [] for handler in @_events[eventName] || []
+  trigger: (eventName, args = []) ->
+    @_events[eventName] ?= []
+    handler.apply @, args for handler in @_events[eventName]
     null
 
   off: (eventName, handler) ->

@@ -182,10 +182,11 @@ class Tool extends BaseClass
     null
 
   destroy: =>
+    @deselect()
+
     for eventName in POINTER_EVENTS
       @root.el.removeEventListener eventName, @handleEvents, false
 
-    # TODO: Animate this out.
     @root.remove()
 
     super

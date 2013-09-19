@@ -126,8 +126,6 @@ class MarkingSurface extends BaseClass
           removeFrom tool, @tools
           @trigger 'destroy-tool', [tool]
 
-          @tools[@tools.length - 1]?.select() if tool is @selection
-
         @tools.push tool
         @trigger 'create-tool', [tool]
 
@@ -142,7 +140,7 @@ class MarkingSurface extends BaseClass
         @marks.push mark
         @trigger 'create-mark', [mark]
 
-        @trigger 'change', []
+        @trigger 'change'
 
     else
       tool = @selection
