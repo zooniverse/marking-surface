@@ -36,7 +36,6 @@ class MarkingSurface extends BaseClass
     toggleClass @el, @constructor::className, true
     toggleClass @el, @className, true
     @el.style.display = 'inline-block'
-    @el.style.position = 'relative' if (getComputedStyle @el).position is 'static'
     @el.setAttribute 'tabindex', @tabIndex
 
     @el.addEventListener 'mousemove', @onMouseMove, false
