@@ -1,5 +1,8 @@
 MarkingSurface = window.MarkingSurface
-{Tool, RectangleTool, EllipseTool, AxesTool, TranscriptionTool} = MarkingSurface
+{Tool, RectangleTool, EllipseTool, AxesTool, TranscriptionTool, DefaultToolControls} = MarkingSurface
+
+EllipseTool.Controls = DefaultToolControls
+AxesTool.Controls = DefaultToolControls
 
 getImageSize = (src, callback) ->
   img = new Image
