@@ -1,6 +1,6 @@
 {
   "name": "marking-surface",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "main": "./lib/marking-surface.js",
   "devDependencies": {
     "bower": "~1.2.3",

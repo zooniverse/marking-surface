@@ -217,8 +217,11 @@ class MarkingSurface extends BaseClass
     @el.removeAttribute 'disabled'
     null
 
+  reset: ->
+    @marks[0].destroy() until @marks.length is 0 # Tools destroy themselves with their marks.
+
   destroy: ->
-    mark.destroy() for mark in @marks # Tools destroy themselves with their marks.
+    @reset()
     @el.removeEventListener 'mousedown', @onMouseDown, false
     @el.removeEventListener 'mousemove', @onMouseMove, false
     @el.removeEventListener 'touchstart', @onTouchStart, false
