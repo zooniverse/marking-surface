@@ -4,6 +4,7 @@ NAMESPACES =
 
 CASE_SENSITIVE_ATTRIBUTES = [
   'viewBox'
+  'preserveAspectRatio'
 ]
 
 NON_ATTRIBUTE_PROPERTIES = [
