@@ -35,7 +35,6 @@ class MarkingSurface extends BaseClass
     @el ?= document.createElement @tagName
     toggleClass @el, @constructor::className, true
     toggleClass @el, @className, true
-    @el.style.display = 'inline-block'
     @el.setAttribute 'tabindex', @tabIndex
 
     @el.addEventListener 'mousemove', @onMouseMove, false
@@ -48,8 +47,10 @@ class MarkingSurface extends BaseClass
       @width ||= @el.clientWidth
       @height ||= @el.clientHeight
 
-    @svg ?= new SVG {@width, @height, style: 'display: block;'}
+    @svg ?= new SVG
     @el.appendChild @svg.el
+
+    @resize @width, @height
 
     @marks ?= []
     @tools ?= []
@@ -57,6 +58,8 @@ class MarkingSurface extends BaseClass
     disable() if @disabled
 
   resize: (@width = @width, @height = @height) ->
+    @el.style.width = "#{@width}px"
+    @el.style.height = "#{@height}px"
     @svg.attr {@width, @height}
     null
 
@@ -239,3 +242,18 @@ class MarkingSurface extends BaseClass
     y = e.pageY - top
 
     {x, y}
+
+document.body.insertAdjacentHTML 'afterbegin', '''
+  <style id="marking-surface-default-style">
+    .marking-surface {
+      display: inline-block;
+      position: relative;
+    }
+
+    .marking-surface > svg {
+      display: block;
+    }
+  </style>
+'''
+
+MarkingSurface.defaultStyle = document.getElementById 'marking-surface-default-style'
