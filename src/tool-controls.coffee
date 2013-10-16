@@ -13,7 +13,6 @@ class ToolControls extends BaseClass
     @el = document.createElement @tagName
     toggleClass @el, @constructor::className, true
     toggleClass @el, @className, true
-    @el.style.position = 'absolute'
     @el.innerHTML = @template
 
     @el.addEventListener 'mousedown', @onMouseDown, false
@@ -62,7 +61,7 @@ class ToolControls extends BaseClass
     super
     null
 
-  moveTo: (x, y, dontTryAndBeClever = false) ->
+  moveTo: (x, y) ->
     {zoomBy, panX, panY} = @tool.surface
     width = @tool.surface.el.clientWidth
     height = @tool.surface.el.clientHeight
@@ -70,25 +69,23 @@ class ToolControls extends BaseClass
     panX *= width - (width / zoomBy)
     panY *= height - (height / zoomBy)
 
-    [left, right] = if dontTryAndBeClever or x < width / 2
-      [(x * zoomBy) - (panX * zoomBy), null]
-    else
-      [null, width - ((x * zoomBy) - (panX * zoomBy))]
+    left = Math.floor (x * zoomBy) - (panX * zoomBy)
+    top = Math.floor (y * zoomBy) - (panY * zoomBy)
 
-    [top, bottom] = if dontTryAndBeClever or y < height / 2
-      [(y * zoomBy) - (panY * zoomBy), null]
-    else
-      [null, height - ((y * zoomBy) - (panY * zoomBy))]
+    @el.style.left    = "#{left}px"
+    @el.style.top     = "#{top}px"
 
-    @el.style.left    = if left?   then "#{Math.floor left}px"   else ''
-    @el.style.right   = if right?  then "#{Math.floor right}px"  else ''
-    @el.style.top     = if top?    then "#{Math.floor top}px"    else ''
-    @el.style.bottom  = if bottom? then "#{Math.floor bottom}px" else ''
+    opensRight = x < width / 2
+    opensDown = y < height / 2
 
-    toggleClass @el, 'opens-right', left?
-    toggleClass @el, 'opens-left', right?
-    toggleClass @el, 'opens-down', top?
-    toggleClass @el, 'opens-up', bottom?
+    toggleClass @el, 'opens-right', opensRight
+    toggleClass @el, 'opens-left', not opensRight
+    toggleClass @el, 'opens-down', opensDown
+    toggleClass @el, 'opens-up', not opensDown
+
+    outOfBounds = left < 0 or left > width or top < 0 or top > height
+
+    toggleClass @el, 'out-of-bounds', outOfBounds
 
     null
 
@@ -100,3 +97,17 @@ class ToolControls extends BaseClass
 
   render: ->
     # Reflect the state of the tool's mark.
+
+document.body.insertAdjacentHTML 'afterbegin', '''
+  <style id="marking-surface-tool-controls-default-style">
+    .marking-tool-controls {
+      position: absolute;
+    }
+
+    .marking-tool-controls.out-of-bounds {
+      display: none
+    }
+  </style>
+'''
+
+ToolControls.defaultStyle = document.getElementById 'marking-surface-tool-controls-default-style'

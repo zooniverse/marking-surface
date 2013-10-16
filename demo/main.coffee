@@ -11,6 +11,8 @@ getImageSize = (src, callback) ->
     callback img.width, img.height
 
 class PointTool extends Tool
+  @Controls: DefaultToolControls
+
   hr: null
   vr: null
   circle: null
