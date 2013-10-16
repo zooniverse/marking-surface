@@ -5,9 +5,6 @@ TAB = 9
 class MarkingSurface extends BaseClass
   tool: Tool
 
-  width: 0
-  height: 0
-
   tagName: 'div'
   className: 'marking-surface'
   tabIndex: 0
@@ -43,25 +40,13 @@ class MarkingSurface extends BaseClass
     @el.addEventListener 'touchstart', @onTouchStart, false
     @el.addEventListener 'keydown', @onKeyDown, false
 
-    if @el.parentNode?
-      @width ||= @el.clientWidth
-      @height ||= @el.clientHeight
-
     @svg ?= new SVG
     @el.appendChild @svg.el
-
-    @resize @width, @height
 
     @marks ?= []
     @tools ?= []
 
     disable() if @disabled
-
-  resize: (@width = @width, @height = @height) ->
-    @el.style.width = "#{@width}px"
-    @el.style.height = "#{@height}px"
-    @svg.attr {@width, @height}
-    null
 
   zoom: (@zoomBy = 1) ->
     if @zoomBy < 1 + @zoomSnapTolerance
@@ -73,10 +58,10 @@ class MarkingSurface extends BaseClass
     null
 
   pan: (@panX = @panX, @panY = @panY) ->
-    minX = (@width - (@width / @zoomBy)) * @panX
-    minY = (@height - (@height / @zoomBy)) * @panY
-    width = @width / @zoomBy
-    height = @height / @zoomBy
+    minX = (@el.clientWidth - (@el.clientWidth / @zoomBy)) * @panX
+    minY = (@el.clientHeight - (@el.clientHeight / @zoomBy)) * @panY
+    width = @el.clientWidth / @zoomBy
+    height = @el.clientHeight / @zoomBy
 
     @svg.attr 'viewBox', "#{minX} #{minY} #{width} #{height}"
 
@@ -86,7 +71,7 @@ class MarkingSurface extends BaseClass
   onMouseMove: (e) =>
     return if @zoomBy is 1
     {x, y} = @pointerOffset e
-    @pan x / @width, y / @height
+    @pan x / @el.clientWidth, y / @el.clientHeight
     null
 
   onTouchMove: (e) =>
@@ -252,6 +237,8 @@ document.body.insertAdjacentHTML 'afterbegin', '''
 
     .marking-surface > svg {
       display: block;
+      height: 100%;
+      width: 100%;
     }
   </style>
 '''

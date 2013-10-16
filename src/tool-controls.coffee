@@ -63,7 +63,9 @@ class ToolControls extends BaseClass
     null
 
   moveTo: (x, y, dontTryAndBeClever = false) ->
-    {zoomBy, panX, panY, width, height} = @tool.surface
+    {zoomBy, panX, panY} = @tool.surface
+    width = @tool.surface.el.clientWidth
+    height = @tool.surface.el.clientHeight
 
     panX *= width - (width / zoomBy)
     panY *= height - (height / zoomBy)

@@ -1,9 +1,10 @@
 removeFrom = (item, array) ->
-  array.splice i, 1 for thing, i in array by -1 when thing is item
+  array.splice (array.indexOf item), 1 until item not in array
   null
 
 toggleClass = (element, className, condition) ->
   classList = element.className.split /\s+/
+  classList.shift() if classList[0] is ''
   contained = className in classList
 
   condition ?= !contained
