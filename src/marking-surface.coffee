@@ -206,7 +206,9 @@ class MarkingSurface extends BaseClass
     null
 
   reset: ->
-    @marks[0].destroy() until @marks.length is 0 # Tools destroy themselves with their marks.
+    @marks[0].destroy() until @marks.length is 0
+    # Tools destroy themselves with their marks.
+    # Tool controls destroy themselves with their tools.
 
   destroy: ->
     @reset()
@@ -223,8 +225,8 @@ class MarkingSurface extends BaseClass
     e = originalEvent.touches[0] if originalEvent? and 'touches' of originalEvent
 
     {left, top} = @offsetAtLastMousedown || @el.getBoundingClientRect()
-    x = e.pageX - left
-    y = e.pageY - top
+    x = e.pageX - scrollX - left
+    y = e.pageY - scrollY - top
 
     {x, y}
 

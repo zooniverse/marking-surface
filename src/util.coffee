@@ -3,8 +3,9 @@ removeFrom = (item, array) ->
   null
 
 toggleClass = (element, className, condition) ->
-  classList = element.className.split /\s+/
-  classList.shift() if classList[0] is ''
+  classList = element.className.match /\S+/g
+  classList ?= []
+
   contained = className in classList
 
   condition ?= !contained
