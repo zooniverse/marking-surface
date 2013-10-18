@@ -225,24 +225,24 @@ class MarkingSurface extends BaseClass
     e = originalEvent.touches[0] if originalEvent? and 'touches' of originalEvent
 
     {left, top} = @offsetAtLastMousedown || @el.getBoundingClientRect()
-    x = e.pageX - scrollX - left
-    y = e.pageY - scrollY - top
+    x = e.pageX - pageXOffset - left
+    y = e.pageY - pageYOffset - top
 
     {x, y}
 
-document.body.insertAdjacentHTML 'afterbegin', '''
-  <style id="marking-surface-default-style">
-    .marking-surface {
-      display: inline-block;
-      position: relative;
-    }
+MarkingSurface.defaultStyle = insertStyle 'marking-surface-default-style', '''
+  .marking-surface-style-container {
+    display: none;
+  }
 
-    .marking-surface > svg {
-      display: block;
-      height: 100%;
-      width: 100%;
-    }
-  </style>
+  .marking-surface {
+    display: inline-block;
+    position: relative;
+  }
+
+  .marking-surface > svg {
+    display: block;
+    height: 100%;
+    width: 100%;
+  }
 '''
-
-MarkingSurface.defaultStyle = document.getElementById 'marking-surface-default-style'

@@ -98,16 +98,12 @@ class ToolControls extends BaseClass
   render: ->
     # Reflect the state of the tool's mark.
 
-document.body.insertAdjacentHTML 'afterbegin', '''
-  <style id="marking-surface-tool-controls-default-style">
-    .marking-tool-controls {
-      position: absolute;
-    }
+ToolControls.defaultStyle = insertStyle 'marking-surface-tool-controls-default-style', '''
+  .marking-tool-controls {
+    position: absolute;
+  }
 
-    .marking-tool-controls.out-of-bounds {
-      display: none
-    }
-  </style>
+  .marking-tool-controls.out-of-bounds {
+    display: none
+  }
 '''
-
-ToolControls.defaultStyle = document.getElementById 'marking-surface-tool-controls-default-style'
