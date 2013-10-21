@@ -41,6 +41,7 @@ class MarkingSurface extends BaseClass
     @el.addEventListener 'keydown', @onKeyDown, false
 
     @svg ?= new SVG
+    @svgRoot ?= @svg.addShape 'g.svg-root'
     @el.appendChild @svg.el
 
     @marks ?= []
@@ -192,7 +193,7 @@ class MarkingSurface extends BaseClass
     JSON.stringify @marks
 
   addShape: ->
-    @svg.addShape arguments...
+    @svgRoot.addShape arguments...
 
   disable: (e) ->
     @disabled = true
