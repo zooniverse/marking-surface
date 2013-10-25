@@ -1,9 +1,7 @@
 class BaseClass
-  _events: null
-
   constructor: (params = {}) ->
-    @[property] = value for own property, value of params when property of @
     @_events = {}
+    @[property] = value for property, value of params
 
   on: (eventName, handler) ->
     @_events[eventName] ?= []
@@ -20,7 +18,7 @@ class BaseClass
       handlerList = @_events[eventName] || []
 
       if handler?
-        removeFrom handler, handlerList
+        handlerList.splice (handlerList.indexOf handler), 1
 
       else
         handlerList.splice 0

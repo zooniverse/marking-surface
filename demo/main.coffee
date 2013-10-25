@@ -1,6 +1,7 @@
 MarkingSurface = window.MarkingSurface
 {Tool, RectangleTool, EllipseTool, AxesTool, TranscriptionTool, DefaultToolControls} = MarkingSurface
 
+RectangleTool.Controls = DefaultToolControls
 EllipseTool.Controls = DefaultToolControls
 AxesTool.Controls = DefaultToolControls
 

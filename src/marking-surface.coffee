@@ -2,10 +2,9 @@ BACKSPACE = 8
 DELETE = 46
 TAB = 9
 
-class MarkingSurface extends BaseClass
+class MarkingSurface extends ElementBase
   tool: Tool
 
-  tagName: 'div'
   className: 'marking-surface'
   tabIndex: 0
 
@@ -14,36 +13,23 @@ class MarkingSurface extends BaseClass
   panX: 0.5
   panY: 0.5
 
-  disabled: false
-
   selection: null
-  offsetAtLastMousedown: null
 
   constructor: ->
     super
+    @tools = []
 
-    @el = document.querySelector @el if typeof @el is 'string'
-    @el ?= document.createElement @tagName
     @el.setAttribute 'tabindex', @tabIndex
 
-    toggleClass @el, MarkingSurface::className, true
-    toggleClass @el, @constructor::className, true unless @constructor::className is MarkingSurface.className
-    toggleClass @el, @className, true unless @className is @constructor::className
-
-    @el.addEventListener 'mousedown', @onStart, false
-    @el.addEventListener 'touchstart', @onTouchStart, false
-    @el.addEventListener 'mousemove', @onMouseMove, false
-    @el.addEventListener 'touchmove', @onTouchMove, false
-    @el.addEventListener 'keydown', @onKeyDown, false
+    @addEvent 'mousedown', @onStart
+    @addEvent 'touchstart', @onTouchStart
+    @addEvent 'mousemove', @onMouseMove
+    @addEvent 'touchmove', @onTouchMove
+    @addEvent 'keydown', @onKeyDown
 
     @svg = new SVG
     @svgRoot = @svg.addShape 'g.svg-root'
     @el.appendChild @svg.el
-
-    @marks ?= []
-    @tools ?= []
-
-    @disable() if @disabled
 
   zoom: (@zoomBy = 1) ->
     if @zoomBy < 1 + @zoomSnapTolerance
@@ -77,8 +63,8 @@ class MarkingSurface extends BaseClass
 
   onStart: (e) =>
     return if @disabled
-    return unless @tool?
     return if e.defaultPrevented
+    return unless @tool?
     return if e.target in @el.querySelectorAll ".#{ToolControls::className}"
     return if e.target in @el.querySelectorAll ".#{ToolControls::className} *"
 
@@ -100,6 +86,10 @@ class MarkingSurface extends BaseClass
 
     null
 
+  onTouchStart: (e) =>
+    @onStart e if e.touches.length is 1
+    null
+
   onDrag: (e) =>
     e.preventDefault()
     @selection.onInitialDrag arguments...
@@ -115,23 +105,17 @@ class MarkingSurface extends BaseClass
 
     null
 
-  onTouchStart: (e) =>
-    @onStart e if e.touches.length is 1
-    null
-
   onKeyDown: (e) =>
     return if @disabled
-    return if e.altKey or e.ctrlKey
     return unless document.activeElement is @el
+    return if e.altKey or e.ctrlKey
 
-    switch e.which
-      when BACKSPACE, DELETE
-        e.preventDefault()
-        @deleteSelection()
+    if e.which in [BACKSPACE, DELETE, TAB]
+      e.preventDefault()
 
-      when TAB
-        e.preventDefault()
-        @tabSelect e.shiftKey
+      switch e.which
+        when BACKSPACE, DELETE then @deleteSelection()
+        when TAB then @tabSelectNext e.shiftKey
 
     null
 
@@ -146,37 +130,38 @@ class MarkingSurface extends BaseClass
       @selection?.deselect()
 
       @selection = tool
-      removeFrom @selection, @tools
+
+      @tools.splice (@tools.indexOf @selection), 1
       @tools.push @selection
 
       @trigger 'select-tool', [@selection]
 
     tool.on 'deselect', =>
       @selection = null
+      @trigger 'deselect-tool', [@selection]
 
     tool.on 'destroy', =>
-      removeFrom tool, @tools
+      @tools.splice (@tools.indexOf tool), 1
       @trigger 'destroy-tool', [tool]
 
     @tools.push tool
     @trigger 'create-tool', [tool]
 
     tool.mark.on 'change', =>
+      @trigger 'change-mark', [tool.mark]
       @trigger 'change', [tool.mark]
 
     tool.mark.on 'destroy', =>
-      removeFrom tool.mark, @marks
       @trigger 'destroy-mark', [tool.mark]
       @trigger 'change', [tool.mark]
 
-    @marks.push tool.mark
     @trigger 'create-mark', [tool.mark]
 
-    @trigger 'change'
+    @trigger 'change', [tool.mark]
 
     tool
 
-  tabSelect: (reverse) ->
+  tabSelectNext: (reverse) ->
     if reverse
       @tools[0]?.select()
     else
@@ -187,56 +172,35 @@ class MarkingSurface extends BaseClass
         next.select()
 
         if current?
-          removeFrom current, @tools
+          @tools.splice (@tools.indexOf current), 1
           @tools.unshift current
 
-    null
-
-  deleteSelection: ->
-    @selection?.mark.destroy()
     null
 
   addShape: ->
     @svgRoot.addShape arguments...
 
-  disable: (e) ->
-    @disabled = true
-    @selection?.deselect()
-    @el.setAttribute 'disabled', 'disabled'
-    null
-
-  enable: (e) ->
-    @disabled = false
-    @el.removeAttribute 'disabled'
+  deleteSelection: ->
+    @selection?.mark.destroy()
     null
 
   getValue: ->
-    JSON.stringify @marks
+    JSON.stringify (tool.mark for tool in @tools)
 
-  reset: ->
-    @marks[0].destroy() until @marks.length is 0
-    # Tools destroy themselves with their marks.
-    # Tool controls destroy themselves with their tools.
-
-  destroy: ->
-    @reset()
-    @el.removeEventListener 'mousedown', @onStart, false
-    @el.removeEventListener 'mousemove', @onMouseMove, false
-    @el.removeEventListener 'touchstart', @onTouchStart, false
-    @el.removeEventListener 'touchmove', @onTouchMove, false
-    @el.removeEventListener 'keydown', @onKeyDown, false
+  disable: ->
+    @selection?.deselect()
     super
     null
 
-  pointerOffset: (e) ->
-    originalEvent = e.originalEvent if 'originalEvent' of e
-    e = originalEvent.touches[0] if originalEvent? and 'touches' of originalEvent
+  reset: ->
+    # Tools destroy themselves with their marks.
+    # Tool controls destroy themselves with their tools.
+    @tools[0].mark.destroy() until @tools.length is 0
 
-    {left, top} = @el.getBoundingClientRect()
-    x = e.pageX - pageXOffset - left
-    y = e.pageY - pageYOffset - top
-
-    {x, y}
+  destroy: ->
+    @reset()
+    super
+    null
 
 MarkingSurface.defaultStyle = insertStyle 'marking-surface-default-style', '''
   .marking-surface {

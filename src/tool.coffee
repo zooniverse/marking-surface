@@ -18,22 +18,21 @@ class Tool extends BaseClass
   deselectedOpacity: 0.5
   renderFps: 30
 
-  surface: null
-  mark: null
-  controls: null
-  root: null
-  group: null
-
   drags: 0
   renderTimeout: NaN
 
   constructor: ->
     super
 
-    @mark ?= new @constructor.Mark
+    @mark = new @constructor.Mark
 
-    @mark.on 'change', @onMarkChange
-    @mark.on 'destroy', @onMarkDestory
+    @mark.on 'change', =>
+      return unless isNaN @renderTimeout
+      @render arguments...
+      @renderTimeout = setTimeout (=> @render arguments; @renderTimeout = NaN), 1000 / @renderFps
+
+    @mark.on 'destroy', =>
+      @destroy arguments...
 
     @controls = new @constructor.Controls tool: @
 
@@ -160,15 +159,6 @@ class Tool extends BaseClass
 
       when 'mouseout'
         @surface.el.style.cursor = ''
-
-  onMarkChange: =>
-    return unless isNaN @renderTimeout
-    @render arguments...
-    @renderTimeout = setTimeout (=> @render arguments; @renderTimeout = NaN), 1000 / @renderFps
-
-  onMarkDestory: =>
-    @destroy arguments...
-    null
 
   select: ->
     @root.attr 'opacity', 1

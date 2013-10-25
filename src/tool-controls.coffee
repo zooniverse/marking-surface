@@ -1,21 +1,16 @@
-class ToolControls extends BaseClass
+class ToolControls extends ElementBase
   tool: null
 
-  tagName: 'div'
   className: 'marking-tool-controls'
-  template: ''
 
   isOpen: false
 
   constructor: ->
     super
 
-    @el = document.createElement @tagName
-    toggleClass @el, @constructor::className, true
-    toggleClass @el, @className, true
     @el.innerHTML = @template
 
-    @el.addEventListener 'mousedown', @onMouseDown, false
+    @addEvent 'mousedown', @onMouseDown
 
     @tool.on 'initial-release', @onToolInitialRelease
     @tool.on 'select', @onToolSelect
@@ -26,7 +21,7 @@ class ToolControls extends BaseClass
     @tool.surface.el.appendChild @el
 
   onToolInitialRelease: =>
-    toggleClass @el, 'tool-complete', @tool.isComplete()
+    @toggleClass 'tool-complete', @tool.isComplete()
     null
 
   onMouseDown: =>
@@ -35,7 +30,7 @@ class ToolControls extends BaseClass
     null
 
   onToolSelect: =>
-    toggleClass @el, 'tool-selected', true
+    @toggleClass 'tool-selected', true
     @el.parentNode.appendChild @el
     @open() unless @isOpen
     @isOpen = true
@@ -46,7 +41,7 @@ class ToolControls extends BaseClass
     null
 
   onToolDeselect: =>
-    toggleClass @el, 'tool-selected', false
+    @toggleClass 'tool-selected', false
     @close() if @isOpen
     @isOpen = false
     null
@@ -56,7 +51,6 @@ class ToolControls extends BaseClass
     null
 
   destroy: ->
-    @el.removeEventListener 'mousedown', @onMouseDown, false
     @el.parentNode.removeChild @el
     super
     null
@@ -78,14 +72,14 @@ class ToolControls extends BaseClass
     opensRight = x < width / 2
     opensDown = y < height / 2
 
-    toggleClass @el, 'opens-right', opensRight
-    toggleClass @el, 'opens-left', not opensRight
-    toggleClass @el, 'opens-down', opensDown
-    toggleClass @el, 'opens-up', not opensDown
+    @toggleClass 'opens-right', opensRight
+    @toggleClass 'opens-left', not opensRight
+    @toggleClass 'opens-down', opensDown
+    @toggleClass 'opens-up', not opensDown
 
     outOfBounds = left < 0 or left > width or top < 0 or top > height
 
-    toggleClass @el, 'out-of-bounds', outOfBounds
+    @toggleClass 'out-of-bounds', outOfBounds
 
     null
 
