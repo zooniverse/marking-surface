@@ -64,6 +64,26 @@ class SVG
 
     null
 
+  # Sigh, basically copied and pasted.
+  # Can't borrow ElementBase::toggleClass because of "baseVal".
+  toggleClass: (className, condition) ->
+    classList = @el.className.baseVal.match /\S+/g
+    classList ?= []
+
+    contained = className in classList
+
+    condition ?= !contained
+    condition = !!condition
+
+    if not contained and condition is true
+      classList.push className
+
+    if contained and condition is false
+      classList.splice (classList.indexOf className), 1
+
+    @el.className.baseVal = classList.join ' '
+    null
+
   filter: (name) ->
     @attr 'filter', if name?
       "url(#marking-surface-filter-#{name})"

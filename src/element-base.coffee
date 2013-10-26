@@ -14,29 +14,6 @@ class ElementBase extends BaseClass
 
     @disable() if @disabled
 
-  enable: (e) ->
-    @disabled = false
-    @el.removeAttribute 'disabled'
-    null
-
-  disable: (e) ->
-    @disabled = true
-    @el.setAttribute 'disabled', 'disabled'
-    null
-
-  addEvent: (eventName, handler) ->
-    @el.addEventListener eventName, handler, false
-    eventList = [eventName, handler]
-    @_eventListeners.push eventList
-    eventList
-
-  removeEvent: (eventName, handler) ->
-    @el.removeEventListener eventName, handler
-
-  destroy: ->
-    @removeEvent @_eventListeners.pop()... until @_eventListeners.length is 0
-    super
-
   toggleClass: (className, condition) ->
     classList = @el.className.match /\S+/g
     classList ?= []
@@ -55,6 +32,31 @@ class ElementBase extends BaseClass
     @el.className = classList.join ' '
     null
 
+  enable: (e) ->
+    @disabled = false
+    @el.removeAttribute 'disabled'
+    null
+
+  disable: (e) ->
+    @disabled = true
+    @el.setAttribute 'disabled', 'disabled'
+    null
+
+  addEvent: (eventName, handler) ->
+    @el.addEventListener eventName, handler, false
+    eventList = [eventName, handler]
+    @_eventListeners.push eventList
+    eventList
+
+  removeEvent: (eventName, handler) ->
+    for [listedEventName, listedHandler], i in @_eventListeners
+      if listedEventName is eventName and listedHandler is handler
+        indexInList = i
+        break
+
+    @el.removeEventListener eventName, handler
+    @_eventListeners.splice indexInList, 1
+
   pointerOffset: (e) ->
     originalEvent = e.originalEvent if 'originalEvent' of e
     e = originalEvent.touches[0] if originalEvent? and 'touches' of originalEvent
@@ -64,3 +66,7 @@ class ElementBase extends BaseClass
     y = e.pageY - pageYOffset - top
 
     {x, y}
+
+  destroy: ->
+    @removeEvent @_eventListeners[0]... until @_eventListeners.length is 0
+    super

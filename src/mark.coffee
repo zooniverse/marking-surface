@@ -6,9 +6,6 @@ class Mark extends BaseClass
       setValue = if setter? then setter.call @, value else value
       @[property] = setValue
 
-      # Specific changes will be triggered.
-      @trigger "change-property", [setValue]
-
     else
       properties = property
       @set property, value, fromMany: true for property, value of properties

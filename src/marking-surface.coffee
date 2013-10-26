@@ -31,6 +31,10 @@ class MarkingSurface extends ElementBase
     @svgRoot = @svg.addShape 'g.svg-root'
     @el.appendChild @svg.el
 
+    @toolControlsContainer = document.createElement 'div'
+    @toolControlsContainer.className = 'marking-surface-tool-controls-container'
+    @el.appendChild @toolControlsContainer
+
   zoom: (@zoomBy = 1) ->
     if @zoomBy < 1 + @zoomSnapTolerance
       @zoomBy = 1
@@ -196,6 +200,7 @@ class MarkingSurface extends ElementBase
     # Tools destroy themselves with their marks.
     # Tool controls destroy themselves with their tools.
     @tools[0].mark.destroy() until @tools.length is 0
+    null
 
   destroy: ->
     @reset()

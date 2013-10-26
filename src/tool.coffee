@@ -15,7 +15,6 @@ class Tool extends BaseClass
   @Controls: ToolControls
 
   cursors: null
-  deselectedOpacity: 0.5
   renderFps: 30
 
   drags: 0
@@ -161,13 +160,14 @@ class Tool extends BaseClass
         @surface.el.style.cursor = ''
 
   select: ->
-    @root.attr 'opacity', 1
+    return if @surface.disabled
+    @root.toggleClass 'selected', true
     @root.toFront()
     @trigger 'select', arguments
     null
 
   deselect: ->
-    @root.attr 'opacity', @deselectedOpacity
+    @root.toggleClass 'selected', false
     @trigger 'deselect', arguments
     null
 
@@ -204,3 +204,13 @@ class Tool extends BaseClass
     # Reflect the state of the mark, e.g.:
     # @mainHandle.attr cx: @mark.x, cy: @mark.y
     # @controls.moveTo @mark.x, @mark.y
+
+ToolControls.defaultStyle = insertStyle 'marking-surface-tool-default-style', '''
+  .marking-tool-root {
+    opacity: 0.5;
+  }
+
+  .marking-tool-root.selected {
+    opacity: 1;
+  }
+'''

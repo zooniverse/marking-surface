@@ -5,6 +5,6 @@ MarkingSurface.Mark = Mark
 MarkingSurface.ToolControls = ToolControls
 MarkingSurface.Tool = Tool
 
-window.MarkingSurface = MarkingSurface
+window?.MarkingSurface = MarkingSurface
 module?.exports = MarkingSurface
 define? -> MarkingSurface

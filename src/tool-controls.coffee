@@ -1,59 +1,43 @@
 class ToolControls extends ElementBase
-  tool: null
-
   className: 'marking-tool-controls'
-
-  isOpen: false
+  template: ''
 
   constructor: ->
     super
 
-    @el.innerHTML = @template
+    @el.insertAdjacentHTML 'beforeEnd', @template
+    @toFront()
 
     @addEvent 'mousedown', @onMouseDown
 
-    @tool.on 'initial-release', @onToolInitialRelease
     @tool.on 'select', @onToolSelect
-    @tool.mark.on 'change', @onMarkChange
     @tool.on 'deselect', @onToolDeselect
     @tool.on 'destroy', @onToolDestroy
-
-    @tool.surface.el.appendChild @el
-
-  onToolInitialRelease: =>
-    @toggleClass 'tool-complete', @tool.isComplete()
-    null
+    @tool.mark.on 'change', @onMarkChange
 
   onMouseDown: =>
-    return if @tool.surface.disabled
     @tool.select()
     null
 
   onToolSelect: =>
     @toggleClass 'tool-selected', true
-    @el.parentNode.appendChild @el
-    @open() unless @isOpen
-    @isOpen = true
-    null
-
-  onMarkChange: =>
-    @render arguments...
+    @toFront()
     null
 
   onToolDeselect: =>
     @toggleClass 'tool-selected', false
-    @close() if @isOpen
-    @isOpen = false
     null
 
   onToolDestroy: =>
     @destroy()
     null
 
-  destroy: ->
-    @el.parentNode.removeChild @el
-    super
+  onMarkChange: =>
+    @render arguments...
     null
+
+  toFront: ->
+    @tool.surface.toolControlsContainer.appendChild @el
 
   moveTo: (x, y) ->
     {zoomBy, panX, panY} = @tool.surface
@@ -83,18 +67,23 @@ class ToolControls extends ElementBase
 
     null
 
-  open: ->
-    # When the tool is selected
-
-  close: ->
-    # When the tool is deselected
-
   render: ->
-    # Reflect the state of the tool's mark.
+    @toggleClass 'tool-complete', @tool.isComplete()
+    # Override to reflect the state of the tool's mark.
+
+  destroy: ->
+    @el.parentNode.removeChild @el
+    super
+    null
 
 ToolControls.defaultStyle = insertStyle 'marking-surface-tool-controls-default-style', '''
   .marking-tool-controls {
+    opacity: 0.75;
     position: absolute;
+  }
+
+  .marking-tool-controls.tool-selected {
+    opacity: 1;
   }
 
   .marking-tool-controls.out-of-bounds {
