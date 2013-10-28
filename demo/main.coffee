@@ -1,5 +1,5 @@
 MarkingSurface = window.MarkingSurface
-{Tool, RectangleTool, EllipseTool, AxesTool, TranscriptionTool, DefaultToolControls} = MarkingSurface
+{Tool, RectangleTool, EllipseTool, AxesTool, TranscriptionTool, MagnifierPointTool, DefaultToolControls} = MarkingSurface
 
 RectangleTool.Controls = DefaultToolControls
 EllipseTool.Controls = DefaultToolControls
@@ -56,6 +56,7 @@ TOOLS =
   ellipse: EllipseTool
   axes: AxesTool
   transcription: TranscriptionTool
+  magnifier: MagnifierPointTool
 
 DEMO_IMAGE = 'http://www.seafloorexplorer.org/images/field-guide/fish.jpg'
 
@@ -67,7 +68,7 @@ ms = new MarkingSurface
 getImageSize DEMO_IMAGE, (width, height) ->
   ms.el.style.width = "#{width}px"
   ms.el.style.height = "#{height}px"
-  ms.addShape 'image', 'xlink:href': DEMO_IMAGE, width: width, height: height
+  ms.addShape 'image', id: MagnifierPointTool::imageId, 'xlink:href': DEMO_IMAGE, width: width, height: height
 
 container = $('#container')
 container.append ms.el
