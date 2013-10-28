@@ -220,4 +220,10 @@ MarkingSurface.defaultStyle = insertStyle 'marking-surface-default-style', '''
     height: 100%;
     width: 100%;
   }
+
+  .marking-surface-tool-controls-container {
+    left: 0;
+    position: absolute;
+    top: 0;
+  }
 '''
