@@ -33,6 +33,7 @@ class ToolControls extends ElementBase
     null
 
   onMarkChange: =>
+    @toggleClass 'tool-complete', @tool.isComplete()
     @render arguments...
     null
 
@@ -68,7 +69,6 @@ class ToolControls extends ElementBase
     null
 
   render: ->
-    @toggleClass 'tool-complete', @tool.isComplete()
     # Override to reflect the state of the tool's mark.
 
   destroy: ->
