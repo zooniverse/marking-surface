@@ -18,6 +18,7 @@ class MarkingSurface extends ElementBase
   constructor: ->
     super
     @tools = []
+    @marks = []
 
     @el.setAttribute 'tabindex', @tabIndex
 
@@ -159,6 +160,7 @@ class MarkingSurface extends ElementBase
       @trigger 'destroy-mark', [tool.mark]
       @trigger 'change', [tool.mark]
 
+    @marks.push tool.mark
     @trigger 'create-mark', [tool.mark]
 
     @trigger 'change', [tool.mark]
@@ -189,7 +191,7 @@ class MarkingSurface extends ElementBase
     null
 
   getValue: ->
-    JSON.stringify (tool.mark for tool in @tools)
+    JSON.stringify @marks
 
   disable: ->
     @selection?.deselect()
@@ -199,7 +201,7 @@ class MarkingSurface extends ElementBase
   reset: ->
     # Tools destroy themselves with their marks.
     # Tool controls destroy themselves with their tools.
-    @tools[0].mark.destroy() until @tools.length is 0
+    @marks[0].destroy() until @marks.length is 0
     null
 
   destroy: ->
