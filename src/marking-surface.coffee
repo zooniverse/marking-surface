@@ -157,6 +157,7 @@ class MarkingSurface extends ElementBase
       @trigger 'change', [tool.mark]
 
     tool.mark.on 'destroy', =>
+      @marks.splice (@marks.indexOf tool.mark), 1
       @trigger 'destroy-mark', [tool.mark]
       @trigger 'change', [tool.mark]
 
