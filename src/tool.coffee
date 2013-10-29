@@ -161,6 +161,7 @@ class Tool extends BaseClass
 
   select: ->
     return if @surface.disabled
+    return if @surface.selection is @
     @root.toggleClass 'selected', true
     @root.toFront()
     @trigger 'select', arguments
