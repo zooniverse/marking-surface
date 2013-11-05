@@ -3,7 +3,6 @@
   "version": "0.4.5",
   "main": "./lib/marking-surface.js",
   "devDependencies": {
-    "bower": "~1.2.3",
     "coffee-script": "~1.6.3",
     "easy-exec": "~0.0.1",
     "silver-server": "~0.1.1"
