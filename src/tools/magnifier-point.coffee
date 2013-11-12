@@ -11,6 +11,8 @@ class MagnifierPointTool extends Tool
   cursors:
     disc: '*grab'
 
+  startOffset: null
+
   initialize: ->
     @href ||= @surface.el.querySelector('image').href.baseVal
 
@@ -23,15 +25,24 @@ class MagnifierPointTool extends Tool
     @redraw()
 
   onInitialClick: ->
-    @onInitialDrag arguments...
+    @['on *start disc'] arguments...
 
   onInitialDrag: ->
     @['on *drag disc'] arguments...
 
-  'on *drag disc': (e) ->
-    @mark.set @pointerOffset e
+  'on *start disc': (e) ->
+    offset = @pointerOffset e
+    @startOffset =
+      x: (offset.x - @mark.x) || 0
+      y: (offset.y - @mark.y) || 0
 
-  @::onInitialClick = @::onInitialDrag
+    @['on *drag disc'] arguments...
+
+  'on *drag disc': (e) ->
+    {x, y} = @pointerOffset e
+    x -= @startOffset.x
+    y -= @startOffset.y
+    @mark.set {x, y}
 
   redraw: ->
     @clipCircle.attr 'r', @radius
@@ -54,14 +65,18 @@ class MagnifierPointTool extends Tool
     @render()
 
   render: ->
-    @group.attr 'transform', "translate(#{@mark.x}, #{@mark.y})"
-    pctX = @mark.x / @surface.el.clientWidth
-    pctY = @mark.y / @surface.el.clientHeight
-    width = @image.attr 'width'
-    height = @image.attr 'height'
-    @clipCircle.attr 'transform', "translate(#{width * pctX}, #{height * pctY})"
-    @image.attr 'transform', "translate(#{width * -pctX}, #{height * -pctY})"
-    @controls.moveTo @mark.x, @mark.y
+    if @mark.x? and @mark.y?
+      @group.attr 'transform', "translate(#{@mark.x}, #{@mark.y})"
+      @controls.moveTo @mark.x, @mark.y
+
+      width = @image.attr 'width'
+      height = @image.attr 'height'
+
+      if width? and height?
+        pctX = @mark.x / @surface.el.clientWidth
+        pctY = @mark.y / @surface.el.clientHeight
+        @clipCircle.attr 'transform', "translate(#{width * pctX}, #{height * pctY})"
+        @image.attr 'transform', "translate(#{width * -pctX}, #{height * -pctY})"
 
 window?.MarkingSurface.MagnifierPointTool = MagnifierPointTool
 module?.exports = MagnifierPointTool
