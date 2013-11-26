@@ -34,8 +34,8 @@ class TranscriptionTool extends RectangleTool
     super
     @mark.set 'content', ''
 
-  positionControls: ->
-    @controls.moveTo @mark.left + (@mark.width / 2),  @mark.top + @mark.height, true
+  getControlsPosition: ->
+    [@mark.left + (@mark.width / 2),  @mark.top + @mark.height]
 
 window?.MarkingSurface.TranscriptionTool = TranscriptionTool
 module?.exports = TranscriptionTool

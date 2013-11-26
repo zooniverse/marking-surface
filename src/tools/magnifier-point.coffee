@@ -67,7 +67,7 @@ class MagnifierPointTool extends Tool
   render: ->
     if @mark.x? and @mark.y?
       @group.attr 'transform', "translate(#{@mark.x}, #{@mark.y})"
-      @controls.moveTo @mark.x, @mark.y
+      @controls.moveTo @getControlsPosition()...
 
       width = @image.attr 'width'
       height = @image.attr 'height'
@@ -77,6 +77,9 @@ class MagnifierPointTool extends Tool
         pctY = @mark.y / @surface.el.clientHeight
         @clipCircle.attr 'transform', "translate(#{width * pctX}, #{height * pctY})"
         @image.attr 'transform', "translate(#{width * -pctX}, #{height * -pctY})"
+
+  getControlsPosition: ->
+    [@mark.x, @mark.y]
 
 window?.MarkingSurface.MagnifierPointTool = MagnifierPointTool
 module?.exports = MagnifierPointTool

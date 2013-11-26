@@ -80,7 +80,10 @@ class EllipseTool extends Tool
     @outside.attr rx: @mark.rx, ry: @mark.ry
     @xHandle.attr 'cx', @mark.rx
     @yHandle.attr 'cy', -@mark.ry
-    @controls.moveTo @mark.center...
+    @controls.moveTo @getControlsPosition()...
+
+  getControlsPosition: ->
+    @mark.center
 
   getAngle: (x1, y1, x2, y2) ->
     deltaX = x2 - x1

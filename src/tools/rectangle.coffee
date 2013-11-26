@@ -148,10 +148,10 @@ class RectangleTool extends Tool
     @bottomRightHandle.attr x: @mark.left + (@mark.width - @handleSize), y: @mark.top + (@mark.height - @handleSize)
     @bottomLeftHandle.attr x: @mark.left, y: @mark.top + (@mark.height - @handleSize)
 
-    @positionControls()
+    @controls.moveTo @getControlsPosition()...
 
-  positionControls: ->
-    @controls.moveTo @mark.left + @mark.width, @mark.top, true
+  getControlsPosition: ->
+    [@mark.left + @mark.width, @mark.top]
 
 window?.MarkingSurface.RectangleTool = RectangleTool
 module?.exports = RectangleTool
