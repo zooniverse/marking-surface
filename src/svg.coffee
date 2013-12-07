@@ -101,7 +101,7 @@ class SVG
     null
 
   remove: ->
-    @el.parentNode.removeChild @el
+    @el.parentNode?.removeChild @el
     null
 
 SVG.filtersContainer = new SVG
