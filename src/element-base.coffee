@@ -48,6 +48,11 @@ class ElementBase extends BaseClass
     @_eventListeners.push eventList
     eventList
 
+  triggerEvent: (eventName, detail) ->
+    e = document.createEvent 'CustomEvent'
+    e.initCustomEvent eventName, true, true, detail
+    @el.dispatchEvent e
+
   removeEvent: (eventName, handler) ->
     for [listedEventName, listedHandler], i in @_eventListeners
       if listedEventName is eventName and listedHandler is handler

@@ -82,6 +82,7 @@ class MarkingSurface extends ElementBase
 
     tool.select()
     tool.onInitialClick e
+    @triggerEvent 'tool-initial-click', tool
 
     dragEvent = if e.type is 'mousedown' then 'mousemove' else 'touchmove'
     document.addEventListener dragEvent, @onDrag, false
@@ -98,11 +99,13 @@ class MarkingSurface extends ElementBase
   onDrag: (e) =>
     e.preventDefault()
     @selection.onInitialDrag arguments...
+    @triggerEvent 'tool-initial-drag', @selection
     null
 
   onRelease: (e) =>
     e.preventDefault()
     @selection.onInitialRelease arguments...
+    @triggerEvent 'tool-initial-release', @selection
 
     dragEvent = if e.type is 'mouseup' then 'mousemove' else 'touchmove'
     document.removeEventListener dragEvent, @onDrag, false
@@ -155,14 +158,17 @@ class MarkingSurface extends ElementBase
     tool.mark.on 'change', =>
       @trigger 'change-mark', [tool.mark]
       @trigger 'change', [tool.mark]
+      @triggerEvent 'change-mark', tool.mark
 
     tool.mark.on 'destroy', =>
       @marks.splice (@marks.indexOf tool.mark), 1
       @trigger 'destroy-mark', [tool.mark]
       @trigger 'change', [tool.mark]
+      @triggerEvent 'destroy-mark', tool.mark
 
     @marks.push tool.mark
     @trigger 'create-mark', [tool.mark]
+    @triggerEvent 'create-mark', tool.mark
 
     @trigger 'change', [tool.mark]
 
