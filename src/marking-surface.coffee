@@ -122,12 +122,14 @@ class MarkingSurface extends ElementBase
     null
 
   onFocus: (e) =>
-    index = if shiftIsDown
-      @tools.length - 1
-    else
-      0
+    setTimeout =>
+      unless @tools[@selection]?
+        index = if shiftIsDown
+          @tools.length - 1
+        else
+          0
 
-    @tools[index]?.select()
+        @tools[index]?.select()
 
   onKeyDown: (e) =>
     return if @disabled
