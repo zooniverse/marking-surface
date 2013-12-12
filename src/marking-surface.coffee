@@ -1,6 +1,11 @@
+SHIFT = 16
 BACKSPACE = 8
 DELETE = 46
 TAB = 9
+
+shiftIsDown = false
+addEventListener 'keydown', (({which}) -> if which is SHIFT then shiftIsDown = true), false
+addEventListener 'keyup', (({which}) -> if which is SHIFT then shiftIsDown = false), false
 
 class MarkingSurface extends ElementBase
   tool: Tool
@@ -13,7 +18,7 @@ class MarkingSurface extends ElementBase
   panX: 0.5
   panY: 0.5
 
-  selection: null
+  selection: -1
 
   constructor: ->
     super
@@ -27,6 +32,8 @@ class MarkingSurface extends ElementBase
     @addEvent 'mousemove', @onMouseMove
     @addEvent 'touchmove', @onTouchMove
     @addEvent 'keydown', @onKeyDown
+    @addEvent 'focus', @onFocus
+    @addEvent 'blur', @onBlur
 
     @svg = new SVG
     @svgRoot = @svg.addShape 'g.svg-root'
@@ -75,12 +82,13 @@ class MarkingSurface extends ElementBase
 
     e.preventDefault()
 
-    tool = if not @selection? or @selection?.isComplete()
+    tool = if not @tools[@selection]? or @tools[@selection]?.isComplete()
       @createTool()
     else
-      @selection
+      @tools[@selection]
 
     tool.select()
+
     tool.onInitialClick e
     @triggerEvent 'tool-initial-click', tool
 
@@ -98,14 +106,14 @@ class MarkingSurface extends ElementBase
 
   onDrag: (e) =>
     e.preventDefault()
-    @selection.onInitialDrag arguments...
-    @triggerEvent 'tool-initial-drag', @selection
+    @tools[@selection].onInitialDrag arguments...
+    @triggerEvent 'tool-initial-drag', @tools[@selection]
     null
 
   onRelease: (e) =>
     e.preventDefault()
-    @selection.onInitialRelease arguments...
-    @triggerEvent 'tool-initial-release', @selection
+    @tools[@selection].onInitialRelease arguments...
+    @triggerEvent 'tool-initial-release', @tools[@selection]
 
     dragEvent = if e.type is 'mouseup' then 'mousemove' else 'touchmove'
     document.removeEventListener dragEvent, @onDrag, false
@@ -113,19 +121,37 @@ class MarkingSurface extends ElementBase
 
     null
 
+  onFocus: (e) =>
+    index = if shiftIsDown
+      @tools.length - 1
+    else
+      0
+
+    @tools[index]?.select()
+
   onKeyDown: (e) =>
     return if @disabled
     return unless document.activeElement is @el
     return if e.altKey or e.ctrlKey
 
-    if e.which in [BACKSPACE, DELETE, TAB]
-      e.preventDefault()
+    switch e.which
+      when BACKSPACE, DELETE
+        e.preventDefault()
+        @tools[@selection]?.mark.destroy()
 
-      switch e.which
-        when BACKSPACE, DELETE then @deleteSelection()
-        when TAB then @tabSelectNext e.shiftKey
+      when TAB
+        if shiftIsDown
+          if @selection > 0
+            e.preventDefault()
+            @tools[@selection - 1].select()
+        else if @selection isnt @tools.length - 1
+            e.preventDefault()
+            @tools[@selection + 1].select()
 
     null
+
+  onBlur: =>
+    @tools[@selection]?.deselect()
 
   createTool: ->
     tool = new @tool surface: @
@@ -133,20 +159,17 @@ class MarkingSurface extends ElementBase
     tool.on 'select', =>
       @el.focus()
 
-      return if @selection is tool
+      return if @tools[@selection] is tool
 
-      @selection?.deselect()
+      @tools[@selection]?.deselect()
 
-      @selection = tool
+      @selection = @tools.indexOf tool
 
-      @tools.splice (@tools.indexOf @selection), 1
-      @tools.push @selection
-
-      @trigger 'select-tool', [@selection]
+      @trigger 'select-tool', [tool]
 
     tool.on 'deselect', =>
-      @selection = null
-      @trigger 'deselect-tool', [@selection]
+      @selection = -1
+      @trigger 'deselect-tool', [tool]
 
     tool.on 'destroy', =>
       @tools.splice (@tools.indexOf tool), 1
@@ -174,34 +197,14 @@ class MarkingSurface extends ElementBase
 
     tool
 
-  tabSelectNext: (reverse) ->
-    if reverse
-      @tools[0]?.select()
-    else
-      current = @selection
-      next = @tools[Math.max 0, @tools.length - 2]
-
-      if next?
-        next.select()
-
-        if current?
-          @tools.splice (@tools.indexOf current), 1
-          @tools.unshift current
-
-    null
-
   addShape: ->
     @svgRoot.addShape arguments...
-
-  deleteSelection: ->
-    @selection?.mark.destroy()
-    null
 
   getValue: ->
     JSON.stringify @marks
 
   disable: ->
-    @selection?.deselect()
+    @tools[@selection]?.deselect()
     super
     null
 
