@@ -109,9 +109,7 @@ mirrorContainer = $('#mirror-container')
 mirrorContainer.append mirror.el
 
 ms.on 'create-mark', (mark) ->
-  console.log mark, ms.tool
   mirroredTool = new ms.tool
     surface: mirror
     mark: mark
   mirror.addTool mirroredTool
-  # mirroredTool.render()
