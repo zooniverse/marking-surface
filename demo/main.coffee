@@ -95,3 +95,23 @@ $('input[name="tool"]').on 'change', ({target}) ->
   ms.tool = TOOLS[$(target).val()]
 
 window.ms = ms
+
+mirror = new MarkingSurface
+  width: 640
+  height: 480
+
+getImageSize DEMO_IMAGE, (width, height) ->
+  mirror.el.style.width = "#{width}px"
+  mirror.el.style.height = "#{height}px"
+  mirror.addShape 'image', id: MagnifierPointTool::imageId, 'xlink:href': DEMO_IMAGE, width: width, height: height
+
+mirrorContainer = $('#mirror-container')
+mirrorContainer.append mirror.el
+
+ms.on 'create-mark', (mark) ->
+  console.log mark, ms.tool
+  mirroredTool = new ms.tool
+    surface: mirror
+    mark: mark
+  mirror.addTool mirroredTool
+  # mirroredTool.render()

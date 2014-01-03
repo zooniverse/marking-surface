@@ -76,7 +76,7 @@ class MarkingSurface extends ElementBase
     e.preventDefault()
 
     tool = if not @selection? or @selection?.isComplete()
-      @createTool()
+      @addTool()
     else
       @selection
 
@@ -127,8 +127,8 @@ class MarkingSurface extends ElementBase
 
     null
 
-  createTool: ->
-    tool = new @tool surface: @
+  addTool: (tool) ->
+    tool ?= new @tool surface: @
 
     tool.on 'select', =>
       @el.focus()

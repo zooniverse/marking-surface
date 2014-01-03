@@ -23,7 +23,7 @@ class Tool extends BaseClass
   constructor: ->
     super
 
-    @mark = new @constructor.Mark
+    @mark ?= new @constructor.Mark
 
     @mark.on 'change', =>
       return unless isNaN @renderTimeout

@@ -38,7 +38,7 @@ class ToolControls extends ElementBase
     null
 
   toFront: ->
-    @tool.surface.toolControlsContainer.appendChild @el
+    @tool.surface?.toolControlsContainer.appendChild @el
 
   moveTo: (x, y) ->
     {zoomBy, panX, panY} = @tool.surface
