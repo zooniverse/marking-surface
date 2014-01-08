@@ -63,8 +63,7 @@ class ElementBase extends BaseClass
     @_eventListeners.splice indexInList, 1
 
   pointerOffset: (e) ->
-    originalEvent = e.originalEvent if 'originalEvent' of e
-    e = originalEvent.touches[0] if originalEvent? and 'touches' of originalEvent
+    e = e.touches[0] if 'touches' of e
 
     {left, top} = @el.getBoundingClientRect()
     x = e.pageX - pageXOffset - left
