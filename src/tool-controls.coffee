@@ -20,8 +20,9 @@ class ToolControls extends ElementBase
     null
 
   onToolSelect: =>
-    @toggleClass 'tool-selected', true
     @toFront()
+    throwaway = @el.offsetWidth # Force reflow
+    @toggleClass 'tool-selected', true
     null
 
   onToolDeselect: =>
