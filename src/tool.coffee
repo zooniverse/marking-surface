@@ -23,7 +23,10 @@ class Tool extends BaseClass
   constructor: ->
     super
 
-    @mark ?= new @constructor.Mark
+    unless @mark?
+      @mark = new @constructor.Mark
+      @surface?.trigger 'create-mark', [@mark]
+      @surface?.triggerEvent 'create-mark', @mark
 
     @mark.on 'change', =>
       return unless isNaN @renderTimeout

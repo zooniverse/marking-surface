@@ -167,8 +167,6 @@ class MarkingSurface extends ElementBase
       @triggerEvent 'destroy-mark', tool.mark
 
     @marks.push tool.mark
-    @trigger 'create-mark', [tool.mark]
-    @triggerEvent 'create-mark', tool.mark
 
     @trigger 'change', [tool.mark]
 
