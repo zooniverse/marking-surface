@@ -47,6 +47,11 @@ class MagnifierPointTool extends Tool
   redraw: ->
     @clipCircle.attr 'r', @radius
 
+    @disc.attr
+      r: @radius
+      stroke: @stroke
+      strokeWidth: @strokeWidth
+
     img = new Image
     img.onload = =>
       {width, height} = img
@@ -55,19 +60,14 @@ class MagnifierPointTool extends Tool
         width: width * @zoom
         height: height * @zoom
 
+      @render()
+
     img.src = @href
-
-    @disc.attr
-      r: @radius
-      stroke: @stroke
-      strokeWidth: @strokeWidth
-
-    @render()
 
   render: ->
     if @mark.x? and @mark.y?
       @group.attr 'transform', "translate(#{@mark.x}, #{@mark.y})"
-      @controls.moveTo @getControlsPosition()...
+      @controls?.moveTo @getControlsPosition()...
 
       width = @image.attr 'width'
       height = @image.attr 'height'

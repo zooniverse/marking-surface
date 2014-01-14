@@ -52,8 +52,8 @@ class ToolControls extends ElementBase
     left = Math.floor (x * zoomBy) - (panX * zoomBy)
     top = Math.floor (y * zoomBy) - (panY * zoomBy)
 
-    @el.style.left    = "#{left}px"
-    @el.style.top     = "#{top}px"
+    @el.style.left = "#{left}px"
+    @el.style.top = "#{top}px"
 
     opensRight = x < width / 2
     opensDown = y < height / 2

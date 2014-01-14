@@ -1,6 +1,6 @@
 {
   "name": "marking-surface",
-  "version": "0.4.14",
+  "version": "0.4.15",
   "main": "./lib/marking-surface.js",
   "devDependencies": {
     "coffee-script": "~1.6.3",
