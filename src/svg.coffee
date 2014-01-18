@@ -5,17 +5,15 @@ NAMESPACES =
 CASE_SENSITIVE_ATTRIBUTES = [
   'viewBox'
   'preserveAspectRatio'
+  'stdDeviation'
+  'tableValues'
 ]
 
 NON_ATTRIBUTE_PROPERTIES = [
   'textContent'
 ]
 
-filters =
-  shadow: [
-    {element: 'feOffset', attributes: {in: 'SourceAlpha', dx: 0.5, dy: 1.5, result: 'offOut'}}
-    {element: 'feBlend', attributes: {in: 'SourceGraphic', in2: 'offOut'}}
-  ]
+FILTER_ID_PREFIX = 'marking-surface-filter-'
 
 class SVG
   el: null
@@ -86,7 +84,7 @@ class SVG
 
   filter: (name) ->
     @attr 'filter', if name?
-      "url(#marking-surface-filter-#{name})"
+      "url(##{FILTER_ID_PREFIX}#{name})"
     else
       ''
 
@@ -110,14 +108,20 @@ SVG.filtersContainer = new SVG
   height: 0
   style: 'bottom: 0; position: absolute; right: 0;'
 
-defs = SVG.filtersContainer.addShape 'defs'
+SVG.filterDefs = SVG.filtersContainer.addShape 'defs'
 
-SVG.registerFilter = (name, elements) ->
-  filters[name] = elements
-  filter = defs.addShape 'filter', id: "marking-surface-filter-#{name}"
-  filter.addShape element, attributes for {element, attributes} in elements
-  null
+shadowFilter = SVG.filterDefs.addShape 'filter', id: "#{FILTER_ID_PREFIX}shadow"
+shadowFilter.addShape 'feGaussianBlur', stdDeviation: 2, in: 'SourceAlpha'
+shadowFilter.addShape 'feOffset', dx: 0.5, dy: 1
+shadowMerge = shadowFilter.addShape 'feMerge'
+shadowMerge.addShape 'feMergeNode'
+shadowMerge.addShape 'feMergeNode', in: 'SourceGraphic'
 
-SVG.registerFilter name, elements for name, elements of filters
+# NOTE: The "invert" filter won't work in IE<10.
+invertFilter = SVG.filterDefs.addShape 'filter', id: "#{FILTER_ID_PREFIX}invert", colorInterpolationFilters: 'sRGB'
+invertTransfer = invertFilter.addShape 'feComponentTransfer'
+invertTransfer.addShape 'feFuncR', type: 'table', tableValues: '1 0'
+invertTransfer.addShape 'feFuncG', type: 'table', tableValues: '1 0'
+invertTransfer.addShape 'feFuncB', type: 'table', tableValues: '1 0'
 
 document.body.appendChild SVG.filtersContainer.el
