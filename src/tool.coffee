@@ -12,7 +12,7 @@ else
 
 class Tool extends BaseClass
   @Mark: Mark
-  @Controls: ToolControls
+  @Controls: null
 
   cursors: null
   renderFps: 30
@@ -36,7 +36,8 @@ class Tool extends BaseClass
     @mark.on 'destroy', =>
       @destroy arguments...
 
-    @controls = new @constructor.Controls tool: @
+    if @constructor.Controls?
+      @controls = new @constructor.Controls tool: @
 
     # Apply filters to the root, transform the group.
     @root = @surface.addShape 'g.marking-tool-root'
