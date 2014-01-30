@@ -65,7 +65,7 @@ class ElementBase extends BaseClass
   pointerOffset: (e) ->
     e = e.touches[0] if 'touches' of e
 
-    {left, top} = @el.getBoundingClientRect()
+    {left, top} = @el.getClientRects()[0]
     x = e.pageX - pageXOffset - left
     y = e.pageY - pageYOffset - top
 
