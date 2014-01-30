@@ -36,6 +36,18 @@ class MarkingSurface extends ElementBase
     @toolControlsContainer.className = 'marking-surface-tool-controls-container'
     @el.appendChild @toolControlsContainer
 
+  pointerOffset: (e) ->
+    {x, y} = ElementBase::pointerOffset.apply @svg, arguments
+
+    if @svg.el.hasAttribute 'viewBox'
+      viewBox = @svg.el.viewBox.animVal
+      x += viewBox.x
+      x *= viewBox.width / @svg.el.offsetWidth
+      y += viewBox.y
+      y *= viewBox.height / @svg.el.offsetHeight
+
+    {x, y}
+
   zoom: (@zoomBy = 1) ->
     if @zoomBy < 1 + @zoomSnapTolerance
       @zoomBy = 1
