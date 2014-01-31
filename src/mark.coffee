@@ -1,27 +1,20 @@
 class Mark extends BaseClass
-  set: (property, value, {fromMany} = {}) ->
+  set: (property, value) ->
     if typeof property is 'string'
-      # The return value of a method named "set propertyName" will be used, if available.
+      # The return value of the method `set propertyName` will be used, if available.
       setter = @["set #{property}"]
-      setValue = if setter? then setter.call @, value else value
-      @[property] = setValue
-
+      value = setter.call @, value if setter?
+      @[property] = value
+      @trigger 'change', [property, value]
     else
       properties = property
-      @set property, value, fromMany: true for property, value of properties
+      @set property, value for property, value of properties
 
-    # One generic change will be triggered, but its arguments can't really be trusted.
-    @trigger 'change', [property, value] unless fromMany
-
-    null
+    return
 
   toJSON: ->
+    # Underscore-prefixed properties will not be included in the output.
     result = {}
-
-    for property, value of @
-      # Underscore-prefixed properties will not be included in the output.
-      continue if (property.charAt 0) is '_'
-      continue if typeof value is 'function'
+    for property, value of @ when property.charAt(0) isnt '_'
       result[property] = @[property]
-
     result

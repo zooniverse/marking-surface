@@ -1,18 +1,14 @@
 class ElementBase extends BaseClass
   tagName: 'div'
   className: ''
-  disabled: false
 
   constructor: ->
-    super
     @_eventListeners = []
+    super
 
-    @el = document.querySelector @el if typeof @el is 'string'
     @el ?= document.createElement @tagName
     @toggleClass @constructor::className, true
     @toggleClass @className, true unless @className is @constructor::className
-
-    @disable() if @disabled
 
   toggleClass: (className, condition) ->
     classList = @el.className.match /\S+/g
@@ -30,28 +26,29 @@ class ElementBase extends BaseClass
       classList.splice (classList.indexOf className), 1
 
     @el.className = classList.join ' '
-    null
+
+  attr: (attribute, value) ->
+    if arguments.length is 1
+      @el.getAttribute attribute
+    else
+      if value?
+        @el.setAttribute attribute, value
+      else
+        @el.removeAttribute attribute
 
   enable: (e) ->
+    @attr 'disabled', null
     @disabled = false
-    @el.removeAttribute 'disabled'
-    null
 
   disable: (e) ->
+    @attr 'disabled', true
     @disabled = true
-    @el.setAttribute 'disabled', 'disabled'
-    null
 
   addEvent: (eventName, handler) ->
     @el.addEventListener eventName, handler, false
     eventList = [eventName, handler]
     @_eventListeners.push eventList
     eventList
-
-  triggerEvent: (eventName, detail) ->
-    e = document.createEvent 'CustomEvent'
-    e.initCustomEvent eventName, true, true, detail
-    @el.dispatchEvent e
 
   removeEvent: (eventName, handler) ->
     for [listedEventName, listedHandler], i in @_eventListeners
@@ -61,6 +58,15 @@ class ElementBase extends BaseClass
 
     @el.removeEventListener eventName, handler
     @_eventListeners.splice indexInList, 1
+
+  triggerEvent: (eventName, detail) ->
+    e = document.createEvent 'CustomEvent'
+    e.initCustomEvent eventName, true, true, detail
+    @el.dispatchEvent e
+
+  trigger: ->
+    super
+    @triggerEvent arguments...
 
   pointerOffset: (e) ->
     e = e.touches[0] if 'touches' of e

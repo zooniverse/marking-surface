@@ -1,34 +1,31 @@
 class BaseClass
   constructor: (params = {}) ->
     @_events = {}
-    @[property] = value for property, value of params
+    for property, value of params
+      @[property] = value
 
   on: (eventName, handler) ->
     @_events[eventName] ?= []
     @_events[eventName].push handler
-    null
 
   trigger: (eventName, args = []) ->
-    @_events[eventName] ?= []
-    handler.apply @, args for handler in @_events[eventName]
-    null
+    if eventName of @_events
+      for handler in @_events[eventName]
+        handler.apply @, args
 
   off: (eventName, handler) ->
     if eventName?
-      handlerList = @_events[eventName] || []
-
-      if handler?
-        handlerList.splice (handlerList.indexOf handler), 1
-
-      else
-        handlerList.splice 0
-
+      if eventName of @_events
+        handlerList = @_events[eventName]
+        if handler?
+          handlerIndex = handlerList.indexOf handler
+          handlerList.splice handlerIndex, 1
+        else
+          handlerList.splice 0
     else
-      delete @_events[property] for property of @_events
-
-    null
+      for property of @_events
+        delete @_events[property]
 
   destroy: ->
     @trigger 'destroy'
     @off()
-    null

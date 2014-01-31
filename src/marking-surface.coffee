@@ -2,47 +2,61 @@ BACKSPACE = 8
 DELETE = 46
 
 class MarkingSurface extends ElementBase
-  tool: Tool
-
   className: 'marking-surface'
-
+  tool: Tool
   selection: null
+  disabled: false
 
   constructor: ->
-    super
     @tools = []
     @marks = []
+    super
 
-    @addEvent 'mousedown', @onStart
-    @addEvent 'touchstart', @onTouchStart
     @addEvent 'keydown', @onKeyDown
+
+    @svgContainer = new ElementBase className: 'marking-surface-svg-container'
+    @svgContainer.addEvent 'mousedown', @onStart
+    @svgContainer.addEvent 'touchstart', @onTouchStart
 
     @svg = new SVG
     @svgRoot = @svg.addShape 'g.svg-root'
-    @el.appendChild @svg.el
+
+    @svgContainer.el.appendChild @svg.el
+    @el.appendChild @svgContainer.el
 
     @toolControlsContainer = document.createElement 'div'
     @toolControlsContainer.className = 'marking-surface-tool-controls-container'
     @el.appendChild @toolControlsContainer
 
+    @disable() if @disabled
+
+  disable: (e) ->
+    @selection?.deselect()
+    super
+
   pointerOffset: (e) ->
     {x, y} = ElementBase::pointerOffset.apply @svg, arguments
-
     if @svg.el.hasAttribute 'viewBox'
       viewBox = @svg.el.viewBox.animVal
       x += viewBox.x
       x *= viewBox.width / @svg.el.offsetWidth
       y += viewBox.y
       y *= viewBox.height / @svg.el.offsetHeight
+    {x, y}
 
+  physicalOffset: ({x, y}) ->
+    if @svg.el.hasAttribute 'viewBox'
+      viewBox = @svg.el.viewBox.animVal
+      x /= viewBox.width / @svg.el.offsetWidth
+      x -= viewBox.x
+      y /= viewBox.height / @svg.el.offsetHeight
+      y -= viewBox.y
     {x, y}
 
   onStart: (e) =>
     return if @disabled
     return if e.defaultPrevented
     return unless @tool?
-    return if e.target in @el.querySelectorAll ".#{ToolControls::className}"
-    return if e.target in @el.querySelectorAll ".#{ToolControls::className} *"
 
     e.preventDefault()
 
@@ -165,8 +179,8 @@ class MarkingSurface extends ElementBase
 
   destroy: ->
     @reset()
+    @svgContainer.destroy()
     super
-    null
 
 MarkingSurface.defaultStyle = insertStyle 'marking-surface-default-style', '''
   .marking-surface {

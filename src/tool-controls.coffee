@@ -42,18 +42,13 @@ class ToolControls extends ElementBase
     @tool.surface?.toolControlsContainer.appendChild @el
 
   moveTo: (x, y) ->
-    {zoomBy, panX, panY} = @tool.surface
-    width = @tool.surface.el.clientWidth
-    height = @tool.surface.el.clientHeight
+    {x, y} = @tool.surface.physicalOffset {x, y}
 
-    panX *= width - (width / zoomBy)
-    panY *= height - (height / zoomBy)
+    width = @tool.surface.el.offsetWidth
+    height = @tool.surface.el.offsetHeight
 
-    left = Math.floor (x * zoomBy) - (panX * zoomBy)
-    top = Math.floor (y * zoomBy) - (panY * zoomBy)
-
-    @el.style.left = "#{left}px"
-    @el.style.top = "#{top}px"
+    @el.style.left = "#{x}px"
+    @el.style.top = "#{y}px"
 
     opensRight = x < width / 2
     opensDown = y < height / 2
@@ -63,7 +58,7 @@ class ToolControls extends ElementBase
     @toggleClass 'opens-down', opensDown
     @toggleClass 'opens-up', not opensDown
 
-    outOfBounds = left < 0 or left > width or top < 0 or top > height
+    outOfBounds = x < 0 or x > width or y < 0 or y > height
 
     @toggleClass 'out-of-bounds', outOfBounds
 
