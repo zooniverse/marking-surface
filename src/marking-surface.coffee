@@ -1,12 +1,10 @@
 BACKSPACE = 8
 DELETE = 46
-TAB = 9
 
 class MarkingSurface extends ElementBase
   tool: Tool
 
   className: 'marking-surface'
-  tabIndex: 0
 
   selection: null
 
@@ -14,8 +12,6 @@ class MarkingSurface extends ElementBase
     super
     @tools = []
     @marks = []
-
-    @el.setAttribute 'tabindex', @tabIndex
 
     @addEvent 'mousedown', @onStart
     @addEvent 'touchstart', @onTouchStart
@@ -93,12 +89,11 @@ class MarkingSurface extends ElementBase
     return unless document.activeElement is @el
     return if e.altKey or e.ctrlKey
 
-    if e.which in [BACKSPACE, DELETE, TAB]
+    if e.which in [BACKSPACE, DELETE]
       e.preventDefault()
 
       switch e.which
         when BACKSPACE, DELETE then @deleteSelection()
-        when TAB then @tabSelectNext e.shiftKey
 
     null
 
@@ -146,22 +141,6 @@ class MarkingSurface extends ElementBase
     @trigger 'change', [tool.mark]
 
     tool
-
-  tabSelectNext: (reverse) ->
-    if reverse
-      @tools[0]?.select()
-    else
-      current = @selection
-      next = @tools[Math.max 0, @tools.length - 2]
-
-      if next?
-        next.select()
-
-        if current?
-          @tools.splice (@tools.indexOf current), 1
-          @tools.unshift current
-
-    null
 
   addShape: ->
     @svgRoot.addShape arguments...
