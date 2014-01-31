@@ -8,11 +8,6 @@ class MarkingSurface extends ElementBase
   className: 'marking-surface'
   tabIndex: 0
 
-  zoomBy: 1
-  zoomSnapTolerance: 0.05
-  panX: 0.5
-  panY: 0.5
-
   selection: null
 
   constructor: ->
@@ -24,8 +19,6 @@ class MarkingSurface extends ElementBase
 
     @addEvent 'mousedown', @onStart
     @addEvent 'touchstart', @onTouchStart
-    @addEvent 'mousemove', @onMouseMove
-    @addEvent 'touchmove', @onTouchMove
     @addEvent 'keydown', @onKeyDown
 
     @svg = new SVG
@@ -47,36 +40,6 @@ class MarkingSurface extends ElementBase
       y *= viewBox.height / @svg.el.offsetHeight
 
     {x, y}
-
-  zoom: (@zoomBy = 1) ->
-    if @zoomBy < 1 + @zoomSnapTolerance
-      @zoomBy = 1
-      @panX = @constructor::panX
-      @panY = @constructor::panY
-
-    @pan()
-    null
-
-  pan: (@panX = @panX, @panY = @panY) ->
-    minX = (@el.clientWidth - (@el.clientWidth / @zoomBy)) * @panX
-    minY = (@el.clientHeight - (@el.clientHeight / @zoomBy)) * @panY
-    width = @el.clientWidth / @zoomBy
-    height = @el.clientHeight / @zoomBy
-
-    @svg.attr 'viewBox', "#{minX} #{minY} #{width} #{height}"
-
-    tool.render() for tool in @tools
-    null
-
-  onMouseMove: (e) =>
-    return if @zoomBy is 1
-    {x, y} = @pointerOffset e
-    @pan x / @el.clientWidth, y / @el.clientHeight
-    null
-
-  onTouchMove: (e) =>
-    @onMouseMove e # if e.touches.length is 2
-    null
 
   onStart: (e) =>
     return if @disabled
