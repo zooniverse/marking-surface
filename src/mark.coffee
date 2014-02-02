@@ -1,5 +1,6 @@
 class Mark extends BaseClass
-  ignore: ['disabled', 'ignore']
+  precision: 3
+  ignore: ['disabled', 'ignore', 'precision']
 
   set: (property, value) ->
     if typeof property is 'string'
@@ -20,5 +21,12 @@ class Mark extends BaseClass
     for property, value of @
       continue if property in @ignore
       continue if property.charAt(0) is '_'
-      result[property] = @[property]
+
+      if typeof value is 'number'
+        parts = value.toString().split('.')
+        if parts[1]?
+          parts[1] = parts[1][0...@precision]
+          value = parseFloat parts.join '.'
+      result[property] = value
+
     result
