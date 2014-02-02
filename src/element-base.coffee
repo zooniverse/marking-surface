@@ -93,7 +93,7 @@ class ElementBase extends BaseClass
         type = e.type
         if e.detail?.originalEvent
           e = e.detail.originalEvent
-          moveTarget = @_startEvent.target ? @_startEvent.srcElement
+          moveTarget = @_startEvent?.target ? @_startEvent?.srcElement
 
         if type of @_eventListeners
           for handler in @_eventListeners[type]

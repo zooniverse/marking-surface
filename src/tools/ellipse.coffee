@@ -1,96 +1,94 @@
 {Tool} = window?.MarkingSurface || require 'marking-surface'
 
 class EllipseTool extends Tool
-  path: null
-  outside: null
-  xHandle: null
-  yHandle: null
-
-  handleRadius: if !!~navigator.userAgent.indexOf 'iO' then 20 else 10
-  fill: 'rgba(128, 128, 128, 0.1)'
-  stroke: 'white'
+  handleRadius: if @mobile then 20 else 10
   strokeWidth: 2
 
   defaultRadius: 2
   defaultSquash: 0.5
 
-  dragOffsetFromCenter: null
+  startOffset: null
 
-  cursors:
-    outside: '*grab'
-    xHandle: 'move'
-    yHandle: 'move'
+  constructor: ->
+    super
 
-  initialize: ->
-    @root.filter 'shadow'
-    @path = @addShape 'path', {d: 'M 0 0', @stroke, @strokeWidth, strokeDasharray: [@strokeWidth * 4, @strokeWidth * 4]}
-    @outside = @addShape 'ellipse', {@fill, @stroke, @strokeWidth}
-    @xHandle = @addShape 'circle', {r: @handleRadius, @fill, @stroke, @strokeWidth}
-    @yHandle = @addShape 'circle', {r: @handleRadius, @fill, @stroke, @strokeWidth}
+    @mark.x = 0
+    @mark.y = 0
+    @mark.angle = 0
+    @mark.rx = 0
+    @mark.ry = 0
+
+    @radii = @addShape 'path.radii', stroke: 'currentColor'
+    @outline = @addShape 'ellipse.outline', fill: 'transparent', stroke: 'currentColor'
+    @xHandle = @addShape 'circle.x-handle', fill: 'currentColor'
+    @yHandle = @addShape 'circle.y-handle', fill: 'currentColor'
+
+    @addEvent 'start', '.outline', @startDrag
+    @addEvent 'move', '.outline', @moveOutline
+    @addEvent 'move', '.x-handle', @dragXHandle
+    @addEvent 'move', '.y-handle', @dragYHandle
+
+  rescale: (scale) ->
+    super
+    scaledStrokeWidth = @strokeWidth / scale
+    scaledHandleRadius = @handleRadius / scale
+    @radii.attr 'strokeWidth', scaledStrokeWidth / 2
+    @outline.attr 'strokeWidth', scaledStrokeWidth
+    @xHandle.attr 'r', scaledHandleRadius
+    @yHandle.attr 'r', scaledHandleRadius
+
+  onInitialStart: (e) ->
+    {x, y} = @coords e
 
     @mark.set
-      center: [0, 0]
-      angle: 0
-      rx: 0
-      ry: 0
-
-  onFirstClick: (e) ->
-    {x, y} = @pointerOffset e
-
-    @mark.set
-      center: [x, y]
+      x: x
+      y: y
       rx: @defaultRadius
       ry: @defaultRadius * @defaultSquash
 
-  onFirstDrag: (e) ->
-    @['on *drag xHandle'] e
+  onInitialMove: (e) ->
+    @dragXHandle e
     @mark.set 'ry', @mark.rx * @defaultSquash
 
-  'on *start': (e) ->
-    {x, y} = @pointerOffset e
-    @dragOffsetFromCenter =
-      x: x - @mark.center[0]
-      y: y - @mark.center[1]
+  startDrag: (e) ->
+    {x, y} = @coords e
+    @startOffset =
+      x: @mark.x - x
+      y: @mark.y - y
 
-  'on *drag outside': (e) =>
-    {x, y} = @pointerOffset e
-    @mark.set 'center', [
-      x - @dragOffsetFromCenter.x
-      y - @dragOffsetFromCenter.y
-    ]
-
-  'on *drag xHandle': (e) =>
-    {x, y} = @pointerOffset e
+  moveOutline: (e) ->
+    {x, y} = @coords e
     @mark.set
-      angle: @getAngle @mark.center[0], @mark.center[1], x, y
-      rx: @getHypotenuse @mark.center[0], @mark.center[1], x, y
+      x: x + @startOffset.x
+      y: y + @startOffset.y
 
-  'on *drag yHandle': (e) =>
-    {x, y} = @pointerOffset e
+  dragXHandle: (e) ->
+    {x, y} = @coords e
     @mark.set
-      angle: 90 + @getAngle @mark.center[0], @mark.center[1], x, y
-      ry: @getHypotenuse @mark.center[0], @mark.center[1], x, y
+      angle: @getAngle @mark.x, @mark.y, x, y
+      rx: @getDistance @mark.x, @mark.y, x, y
 
-  'on *end': =>
-    @dragOffsetFromCenter = null
+  dragYHandle: (e) ->
+    {x, y} = @coords e
+    @mark.set
+      angle: @getAngle(@mark.x, @mark.y, x, y) - 90
+      ry: @getDistance @mark.x, @mark.y, x, y
 
   render: ->
-    @group.attr 'transform', "translate(#{@mark.center}) rotate(#{@mark.angle})"
-    @path.attr 'd', "M 0 #{-@mark.ry} L 0 0 M #{@mark.rx} 0 L 0 0"
-    @outside.attr rx: @mark.rx, ry: @mark.ry
+    # NOTE: SVG rotates clockwise, andgles are measure counterclockwise.
+    @attr 'transform', "translate(#{@mark.x}, #{@mark.y}) rotate(#{-@mark.angle})"
+    @radii.attr 'd', "M 0 #{-@mark.ry} L 0 0 M #{@mark.rx} 0 L 0 0"
+    @outline.attr rx: @mark.rx, ry: @mark.ry
     @xHandle.attr 'cx', @mark.rx
     @yHandle.attr 'cy', -@mark.ry
-    @controls.moveTo @getControlsPosition()...
-
-  getControlsPosition: ->
-    @mark.center
+    @controls.moveTo @mark
 
   getAngle: (x1, y1, x2, y2) ->
     deltaX = x2 - x1
     deltaY = y2 - y1
-    Math.atan2(deltaY, deltaX) * (180 / Math.PI)
+    Math.atan2(deltaY, deltaX) * (-180 / Math.PI)
 
-  getHypotenuse: (x1, y1, x2, y2) ->
+  getDistance: (x1, y1, x2, y2) ->
     aSquared = Math.pow x2 - x1, 2
     bSquared = Math.pow y2 - y1, 2
     Math.sqrt aSquared + bSquared

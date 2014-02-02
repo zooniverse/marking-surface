@@ -1,6 +1,8 @@
 MarkingSurface = window.MarkingSurface
 {Tool, RectangleTool, EllipseTool, AxesTool, TranscriptionTool, MagnifierPointTool, DefaultToolControls} = MarkingSurface
 
+EllipseTool.Controls = DefaultToolControls
+
 getImage = (src, callback) ->
   img = new Image
   img.onload = ->
@@ -8,8 +10,7 @@ getImage = (src, callback) ->
   img.src = src
 
 class PointTool extends Tool
-  @Controls: DefaultToolControls
-
+  @Controls = DefaultToolControls
   radius: if @mobile then 25 else 15
   strokeWidth: 2
 
@@ -20,17 +21,11 @@ class PointTool extends Tool
     @mark.y = 0
 
     @ticks = @addShape 'path',
-      d: 'M 0 0'
       stroke: 'currentColor'
-      strokeWidth: @strokeWidth
 
     @disc = @addShape 'circle',
-      cx: 0
-      cy: 0
-      r: @radius
       fill: 'transparent'
       stroke: 'currentColor'
-      strokeWidth: @strokeWidth
 
     @addEvent 'move', 'circle', @onMove
 
