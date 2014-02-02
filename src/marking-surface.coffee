@@ -27,12 +27,14 @@ class MarkingSurface extends ElementBase
     @el.appendChild @toolControlsContainer.el
     @on 'destroy', [@toolControlsContainer, 'destroy']
 
-    @input = new ElementBase tag: 'input.marking-surface-input'
-    @input.el.tabIndex = -1
-    @on 'change', @onChange
-    @on 'destroy', [@input, 'destroy']
+    if @inputName
+      @input = new ElementBase tag: 'input.marking-surface-input'
+      @input.el.tabIndex = -1
+      @input.el.name = @inputName
+      @on 'change', @onChange
+      @on 'destroy', [@input, 'destroy']
+      @el.appendChild @input.el
 
-    @el.appendChild @input.el
     @trigger 'change'
 
   addShape: ->
@@ -94,7 +96,7 @@ class MarkingSurface extends ElementBase
     @trigger 'change', [mark]
 
   onChange: ->
-    @input.el.value = @getValue()
+    @input?.el.value = @getValue()
 
   onDeselectTool: (e) ->
     [tool] = e.detail

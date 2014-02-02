@@ -59,6 +59,7 @@ TOOLS =
 DEMO_IMAGE = 'http://www.seafloorexplorer.org/images/field-guide/fish.jpg'
 
 ms = new MarkingSurface
+  name: 'marking-surface'
   tool: TOOLS[$('input[name="tool"]:checked').val()]
 
 getImage DEMO_IMAGE, ({src, width, height}) ->
