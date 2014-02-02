@@ -1,5 +1,7 @@
 class MarkingSurface extends ElementBase
   tag: 'div.marking-surface'
+  focusable: true
+  inputName: ''
 
   tool: null # This is the class with which to create new tools.
 
@@ -19,9 +21,10 @@ class MarkingSurface extends ElementBase
     @svg.addEvent 'deselect', '.marking-surface-tool', [@, 'onDeselectTool']
     @svg.addEvent 'destroy', '.marking-surface-tool', [@, 'onDestroyTool']
 
-    @toolFocusTargetsContainer = new ElementBase tag: 'div.marking-surface-tool-focusables-container'
-    @el.appendChild @toolFocusTargetsContainer.el
-    @on 'destroy', [@toolFocusTargetsContainer, 'destroy']
+    if @focusable
+      @toolFocusTargetsContainer = new ElementBase tag: 'div.marking-surface-tool-focusables-container'
+      @el.appendChild @toolFocusTargetsContainer.el
+      @on 'destroy', [@toolFocusTargetsContainer, 'destroy']
 
     @toolControlsContainer = new ElementBase tag: 'div.marking-surface-tool-controls-container'
     @el.appendChild @toolControlsContainer.el
@@ -78,7 +81,7 @@ class MarkingSurface extends ElementBase
       @toolControlsContainer.el.appendChild tool.controls.el
 
     if tool.focusTarget?
-      @toolFocusTargetsContainer.el.appendChild tool.focusTarget.el
+      @toolFocusTargetsContainer?.el.appendChild tool.focusTarget.el
 
     @trigger 'add-tool', [tool]
     @trigger 'change'
