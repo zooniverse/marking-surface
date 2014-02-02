@@ -7,6 +7,7 @@ class ToolFocusTarget extends ElementBase
 
   constructor: ->
     super
+    @el.type = 'button'
 
     @tool.on 'focus', [@el, 'focus']
     @tool.on 'select', [@, 'toFront']

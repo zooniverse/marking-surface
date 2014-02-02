@@ -27,6 +27,14 @@ class MarkingSurface extends ElementBase
     @el.appendChild @toolControlsContainer.el
     @on 'destroy', [@toolControlsContainer, 'destroy']
 
+    @input = new ElementBase tag: 'input.marking-surface-input'
+    @input.el.tabIndex = -1
+    @on 'change', @onChange
+    @on 'destroy', [@input, 'destroy']
+
+    @el.appendChild @input.el
+    @trigger 'change'
+
   addShape: ->
     @root.addShape arguments...
 
@@ -71,6 +79,7 @@ class MarkingSurface extends ElementBase
       @toolFocusTargetsContainer.el.appendChild tool.focusTarget.el
 
     @trigger 'add-tool', [tool]
+    @trigger 'change'
     tool
 
   onSelectTool: (e) ->
@@ -83,6 +92,9 @@ class MarkingSurface extends ElementBase
   onChangeMark: (e) ->
     [mark] = e.detail
     @trigger 'change', [mark]
+
+  onChange: ->
+    @input.el.value = @getValue()
 
   onDeselectTool: (e) ->
     [tool] = e.detail
@@ -149,13 +161,23 @@ MarkingSurface.defaultStyle = insertStyle 'marking-surface-default-style', '''
     -webkit-user-select: none;
   }
 
+  .marking-surface-input {
+    left: 0;
+    position: absolute;
+    opacity: 0;
+    pointer-events: 0;
+    top: 0;
+  }
+
   .marking-surface-tool-focusables-container {
     height: 0;
+    left: 0;
     overflow: hidden;
+    position: absolute;
+    top: 0;
     width: 0;
   }
 
-  .marking-surface-tool-focusables-container,
   .marking-surface-tool-controls-container {
     left: 0;
     position: absolute;
