@@ -9,26 +9,46 @@ getImage = (src, callback) ->
 
 class PointTool extends Tool
   @Controls: DefaultToolControls
-  size: if !!~navigator.userAgent.indexOf 'iO' then 40 else 20
+
+  radius: if @mobile then 25 else 15
   strokeWidth: 2
 
   constructor: ->
     super
 
-    @size = @scale @size
-    @strokeWidth = @scale @strokeWidth
-
     @mark.x = 0
     @mark.y = 0
 
-    @addShape 'path', d: """
-      M #{-@size} 0 L #{-@size * (1 / 3)} 0 M #{@size} 0 L #{@size * (1 / 3)} 0
-      M 0 #{-@size} L 0 #{-@size * (1 / 3)} M 0 #{@size} L 0 #{@size * (1 / 3)}
-    """, stroke: 'currentColor', strokeWidth: @strokeWidth
+    @ticks = @addShape 'path',
+      d: 'M 0 0'
+      stroke: 'currentColor'
+      strokeWidth: @strokeWidth
 
-    @addShape 'circle', cx: 0, cy: 0, r: @size, fill: 'transparent', stroke: 'currentColor', strokeWidth: @strokeWidth
+    @disc = @addShape 'circle',
+      cx: 0
+      cy: 0
+      r: @radius
+      fill: 'transparent'
+      stroke: 'currentColor'
+      strokeWidth: @strokeWidth
 
     @addEvent 'move', 'circle', @onMove
+
+  rescale: (scale) ->
+    super
+    scaledRadius = @radius / scale
+    scaledStrokeWidth = @strokeWidth / scale
+
+    @ticks.attr
+      d: """
+        M #{-scaledRadius} 0 L #{-scaledRadius * (1 / 3)} 0 M #{scaledRadius} 0 L #{scaledRadius * (1 / 3)} 0
+        M 0 #{-scaledRadius} L 0 #{-scaledRadius * (1 / 3)} M 0 #{scaledRadius} L 0 #{scaledRadius * (1 / 3)}
+      """
+      strokeWidth: scaledStrokeWidth
+
+    @disc.attr
+      r: scaledRadius
+      strokeWidth: scaledStrokeWidth
 
   onInitialStart: (e) ->
     super
@@ -59,12 +79,13 @@ TOOLS =
 DEMO_IMAGE = 'http://www.seafloorexplorer.org/images/field-guide/fish.jpg'
 
 ms = new MarkingSurface
-  name: 'marking-surface'
+  inputName: 'marks'
   tool: TOOLS[$('input[name="tool"]:checked').val()]
 
 getImage DEMO_IMAGE, ({src, width, height}) ->
-  ms.svg.attr width: width * 0.75, height: height * 0.75, viewBox: "0 0 #{width} #{height}"
-  ms.image = ms.addShape 'image', 'xlink:href': src, width: '100%', height: '100%'
+  ms.image = ms.addShape 'image', 'xlink:href': src, width: width, height: height
+  ms.svg.attr width: width * 0.75, height: height * 0.75
+  ms.rescale 0, 0, width, height
 
 container = $('#container')
 container.append ms.el
@@ -99,4 +120,4 @@ ms.on 'add-tool', (tool) ->
   mirror.addTool mirroredTool
 
 window.ms = ms
-# window.mirror = mirror
+window.mirror = mirror

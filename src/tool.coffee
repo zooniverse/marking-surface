@@ -1,12 +1,14 @@
 class Tool extends SVG
   @Mark: Mark
   @Controls: null
+  @mobile: !!navigator.userAgent.match /iP|droid/
 
   tag: 'g.marking-surface-tool'
 
   markingSurface: null
 
   movements: 0
+
 
   constructor: ->
     super
@@ -28,6 +30,10 @@ class Tool extends SVG
     @selectedRoot = @focusRoot.addShape 'g.marking-surface-tool-selected-root'
     @root = @selectedRoot.addShape 'g.marking-surface-tool-root'
 
+    setTimeout =>
+      if @markingSurface?
+        @rescale @markingSurface.getScale()
+
   onMarkChange: (property, value) ->
     @render? property, value # render: (property, value) -> swith property...
     @render?[property]?.call? @, value # render: x: (x) -> @move x
@@ -42,9 +48,6 @@ class Tool extends SVG
 
   coords: (e) ->
     @markingSurface.toScale @markingSurface.pointerOffset e
-
-  scale: (value) ->
-    value / @markingSurface.getScale()
 
   # NOTE: These "initial" events originate on the marking surface.
 
@@ -68,6 +71,12 @@ class Tool extends SVG
   onInitialRelease: (e) ->
     @movements += 1
     @trigger 'initial-release', [e]
+
+  render: ->
+    # TODO
+
+  rescale: (scaleX, scaleY) ->
+    @render()
 
   isComplete: ->
     # Override this if drawing the tool requires multiple drag steps (e.g. axes).
