@@ -8,6 +8,7 @@ sources = [
   'src/element-base.coffee'
   'src/svg.coffee'
   'src/mark.coffee'
+  'src/tool-focus-target.coffee'
   'src/tool-controls.coffee'
   'src/tool.coffee'
   'src/marking-surface.coffee'

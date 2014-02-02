@@ -1,88 +1,53 @@
 class ToolControls extends ElementBase
-  className: 'marking-tool-controls'
+  tag: 'div.marking-surface-tool-controls'
   template: ''
 
   constructor: ->
     super
-
     @el.insertAdjacentHTML 'beforeEnd', @template
+
+    @tool.on 'select', [@, 'onToolSelect']
+    @tool.mark.on 'change', [@, 'onMarkChange']
+    @tool.on 'deselect', [@, 'onToolDeselect']
+    @tool.on 'destroy', [@, 'onToolDestroy']
+
+  onToolSelect: ->
     @toFront()
+    @attr 'data-selected', true
 
-    @addEvent 'mousedown', @onMouseDown
+  onToolDeselect: ->
+    @attr 'data-selected', null
 
-    @tool.on 'select', @onToolSelect
-    @tool.on 'deselect', @onToolDeselect
-    @tool.on 'destroy', @onToolDestroy
-    @tool.mark.on 'change', @onMarkChange
-
-  onMouseDown: =>
-    @tool.select()
-    null
-
-  onToolSelect: =>
-    @toFront()
-    throwaway = @el.offsetWidth # Force reflow
-    @toggleClass 'tool-selected', true
-    null
-
-  onToolDeselect: =>
-    @toggleClass 'tool-selected', false
-    null
-
-  onToolDestroy: =>
+  onToolDestroy: ->
     @destroy()
-    null
 
-  onMarkChange: =>
-    @toggleClass 'tool-complete', @tool.isComplete()
-    @render arguments...
-    null
+  onMarkChange: ->
+    @render? arguments...
 
-  toFront: ->
-    @tool.surface?.toolControlsContainer.appendChild @el
-
-  moveTo: (x, y) ->
-    {x, y} = @tool.surface.physicalOffset {x, y}
-
-    width = @tool.surface.el.offsetWidth
-    height = @tool.surface.el.offsetHeight
-
+  moveTo: ({x, y}) ->
+    {x, y} = @tool.markingSurface.toPixels {x, y}
+    width = @tool.markingSurface.el.offsetWidth
+    height = @tool.markingSurface.el.offsetHeight
+    outOfBounds = x < 0 or x > width or y < 0 or y > height
+    @attr 'data-out-of-bounds', outOfBounds || null
     @el.style.left = "#{x}px"
     @el.style.top = "#{y}px"
-
-    opensRight = x < width / 2
-    opensDown = y < height / 2
-
-    @toggleClass 'opens-right', opensRight
-    @toggleClass 'opens-left', not opensRight
-    @toggleClass 'opens-down', opensDown
-    @toggleClass 'opens-up', not opensDown
-
-    outOfBounds = x < 0 or x > width or y < 0 or y > height
-
-    @toggleClass 'out-of-bounds', outOfBounds
-
-    null
+    @attr 'data-horizontal-room', if x < width / 2 then 'right' else 'left'
+    @attr 'data-vertical-room', if y < height / 2 then 'down' else 'up'
 
   render: ->
-    # Override to reflect the state of the tool's mark.
-
-  destroy: ->
-    @el.parentNode.removeChild @el
-    super
-    null
+    @attr 'data-complete', @tool.isComplete() || null
 
 ToolControls.defaultStyle = insertStyle 'marking-surface-tool-controls-default-style', '''
-  .marking-tool-controls {
-    opacity: 0.75;
+  .marking-surface-tool-controls {
     position: absolute;
   }
 
-  .marking-tool-controls.tool-selected {
-    opacity: 1;
+  .marking-surface-tool-controls:not([data-selected]) {
+    display: none;
   }
 
-  .marking-tool-controls.out-of-bounds {
-    display: none
+  .marking-surface-tool-controls[data-out-of-bounds] {
+    display: none;
   }
 '''

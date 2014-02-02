@@ -1,4 +1,6 @@
 class Mark extends BaseClass
+  ignore: ['disabled', 'ignore']
+
   set: (property, value) ->
     if typeof property is 'string'
       # The return value of the method `set propertyName` will be used, if available.
@@ -15,6 +17,8 @@ class Mark extends BaseClass
   toJSON: ->
     # Underscore-prefixed properties will not be included in the output.
     result = {}
-    for property, value of @ when property.charAt(0) isnt '_'
+    for property, value of @
+      continue if property in @ignore
+      continue if property.charAt(0) is '_'
       result[property] = @[property]
     result

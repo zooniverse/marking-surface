@@ -1,16 +1,13 @@
 {ToolControls} = window?.MarkingSurface || require 'marking-surface'
 
 class DefaultToolControls extends ToolControls
-  destroyButtonName: 'destroy'
-  destroyButtonLabel: '&times;'
+  template: '''
+    <button name="destroy">&times;</button>
+  '''
 
   constructor: ->
     super
-    @deleteButton = document.createElement 'button'
-    @deleteButton.name = @destroyButtonName
-    @deleteButton.innerHTML = @destroyButtonLabel
-    @deleteButton.onclick = => @tool.mark.destroy()
-    @el.appendChild @deleteButton
+    @addEvent 'click', 'button[name="destroy"]', => @tool.mark.destroy()
 
 window?.MarkingSurface.DefaultToolControls = DefaultToolControls
 module?.exports = DefaultToolControls

@@ -6,56 +6,29 @@
     <title>Marking surface demo</title>
     <style>
       html {
-        border: 1px solid gray;
-        margin: 10px auto;
         text-align: center;
-        width: 75%;
       }
 
-      body {
-        border: 1px dashed gray;
-        margin: 10px auto;
-        width: 75%;
+      .marking-surface {
+        color: red;
       }
 
-      input[type="range"] {
-        vertical-align: middle;
-      }
-
-      .marking-surface[disabled] {
-        opacity: 0.67;
-      }
-
-      .marking-tool-controls {
+      .marking-surface-tool-controls {
         background: rgba(255, 255, 255, 0.75);
-        border: 1px solid white;
-        border-radius: 3px;
         box-shadow: 0 1px 2px black;
-        margin: 10px 0 0;
         padding: 5px;
-        -webkit-transform: translate(-50%, 0);
-      }
-
-      .marking-tool-controls.opens-up {
-        margin: 0 0 10px;
-        -webkit-transform: translate(-50%, -100%);
       }
     </style>
   </head>
 
   <body>
     <label><input id="disabled" type="checkbox" /> Disabled</label>
-    &emsp;
-    <label>Zoom <input id="zoom" type="range" min="1" max="3" value="1" step="0.1" /></label>
-    <button type="button" id="no-zoom">&times;</button>
-    <br />
-
-    <label><input type="radio" name="tool" value="point" /> Point</label>
+    <label><input type="radio" name="tool" value="point" checked="checked" /> Point</label>
     <label><input type="radio" name="tool" value="rectangle" /> Rectangle</label>
     <label><input type="radio" name="tool" value="ellipse" /> Ellipse</label>
     <label><input type="radio" name="tool" value="axes" /> Axes</label>
     <label><input type="radio" name="tool" value="transcription" /> Transcription</label>
-    <label><input type="radio" name="tool" value="magnifier" checked="checked" /> Mag. Point</label>
+    <label><input type="radio" name="tool" value="magnifier" /> Mag. Point</label>
 
     <div id="container"></div>
 

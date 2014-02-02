@@ -1,49 +1,52 @@
 MarkingSurface = window.MarkingSurface
 {Tool, RectangleTool, EllipseTool, AxesTool, TranscriptionTool, MagnifierPointTool, DefaultToolControls} = MarkingSurface
 
-RectangleTool.Controls = DefaultToolControls
-EllipseTool.Controls = DefaultToolControls
-AxesTool.Controls = DefaultToolControls
-
-getImageSize = (src, callback) ->
+getImage = (src, callback) ->
   img = new Image
-  img.src = src
   img.onload = ->
-    callback img.width, img.height
+    callback? img
+  img.src = src
 
 class PointTool extends Tool
   @Controls: DefaultToolControls
-
-  hr: null
-  vr: null
-  circle: null
-
   size: if !!~navigator.userAgent.indexOf 'iO' then 40 else 20
-  stroke: 'white'
+  strokeWidth: 2
 
-  cursors:
-    circle: 'move'
+  constructor: ->
+    super
 
-  initialize: ->
+    @size = @scale @size
+    @strokeWidth = @scale @strokeWidth
+
+    @mark.x = 0
+    @mark.y = 0
+
     @addShape 'path', d: """
       M #{-@size} 0 L #{-@size * (1 / 3)} 0 M #{@size} 0 L #{@size * (1 / 3)} 0
       M 0 #{-@size} L 0 #{-@size * (1 / 3)} M 0 #{@size} L 0 #{@size * (1 / 3)}
-    """, stroke: @stroke, strokeWidth: 2
-    @circle = @addShape 'circle', cx: 0, cy: 0, r: @size, fill: 'transparent', stroke: @stroke, strokeWidth: 2
+    """, stroke: 'currentColor', strokeWidth: @strokeWidth
 
-  onInitialClick: (e) ->
-    @onInitialDrag e
+    @addShape 'circle', cx: 0, cy: 0, r: @size, fill: 'transparent', stroke: 'currentColor', strokeWidth: @strokeWidth
 
-  onInitialDrag: (e) ->
-    @['on *drag circle'] e
+    @addEvent 'move', 'circle', @onMove
 
-  'on *drag circle': (e) =>
-    offset = @pointerOffset e
-    @mark.set offset
+  onInitialStart: (e) ->
+    super
+    @onInitialMove e
+
+  onInitialMove: (e) ->
+    super
+    @onMove e
+
+  onMove: (e) ->
+    {x, y} = @coords e
+    x -= 10
+    y -= 10
+    @mark.set {x, y}
 
   render: ->
-    @group.attr 'transform', "translate(#{@mark.x}, #{@mark.y})"
-    @controls.moveTo @mark.x, @mark.y
+    @attr 'transform', "translate(#{@mark.x}, #{@mark.y})"
+    @controls.moveTo @mark
 
 TOOLS =
   point: PointTool
@@ -57,13 +60,10 @@ DEMO_IMAGE = 'http://www.seafloorexplorer.org/images/field-guide/fish.jpg'
 
 ms = new MarkingSurface
   tool: TOOLS[$('input[name="tool"]:checked').val()]
-  width: 640
-  height: 480
 
-getImageSize DEMO_IMAGE, (width, height) ->
-  ms.el.style.width = "#{width}px"
-  ms.el.style.height = "#{height}px"
-  ms.addShape 'image', 'xlink:href': DEMO_IMAGE, width: width, height: height
+getImage DEMO_IMAGE, ({src, width, height}) ->
+  ms.svg.attr width: width * 0.75, height: height * 0.75, viewBox: "0 0 #{width} #{height}"
+  ms.image = ms.addShape 'image', 'xlink:href': src, width: '100%', height: '100%'
 
 container = $('#container')
 container.append ms.el
@@ -77,23 +77,12 @@ disabledCheckbox.on 'change', ->
   checked = !!disabledCheckbox.prop 'checked'
   ms[if checked then 'disable' else 'enable']()
 
-zoomSlider = $('#zoom')
-zoomSlider.on 'change', ->
-  ms.zoom zoomSlider.val()
-
-noZoomButton = $('#no-zoom')
-noZoomButton.on 'click', ->
-  zoomSlider.val 1
-  ms.zoom 1
-
 $('input[name="tool"]').on 'change', ({target}) ->
   ms.tool = TOOLS[$(target).val()]
 
 mirror = new MarkingSurface
-  width: 640
-  height: 480
 
-getImageSize DEMO_IMAGE, (width, height) ->
+getImage DEMO_IMAGE, ({width, height}) ->
   mirror.el.style.width = "#{width}px"
   mirror.el.style.height = "#{height}px"
   mirrorImage = mirror.addShape 'image', 'xlink:href': DEMO_IMAGE, width: width, height: height
@@ -102,11 +91,11 @@ getImageSize DEMO_IMAGE, (width, height) ->
 mirrorContainer = $('#mirror-container')
 mirrorContainer.append mirror.el
 
-ms.on 'create-mark', (mark) ->
-  mirroredTool = new ms.tool
-    surface: mirror
-    mark: mark
+ms.on 'add-tool', (tool) ->
+  mirroredTool = new tool.constructor
+    markingSurface: mirror
+    mark: tool.mark
   mirror.addTool mirroredTool
 
 window.ms = ms
-window.mirror = mirror
+# window.mirror = mirror

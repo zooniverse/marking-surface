@@ -11,7 +11,13 @@ class BaseClass
   trigger: (eventName, args = []) ->
     if eventName of @_events
       for handler in @_events[eventName]
-        handler.apply @, args
+        @applyHandler handler, args
+
+  applyHandler: (handler, args = []) ->
+    context = @
+    [context, handler] = handler if handler instanceof Array
+    handler = context[handler] if typeof handler is 'string'
+    handler.apply context, args
 
   off: (eventName, handler) ->
     if eventName?

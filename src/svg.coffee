@@ -15,25 +15,24 @@ NON_ATTRIBUTE_PROPERTIES = [
 
 FILTER_ID_PREFIX = 'marking-surface-filter-'
 
-class SVG
-  el: null
+class SVG extends ElementBase
+  tag: 'svg'
+  defaultAttrs: null
 
-  constructor: (tagName, attributes) ->
-    # Without a tag name, create an SVG container.
-    [tagName, attributes] = ['svg', tagName] unless typeof tagName is 'string'
+  constructor: ->
+    super
+    if @defaultAttrs?
+      @attr @defaultAttrs
+      @defaultAttrs = null
 
+  _createEl: ->
     # Classes can be assigned at creation: "circle.foo.bar".
-    [tagName, classes...] = tagName.split '.'
-    classes = classes.join ' '
-
+    [tagName, classNames...] = @tag.split '.'
+    tagName ||= 'svg'
     [namespace..., tagName] = tagName.split ':'
-    namespace = namespace.join ''
-    namespace ||= 'svg'
-
+    namespace = namespace.join(':') || 'svg'
     @el = document.createElementNS NAMESPACES[namespace] || null, tagName
-
-    @attr 'class', classes if classes
-    @attr attributes
+    @attr 'class', classNames.join ' '
 
   attr: (attribute, value) ->
     if typeof attribute is 'string'
@@ -42,65 +41,37 @@ class SVG
         attribute = (attribute.replace /([A-Z])/g, '-$1').toLowerCase()
 
       [namespace..., attribute] = attribute.split ':'
-      namespace = namespace.join ''
+      namespace = NAMESPACES[namespace.join ''] ? null
 
-      if value? # Setter
+      if arguments.length is 1
         if attribute in NON_ATTRIBUTE_PROPERTIES
-          @el[attribute] = value
-        else
-          @el.setAttributeNS NAMESPACES[namespace] || null, attribute, value
-
-      else # Getter
-        return if attribute in NON_ATTRIBUTE_PROPERTIES
           @el[attribute]
         else
-          @el.getAttributeNS NAMESPACES[namespace] || null, attribute
+          @el.getAttributeNS namespace, attribute
+      else
+        if value?
+          if attribute in NON_ATTRIBUTE_PROPERTIES
+            @el[attribute] = value
+          else
+            @el.setAttributeNS namespace, attribute, value
+        else
+          @el.removeAttributeNS namespace, attribute
 
-    else # Given an object to loop through:
+    else
       attributes = attribute
       @attr attribute, value for attribute, value of attributes
 
-    null
-
-  # Sigh, basically copied and pasted.
-  # Can't borrow ElementBase::toggleClass because of "baseVal".
-  toggleClass: (className, condition) ->
-    classList = @el.className.baseVal.match /\S+/g
-    classList ?= []
-
-    contained = className in classList
-
-    condition ?= !contained
-    condition = !!condition
-
-    if not contained and condition is true
-      classList.push className
-
-    if contained and condition is false
-      classList.splice (classList.indexOf className), 1
-
-    @el.className.baseVal = classList.join ' '
-    null
+  addShape: (tag, defaultAttrs) ->
+    # Added shapes are automatically added as children, useful for SVG roots and groups.
+    shape = new SVG {tag, defaultAttrs}
+    @el.appendChild shape.el
+    shape
 
   filter: (name) ->
     @attr 'filter', if name?
       "url(##{FILTER_ID_PREFIX}#{name})"
     else
       ''
-
-  addShape: (tagName, attributes) ->
-    # Added shapes are automatically added as children, useful for SVG roots and groups.
-    shape = new @constructor tagName, attributes
-    @el.appendChild shape.el
-    shape
-
-  toFront: ->
-    @el.parentNode.appendChild @el
-    null
-
-  remove: ->
-    @el.parentNode?.removeChild @el
-    null
 
 SVG.filtersContainer = new SVG
   id: 'marking-surface-filters-container'
@@ -116,6 +87,12 @@ shadowFilter.addShape 'feOffset', dx: 0.5, dy: 1
 shadowMerge = shadowFilter.addShape 'feMerge'
 shadowMerge.addShape 'feMergeNode'
 shadowMerge.addShape 'feMergeNode', in: 'SourceGraphic'
+
+focusFilter = SVG.filterDefs.addShape 'filter', id: "#{FILTER_ID_PREFIX}focus"
+focusFilter.addShape 'feGaussianBlur', stdDeviation: 3
+focusMerge = focusFilter.addShape 'feMerge'
+focusMerge.addShape 'feMergeNode'
+focusMerge.addShape 'feMergeNode', in: 'SourceGraphic'
 
 # NOTE: The "invert" filter won't work in IE<10.
 invertFilter = SVG.filterDefs.addShape 'filter', id: "#{FILTER_ID_PREFIX}invert", colorInterpolationFilters: 'sRGB'

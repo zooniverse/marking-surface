@@ -1,31 +1,27 @@
 class ElementBase extends BaseClass
-  tagName: 'div'
-  className: ''
+  tag: 'div'
+
+  disabled: false
+
+  _startEvent: null
 
   constructor: ->
-    @_eventListeners = []
+    @_eventListeners = {}
+    @_delegatedListeners = {}
+
     super
 
-    @el ?= document.createElement @tagName
-    @toggleClass @constructor::className, true
-    @toggleClass @className, true unless @className is @constructor::className
+    @_createEl() unless @el?
 
-  toggleClass: (className, condition) ->
-    classList = @el.className.match /\S+/g
-    classList ?= []
+    @addEvent 'mousedown', @_onStart
+    @addEvent 'touchstart', @_onStart
 
-    contained = className in classList
+    @disable() if @disabled
 
-    condition ?= !contained
-    condition = !!condition
-
-    if not contained and condition is true
-      classList.push className
-
-    if contained and condition is false
-      classList.splice (classList.indexOf className), 1
-
-    @el.className = classList.join ' '
+  _createEl: ->
+    [tagName, classNames...] = @tag.split '.'
+    @el = document.createElement tagName
+    @el.className = classNames.join ' '
 
   attr: (attribute, value) ->
     if arguments.length is 1
@@ -36,47 +32,129 @@ class ElementBase extends BaseClass
       else
         @el.removeAttribute attribute
 
+    # Hack to make IE apply changes in attribute-selected styles.
+    if 'msMatchesSelector' of document.body
+      @el.style.display = 'none'
+      @el.style.display = ''
+
   enable: (e) ->
-    @attr 'disabled', null
     @disabled = false
+    @attr 'disabled', null
+    @trigger 'enable'
 
   disable: (e) ->
-    @attr 'disabled', true
     @disabled = true
+    @attr 'disabled', true
+    @trigger 'disable'
 
-  addEvent: (eventName, handler) ->
-    @el.addEventListener eventName, handler, false
-    eventList = [eventName, handler]
-    @_eventListeners.push eventList
-    eventList
+  addEvent: (eventName, [delegate]..., handler) ->
+    unless eventName of @_eventListeners or eventName of @_delegatedListeners
+      @el.addEventListener eventName, @, false
 
-  removeEvent: (eventName, handler) ->
-    for [listedEventName, listedHandler], i in @_eventListeners
-      if listedEventName is eventName and listedHandler is handler
-        indexInList = i
-        break
+    if delegate?
+      @_delegatedListeners[eventName] ?= {}
+      @_delegatedListeners[eventName][delegate] ?= []
+      @_delegatedListeners[eventName][delegate].push handler
+    else
+      @_eventListeners[eventName] ?= []
+      @_eventListeners[eventName].push handler
 
-    @el.removeEventListener eventName, handler
-    @_eventListeners.splice indexInList, 1
+  _onStart: (e) ->
+    @_startEvent = e
+    addEventListener 'mousemove', @, false
+    addEventListener 'mouseup', @, false
+    addEventListener 'touchmove', @, false
+    addEventListener 'touchend', @, false
+    addEventListener 'touchcancel', @, false
+    @dispatchEvent 'start', originalEvent: e
 
-  triggerEvent: (eventName, detail) ->
+  _onMove: (e) ->
+    @dispatchEvent 'move', originalEvent: e
+
+  _onRelease: (e) ->
+    removeEventListener 'mousemove', @, false
+    removeEventListener 'mouseup', @, false
+    removeEventListener 'touchmove', @, false
+    removeEventListener 'touchend', @, false
+    removeEventListener 'touchcancel', @, false
+    @_startEvent = null
+    @dispatchEvent 'release', originalEvent: e
+
+  handleEvent: (e) ->
+    unless @disabled
+      if e.currentTarget is window
+        switch e.type
+          when 'mousemove', 'touchmove'
+            @_onMove e
+          when 'mouseup', 'touchend', 'touchcancel'
+            @_onRelease e
+
+      else
+        type = e.type
+        if e.detail?.originalEvent
+          e = e.detail.originalEvent
+          moveTarget = @_startEvent.target ? @_startEvent.srcElement
+
+        if type of @_eventListeners
+          for handler in @_eventListeners[type]
+            @applyHandler handler, [e]
+
+        if type of @_delegatedListeners
+          for selector, handlers of @_delegatedListeners[type]
+            match = null
+            target = moveTarget ? e.target ? e.srcElement
+            while target? and not match?
+              match = target if matchesSelector target, selector
+              target = target.parentNode
+            if match?
+              for handler in handlers
+                @applyHandler handler, [e]
+
+  removeEvent: (eventName, [delegate]..., handler) ->
+    # TODO: Allow more general event removal.
+    handlers = if delegate?
+      if eventName of @_delegatedListeners
+        if delegate of @_delegatedListeners[eventName]
+          if handler in @_delegatedListeners[eventName]
+            @_delegatedListeners[eventName]
+    else
+      if eventName of @_eventListeners
+        if handler in @_eventListeners[eventName]
+          @_eventListeners[eventName]
+
+    if handlers?
+      index = handlers.indexOf handler
+      handlers.splice index, 1
+
+  dispatchEvent: (eventName, detail) ->
     e = document.createEvent 'CustomEvent'
     e.initCustomEvent eventName, true, true, detail
     @el.dispatchEvent e
 
-  trigger: ->
+  trigger: (eventName, args = [])->
     super
-    @triggerEvent arguments...
+    @dispatchEvent eventName, [@, args...]
 
   pointerOffset: (e) ->
     e = e.touches[0] if 'touches' of e
-
-    {left, top} = @el.getClientRects()[0]
+    {left, top} = @el.getBoundingClientRect()
     x = e.pageX - pageXOffset - left
     y = e.pageY - pageYOffset - top
-
     {x, y}
 
+  toFront: ->
+    @el.parentNode?.appendChild @el
+
+  remove: ->
+    @el.parentNode?.removeChild @el
+
   destroy: ->
-    @removeEvent @_eventListeners[0]... until @_eventListeners.length is 0
     super
+    @remove()
+    for eventName of @_eventListeners
+      @el.removeEventListener eventName, @, false
+    for eventName of @_delegatedListeners
+      continue if eventName of @_eventListeners
+      @el.removeEventListener eventName, @, false
+    @_eventListeners = {}
+    @_delegatedListeners = {}
