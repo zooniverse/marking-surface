@@ -1,7 +1,7 @@
 {Tool} = window?.MarkingSurface || require 'marking-surface'
 
 class RectangleTool extends Tool
-  handleSize: if @mobile then 20 else 10
+  handleSize: if @mobile then 14 else 7
   strokeWidth: 2
 
   startOffset = null
@@ -21,16 +21,14 @@ class RectangleTool extends Tool
     @addEvent 'move', '.outline', @moveOutline
 
     handleDefaults =
-      width: @handleSize
-      height: @handleSize
+      r: @handleSize
       fill: 'currentColor'
       stroke: 'transparent'
-      strokeWidth: @strokeWidth
 
-    @topLeftHandle = @addShape 'rect.top-left.handle', handleDefaults
-    @topRightHandle = @addShape 'rect.top-right.handle', handleDefaults
-    @bottomRightHandle = @addShape 'rect.bottom-right.handle', handleDefaults
-    @bottomLeftHandle = @addShape 'rect.bottom-left.handle', handleDefaults
+    @topLeftHandle = @addShape 'circle.top-left.handle', handleDefaults
+    @topRightHandle = @addShape 'circle.top-right.handle', handleDefaults
+    @bottomRightHandle = @addShape 'circle.bottom-right.handle', handleDefaults
+    @bottomLeftHandle = @addShape 'circle.bottom-left.handle', handleDefaults
 
     @addEvent 'start', '.top-left.handle', @startTopLeftHandle
     @addEvent 'start', '.top-right.handle', @startTopRightHandle
@@ -39,6 +37,18 @@ class RectangleTool extends Tool
     @addEvent 'move', '.handle', @moveAnyHandle
 
     @handles = [@topLeftHandle, @topRightHandle, @bottomRightHandle, @bottomLeftHandle]
+
+  rescale: (scale) ->
+    super
+    scaledStrokeWidth = @strokeWidth / scale
+    scaledHandleSize = @handleSize / scale
+
+    @outline.attr 'strokeWidth', @scaledStrokeWidth
+
+    for handle in @handles
+      handle.attr
+        r: scaledHandleSize
+        strokeWidth: scaledStrokeWidth
 
   onInitialStart: (e) ->
     super
@@ -138,16 +148,17 @@ class RectangleTool extends Tool
       height: y - @mark.top
 
   render: ->
+    super
     @outline.attr
       x: @mark.left
       y: @mark.top
       width: @mark.width
       height: @mark.height
 
-    @topLeftHandle.attr x: @mark.left, y: @mark.top
-    @topRightHandle.attr x: @mark.left + (@mark.width - @handleSize), y: @mark.top
-    @bottomRightHandle.attr x: @mark.left + (@mark.width - @handleSize), y: @mark.top + (@mark.height - @handleSize)
-    @bottomLeftHandle.attr x: @mark.left, y: @mark.top + (@mark.height - @handleSize)
+    @topLeftHandle.attr cx: @mark.left, cy: @mark.top
+    @topRightHandle.attr cx: @mark.left + @mark.width, cy: @mark.top
+    @bottomRightHandle.attr cx: @mark.left + @mark.width, cy: @mark.top + @mark.height
+    @bottomLeftHandle.attr cx: @mark.left, cy: @mark.top + @mark.height
 
     @controls?.moveTo [@mark.left + @mark.width, @mark.top]
 

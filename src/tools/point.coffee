@@ -50,6 +50,7 @@ class PointTool extends Tool
     @mark.set {x, y}
 
   render: ->
+    super
     @attr 'transform', "translate(#{@mark.x}, #{@mark.y})"
     @controls?.moveTo @mark
 

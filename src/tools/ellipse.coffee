@@ -77,6 +77,7 @@ class EllipseTool extends Tool
       ry: @getDistance @mark.x, @mark.y, x, y
 
   render: ->
+    super
     # NOTE: SVG rotates clockwise, angles are measured counterclockwise.
     @attr 'transform', "translate(#{@mark.x}, #{@mark.y}) rotate(#{-@mark.angle})"
     @radii.attr 'd', "M 0 #{-@mark.ry} L 0 0 M #{@mark.rx} 0 L 0 0"

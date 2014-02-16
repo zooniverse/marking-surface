@@ -1,41 +1,46 @@
 {ToolControls, RectangleTool} = window?.MarkingSurface || require 'marking-surface'
 
 class TranscriptionControls extends ToolControls
+  template: '''
+    <textarea style="height: 3em; width: 100%"></textarea>
+  '''
+
   constructor: ->
     super
+    @textarea = @el.querySelector 'textarea'
+    @addEvent 'input', 'textarea', @onChangeTextarea
 
-    @textarea = document.createElement 'textarea'
-    @textarea.style.height = '3em'
-    @textarea.style.width = '100%'
-    @textarea.addEventListener 'input', @onChangeTextarea, false
-
-    @el.appendChild @textarea
-
-  onChangeTextarea: (e) =>
-    setTimeout =>
-      @tool.mark.set 'content', @textarea.value
+  onChangeTextarea: (e) ->
+    @tool.mark.set 'content', @textarea.value
 
   onToolSelect: ->
     super
     @textarea.style.display = ''
-    setTimeout => @textarea.focus()
 
   onToolDeselect: ->
     super
     @textarea.style.display = 'none'
 
   render: ->
+    super
     @el.style.width = "#{@tool.mark.width}px"
 
 class TranscriptionTool extends RectangleTool
   @Controls: TranscriptionControls
 
-  initialize: ->
+  constructor: ->
     super
-    @mark.set 'content', ''
+    @mark.content = ''
 
-  getControlsPosition: ->
-    [@mark.left + (@mark.width / 2),  @mark.top + @mark.height]
+  onInitialRelease: ->
+    super
+    @controls?.textarea.focus()
+
+  render: ->
+    super
+    @controls?.moveTo
+      x: @mark.left + (@mark.width / 2)
+      y: @mark.top + @mark.height
 
 window?.MarkingSurface.TranscriptionTool = TranscriptionTool
 module?.exports = TranscriptionTool
