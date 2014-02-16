@@ -73,7 +73,7 @@ class SVG extends ElementBase
     else
       ''
 
-SVG.filtersContainer = new SVG
+SVG.filtersContainer = new SVG defaultAttrs:
   id: 'marking-surface-filters-container'
   width: 0
   height: 0
