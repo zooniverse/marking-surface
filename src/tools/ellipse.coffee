@@ -75,13 +75,13 @@ class EllipseTool extends Tool
       ry: @getDistance @mark.x, @mark.y, x, y
 
   render: ->
-    # NOTE: SVG rotates clockwise, andgles are measure counterclockwise.
+    # NOTE: SVG rotates clockwise, angles are measured counterclockwise.
     @attr 'transform', "translate(#{@mark.x}, #{@mark.y}) rotate(#{-@mark.angle})"
     @radii.attr 'd', "M 0 #{-@mark.ry} L 0 0 M #{@mark.rx} 0 L 0 0"
     @outline.attr rx: @mark.rx, ry: @mark.ry
     @xHandle.attr 'cx', @mark.rx
     @yHandle.attr 'cy', -@mark.ry
-    @controls.moveTo @mark
+    @controls?.moveTo @mark
 
   getAngle: (x1, y1, x2, y2) ->
     deltaX = x2 - x1
