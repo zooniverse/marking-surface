@@ -71,7 +71,7 @@ TOOLS =
   transcription: TranscriptionTool
   magnifier: MagnifierPointTool
 
-DEMO_IMAGE = 'http://www.seafloorexplorer.org/images/field-guide/fish.jpg'
+DEMO_IMAGE = './fish.jpg'
 
 ms = new MarkingSurface
   inputName: 'marks'
