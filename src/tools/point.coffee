@@ -54,4 +54,4 @@ class PointTool extends Tool
     @controls?.moveTo @mark
 
 window?.MarkingSurface.PointTool = PointTool
-module.exports = PointTool
+module?.exports = PointTool

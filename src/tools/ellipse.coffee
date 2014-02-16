@@ -38,6 +38,7 @@ class EllipseTool extends Tool
     @yHandle.attr 'r', scaledHandleRadius
 
   onInitialStart: (e) ->
+    super
     {x, y} = @coords e
 
     @mark.set
@@ -47,6 +48,7 @@ class EllipseTool extends Tool
       ry: @defaultRadius * @defaultSquash
 
   onInitialMove: (e) ->
+    super
     @dragXHandle e
     @mark.set 'ry', @mark.rx * @defaultSquash
 

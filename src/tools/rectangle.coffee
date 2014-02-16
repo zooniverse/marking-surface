@@ -1,103 +1,104 @@
 {Tool} = window?.MarkingSurface || require 'marking-surface'
 
 class RectangleTool extends Tool
-  outside: null
-  handles: null
-  topLeftHandle: null
-  topRightHandle: null
-  bottomRightHandle: null
-  bottomLeftHandle: null
-
-  handleSize: if !!~navigator.userAgent.indexOf 'iO' then 20 else 10
-  fill: 'rgba(128, 128, 128, 0.1)'
-  stroke: 'white'
+  handleSize: if @mobile then 20 else 10
   strokeWidth: 2
 
-  defaultSize: 10
-
-  startCoords = null
+  startOffset = null
   pointerOffsetFromShape: null
 
-  cursors:
-    outside: '*grab'
-    handles: 'move'
+  constructor: ->
+    super
 
-  initialize: ->
-    @root.filter 'shadow'
+    @mark.left = 0
+    @mark.top = 0
+    @mark.width = 0
+    @mark.height = 0
 
-    @outside = @addShape 'rect', {@fill, @stroke, @strokeWidth}
+    @outline = @addShape 'rect.outline', fill: 'transparent', stroke: 'currentColor'
 
-    @topLeftHandle = @addShape 'rect', {width: @handleSize, height: @handleSize, @fill, @stroke, @strokeWidth}
-    @topRightHandle = @addShape 'rect', {width: @handleSize, height: @handleSize, @fill, @stroke, @strokeWidth}
-    @bottomRightHandle = @addShape 'rect', {width: @handleSize, height: @handleSize, @fill, @stroke, @strokeWidth}
-    @bottomLeftHandle = @addShape 'rect', {width: @handleSize, height: @handleSize, @fill, @stroke, @strokeWidth}
+    @addEvent 'start', '.outline', @startDrag
+    @addEvent 'move', '.outline', @moveOutline
+
+    handleDefaults =
+      width: @handleSize
+      height: @handleSize
+      fill: 'currentColor'
+      stroke: 'transparent'
+      strokeWidth: @strokeWidth
+
+    @topLeftHandle = @addShape 'rect.top-left.handle', handleDefaults
+    @topRightHandle = @addShape 'rect.top-right.handle', handleDefaults
+    @bottomRightHandle = @addShape 'rect.bottom-right.handle', handleDefaults
+    @bottomLeftHandle = @addShape 'rect.bottom-left.handle', handleDefaults
+
+    @addEvent 'start', '.top-left.handle', @startTopLeftHandle
+    @addEvent 'start', '.top-right.handle', @startTopRightHandle
+    @addEvent 'start', '.bottom-right.handle', @startBottomRightHandle
+    @addEvent 'start', '.bottom-left.handle', @startBottomLeftHandle
+    @addEvent 'move', '.handle', @moveAnyHandle
 
     @handles = [@topLeftHandle, @topRightHandle, @bottomRightHandle, @bottomLeftHandle]
 
+  onInitialStart: (e) ->
+    super
+    @startDrag e
     @mark.set
-      left: 0
-      top: 0
-      width: @defaultSize
-      height: @defaultSize
+      left: @startOffset.x
+      top: @startOffset.y
 
-  'on *start outside': (e) ->
-    @startCoords = @pointerOffset e
-    @pointerOffsetFromShape =
-      x: @startCoords.x - @mark.left
-      y: @startCoords.y - @mark.top
+  onInitialMove: (e) ->
+    super
+    @moveAnyHandle e
 
-  'on *drag outside': (e) ->
-    {x, y} = @pointerOffset e
+  startDrag: (e) ->
+    @startOffset = @coords e
+    @shapeOffset =
+      x: @startOffset.x - @mark.left
+      y: @startOffset.y - @mark.top
+
+  moveOutline: (e) ->
+    {x, y} = @coords e
     @mark.set
-      left: x - @pointerOffsetFromShape.x
-      top: y - @pointerOffsetFromShape.y
+      left: x - @shapeOffset.x
+      top: y - @shapeOffset.y
 
-  onFirstClick: (e) ->
-    @startCoords = @pointerOffset e
-
-    @mark.set
-      left: @startCoords.x - (@defaultSize / 2)
-      top: @startCoords.y - (@defaultSize / 2)
-
-  onFirstDrag: (e) ->
-    @['on *drag handles'] e
-
-  'on *start topLeftHandle': (e) ->
-    @startCoords =
+  startTopLeftHandle: (e) ->
+    @startOffset =
       x: @mark.left + @mark.width
       y: @mark.top + @mark.height
 
-  'on *start topRightHandle': (e) ->
-    @startCoords =
+  startTopRightHandle: (e) ->
+    @startOffset =
       x: @mark.left
       y: @mark.top + @mark.height
 
-  'on *start bottomRightHandle': (e) ->
-    @startCoords =
+  startBottomRightHandle: (e) ->
+    @startOffset =
       x: @mark.left
       y: @mark.top
 
-  'on *start bottomLeftHandle': (e) ->
-    @startCoords =
+  startBottomLeftHandle: (e) ->
+    @startOffset =
       x: @mark.left + @mark.width
       y: @mark.top
 
-  'on *drag handles': (e) ->
-    {x, y} = @pointerOffset e
+  moveAnyHandle: (e) ->
+    {x, y} = @coords e
 
-    dragMethod = if x < @startCoords.x and y < @startCoords.y
+    dragMethod = if x < @startOffset.x and y < @startOffset.y
       'dragFromTopLeft'
-    else if x >= @startCoords.x and y < @startCoords.y
+    else if x >= @startOffset.x and y < @startOffset.y
       'dragFromTopRight'
-    else if x >= @startCoords.x and y >= @startCoords.y
+    else if x >= @startOffset.x and y >= @startOffset.y
       'dragFromBottomRight'
-    else if x < @startCoords.x and y >= @startCoords.y
+    else if x < @startOffset.x and y >= @startOffset.y
       'dragFromBottomLeft'
 
     @[dragMethod] e
 
   dragFromTopLeft: (e) =>
-    {x, y} = @pointerOffset e
+    {x, y} = @coords e
     x -= @handleSize / 2
     y -= @handleSize / 2
 
@@ -108,7 +109,7 @@ class RectangleTool extends Tool
       height: @mark.height + (@mark.top - y)
 
   dragFromTopRight: (e) =>
-    {x, y} = @pointerOffset e
+    {x, y} = @coords e
     x += @handleSize / 2
     y -= @handleSize / 2
 
@@ -118,7 +119,7 @@ class RectangleTool extends Tool
       height: @mark.height + (@mark.top - y)
 
   dragFromBottomRight: (e) =>
-    {x, y} = @pointerOffset e
+    {x, y} = @coords e
     x += @handleSize / 2
     y += @handleSize / 2
 
@@ -127,7 +128,7 @@ class RectangleTool extends Tool
       height: y - @mark.top
 
   dragFromBottomLeft: (e) =>
-    {x, y} = @pointerOffset e
+    {x, y} = @coords e
     x -= @handleSize / 2
     y += @handleSize / 2
 
@@ -137,7 +138,7 @@ class RectangleTool extends Tool
       height: y - @mark.top
 
   render: ->
-    @outside.attr
+    @outline.attr
       x: @mark.left
       y: @mark.top
       width: @mark.width
@@ -148,10 +149,7 @@ class RectangleTool extends Tool
     @bottomRightHandle.attr x: @mark.left + (@mark.width - @handleSize), y: @mark.top + (@mark.height - @handleSize)
     @bottomLeftHandle.attr x: @mark.left, y: @mark.top + (@mark.height - @handleSize)
 
-    @controls.moveTo @getControlsPosition()...
-
-  getControlsPosition: ->
-    [@mark.left + @mark.width, @mark.top]
+    @controls?.moveTo [@mark.left + @mark.width, @mark.top]
 
 window?.MarkingSurface.RectangleTool = RectangleTool
 module?.exports = RectangleTool
