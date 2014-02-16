@@ -174,7 +174,7 @@ MarkingSurface.defaultStyle = insertStyle 'marking-surface-default-style', '''
     left: 0;
     position: absolute;
     opacity: 0;
-    pointer-events: 0;
+    pointer-events: none;
     top: 0;
   }
 
