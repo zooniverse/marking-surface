@@ -39,7 +39,7 @@ class TranscriptionTool extends RectangleTool
   render: ->
     super
     @controls?.moveTo
-      x: @mark.left + (@mark.width / 2)
+      x: @mark.left
       y: @mark.top + @mark.height
 
 window?.MarkingSurface.TranscriptionTool = TranscriptionTool
