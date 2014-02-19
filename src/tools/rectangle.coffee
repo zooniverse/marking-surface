@@ -43,7 +43,7 @@ class RectangleTool extends Tool
     scaledStrokeWidth = @strokeWidth / scale
     scaledHandleSize = @handleSize / scale
 
-    @outline.attr 'strokeWidth', @scaledStrokeWidth
+    @outline.attr 'strokeWidth', scaledStrokeWidth
 
     for handle in @handles
       handle.attr
