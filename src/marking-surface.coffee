@@ -41,6 +41,14 @@ class MarkingSurface extends ElementBase
 
     @trigger 'change'
 
+    addEventListener 'resize', @, false
+
+  handleEvent: (e) ->
+    if e.target is window and e.type is 'resize'
+      @rescaleTools()
+    else
+      super
+
   addShape: ->
     @root.addShape arguments...
 
@@ -161,6 +169,7 @@ class MarkingSurface extends ElementBase
 
   destroy: ->
     @reset()
+    removeEventListener 'resize', @, false
     super
 
 MarkingSurface.defaultStyle = insertStyle 'marking-surface-default-style', '''
