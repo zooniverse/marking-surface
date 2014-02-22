@@ -137,6 +137,9 @@ class MarkingSurface extends ElementBase
 
   rescale: (x, y, width, height) ->
     @svg.attr 'viewBox', "#{x} #{y} #{width} #{height}"
+    @rescaleTools()
+
+  rescaleTools: ->
     tool.rescale? @getScale() for tool in @tools
 
   getScale: ->
