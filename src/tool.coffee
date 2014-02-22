@@ -47,7 +47,7 @@ class Tool extends SVG
     @root.addShape arguments...
 
   coords: (e) ->
-    @markingSurface.toScale @markingSurface.pointerOffset e
+    @markingSurface.toScale @markingSurface.sizeRect.pointerOffset e
 
   # NOTE: These "initial" events originate on the marking surface.
 

@@ -12,6 +12,7 @@ class MarkingSurface extends ElementBase
     super
 
     @svg = new SVG tag: 'svg.marking-surface-svg'
+    @sizeRect = @svg.addShape 'rect', fill: 'none', stroke: 'transparent', strokeWidth: 0, width: '100%', height: '100%'
     @root = @svg.addShape 'g.marking-surface-svg-root'
     @el.appendChild @svg.el
     @on 'destroy', [@svg, 'destroy']
@@ -117,18 +118,20 @@ class MarkingSurface extends ElementBase
   toScale: ({x, y}) ->
     if @svg.el.hasAttribute 'viewBox'
       viewBox = @svg.el.viewBox.animVal
+      sizeRect = @sizeRect.el.getBoundingClientRect()
       x += viewBox.x
-      x *= viewBox.width / @el.offsetWidth
+      x *= viewBox.width / sizeRect.width
       y += viewBox.y
-      y *= viewBox.height / @el.offsetHeight
+      y *= viewBox.height / sizeRect.height
     {x, y}
 
   toPixels: ({x, y}) ->
     if @svg.el.hasAttribute 'viewBox'
       viewBox = @svg.el.viewBox.animVal
-      x /= viewBox.width / @el.offsetWidth
+      sizeRect = @sizeRect.el.getBoundingClientRect()
+      x /= viewBox.width / sizeRect.width
       x -= viewBox.x
-      y /= viewBox.height / @el.offsetHeight
+      y /= viewBox.height / sizeRect.height
       y -= viewBox.y
     {x, y}
 
