@@ -3,10 +3,14 @@ NAMESPACES =
   xlink: 'http://www.w3.org/1999/xlink'
 
 CASE_SENSITIVE_ATTRIBUTES = [
-  'viewBox'
+  'markerHeight'
+  'markerWidth'
   'preserveAspectRatio'
+  'refX'
+  'refY'
   'stdDeviation'
-  'tableValues'
+  'tableValues',
+  'viewBox'
 ]
 
 NON_ATTRIBUTE_PROPERTIES = [
