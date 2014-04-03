@@ -2,6 +2,7 @@ MarkingSurface = window.MarkingSurface
 {Tool, PointTool, RectangleTool, EllipseTool, AxesTool, TranscriptionTool, MagnifierPointTool, DefaultToolControls} = MarkingSurface
 
 EllipseTool.Controls = DefaultToolControls
+AxesTool.Controls = DefaultToolControls
 
 getImage = (src, callback) ->
   img = new Image

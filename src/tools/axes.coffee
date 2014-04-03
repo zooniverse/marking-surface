@@ -1,78 +1,93 @@
 {Tool} = window?.MarkingSurface || require 'marking-surface'
 
 class AxesTool extends Tool
-  lines: null
-  dots: null
-
-  handleRadius: if !!~navigator.userAgent.indexOf 'iO' then 20 else 10
-  fill: 'rgba(128, 128, 128, 0.1)'
-  stroke: 'white'
   strokeWidth: 2
+  radius: if @mobile then 20 else 10
 
-  cursors:
-    'dots': 'move'
-
-  initialize: ->
-    @root.filter 'shadow'
+  constructor: ->
+    super
 
     @lines = for i in [0...2]
-      @addShape 'line', {@stroke, @strokeWidth}
+      @addShape 'line.axis', stroke: 'currentColor'
 
-    @dots = for i in [0...4]
-      @addShape 'circle', {r: @handleRadius, @fill, @stroke, @strokeWidth}
+    @handles = for i in [0...4]
+      @mark["p#{i}"] = [-2 * @radius, -2 * @radius]
+      handle = @addShape 'circle.handle', fill: 'currentColor', 'data-handle-index': i
+      handle
 
-    @mark.set
-      p0: [-(@handleRadius * 2), -(@handleRadius * 2)]
-      p1: [-(@handleRadius * 2), -(@handleRadius * 2)]
-      p2: [-(@handleRadius * 2), -(@handleRadius * 2)]
-      p3: [-(@handleRadius * 2), -(@handleRadius * 2)]
+    @addEvent 'move', '.handle', [this, @onHandleMove]
+    @addEvent 'release', '.handle', [this, @onHandleRelease]
 
-  onFirstClick: (e) ->
-    {x, y} = @pointerOffset e
-    points = if @drags is 0 then ['p0', 'p1', 'p2', 'p3'] else ['p2', 'p3']
-    newValues = {}
-    newValues[point] = [x, y] for point in points
-    @mark.set newValues
+  rescale: (scale) ->
+    super
 
-  onFirstDrag: (e) ->
-    {x, y} = @pointerOffset e
-    points = if @drags is 0 then ['p1', 'p3'] else ['p3']
-    newValues = {}
-    newValues[point] = [x, y] for point in points
-    @mark.set newValues
+    for line in @lines
+      line.attr 'strokeWidth', @strokeWidth / scale
+
+    for handle in @handles
+      handle.attr 'r', @radius / scale
+
+  onInitialStart: (e) ->
+    {x, y} = @coords e
+    points = if @movements is 0 then ['p0', 'p1'] else ['p2', 'p3']
+    for point in points
+      @mark.set point, [x, y]
+
+  onInitialMove: (e) ->
+    {x, y} = @coords e
+    point = if @movements is 0 then 'p1' else 'p3'
+    @mark.set point, [x, y]
 
   isComplete: ->
-    @drags is 2
+    @movements is 2
 
-  downedDotIndex: NaN
-  'on *drag dots': (e) =>
-    if e.type in ['mousedown', 'touchstart']
-      @downedDotIndex = i for s, i in @dots when s.el is e.target
+  # Store the moving handle outside the method or we'll lose it when the cursor slips off.
+  handleIndex = null
 
-    {x, y} = @pointerOffset e
-    @mark.set "p#{@downedDotIndex}", [x, y]
+  onHandleMove: (e) ->
+    handleIndex ?= e.target.getAttribute 'data-handle-index'
+    {x, y} = @coords e
+    @mark.set "p#{handleIndex}", [x, y]
+
+  onHandleRelease: ->
+    handleIndex = null
 
   render: ->
+    @lines[0].attr
+      x1: @mark.p0[0], y1: @mark.p0[1]
+      x2: @mark.p1[0], y2: @mark.p1[1]
+
+    @lines[1].attr
+      x1: @mark.p2[0], y1: @mark.p2[1]
+      x2: @mark.p3[0], y2: @mark.p3[1]
+
     for point, i in ['p0', 'p1', 'p2', 'p3']
-      @dots[i].attr cx: @mark[point][0], cy: @mark[point][1]
+      @handles[i].attr cx: @mark[point][0], cy: @mark[point][1]
 
-    @lines[0].attr x1: @mark.p0[0], y1: @mark.p0[1], x2: @mark.p1[0], y2: @mark.p1[1]
-    @lines[1].attr x1: @mark.p2[0], y1: @mark.p2[1], x2: @mark.p3[0], y2: @mark.p3[1]
-
-    intersection = if @mark.p0[0] is @mark.p2[0] and @mark.p0[1] is @mark.p2[1]
+    intersection = if @movements < 1
       null
     else
       @getIntersection @mark.p0, @mark.p1, @mark.p2, @mark.p3
 
-    for line in @lines
-      line.attr 'strokeDasharray': if intersection? then '' else '2, 2'
+    if intersection?
+      @el.setAttribute 'data-intersects', true
+    else
+      @el.removeAttribute 'data-intersects'
 
-    intersection ?= [
-      (@mark.p0[0] + @mark.p1[0] + @mark.p2[0] + @mark.p3[0]) / 4
-      (@mark.p0[1] + @mark.p1[1] + @mark.p2[1] + @mark.p3[1]) / 4
-    ]
+    intersection ?= if @movements is 0
+      [
+        (@mark.p0[0] + @mark.p1[0]) / 2
+        (@mark.p0[1] + @mark.p1[1]) / 2
+      ]
+    else
+      [
+        (@mark.p0[0] + @mark.p1[0] + @mark.p2[0] + @mark.p3[0]) / 4
+        (@mark.p0[1] + @mark.p1[1] + @mark.p2[1] + @mark.p3[1]) / 4
+      ]
 
-    @controls.moveTo intersection...
+    @controls.moveTo
+      x: intersection[0]
+      y: intersection[1]
 
   getIntersection: (p0, p1, p2, p3) ->
       grads = [
