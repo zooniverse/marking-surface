@@ -9,7 +9,6 @@ class Tool extends SVG
 
   movements: 0
 
-
   constructor: ->
     super
 
