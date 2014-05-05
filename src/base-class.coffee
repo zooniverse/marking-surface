@@ -41,4 +41,7 @@ class BaseClass
 
   destroy: ->
     @trigger 'destroy'
-    @off()
+
+    # Delay event removal so extending functions can run and trigger things.
+    setTimeout ->
+      @off()
