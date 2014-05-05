@@ -6,8 +6,7 @@ AxesTool.Controls = DefaultToolControls
 
 getImage = (src, callback) ->
   img = new Image
-  img.onload = ->
-    callback? img
+  img.onload = -> callback? img
   img.src = src
 
 TOOLS =

@@ -13,11 +13,18 @@ class BaseClass
       for handler in @_events[eventName]
         @applyHandler handler, args
 
-  applyHandler: (handler, args = []) ->
-    context = @
-    [context, handler] = handler if handler instanceof Array
-    handler = context[handler] if typeof handler is 'string'
-    handler.apply context, args
+  applyHandler: (handler, givenArgs = []) ->
+    context = this
+
+    if handler instanceof Array
+      [context, handler, firstArgs...] = handler
+
+    firstArgs ?= []
+
+    if typeof handler is 'string'
+      handler = context[handler]
+
+    handler.call context, firstArgs..., givenArgs...
 
   off: (eventName, handler) ->
     if eventName?
