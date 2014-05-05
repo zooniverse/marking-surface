@@ -21,44 +21,26 @@ DEMO_IMAGE = './fish.jpg'
 
 ms = new MarkingSurface
   inputName: 'marks'
-  tool: TOOLS[$('input[name="tool"]:checked').val()]
+  tool: TOOLS[document.querySelector('input[name="tool"]:checked').value]
 
 getImage DEMO_IMAGE, ({src, width, height}) ->
   ms.image = ms.addShape 'image', 'xlink:href': src, width: width, height: height
   ms.svg.attr width: width * 0.75, height: height * 0.75
   ms.rescale 0, 0, width, height
 
-container = $('#container')
-container.append ms.el
+container = document.getElementById 'container'
+container.appendChild ms.el
 
-marks = $('#marks')
+marks = document.getElementById 'marks'
 ms.on 'change', ->
-  marks.val ms.getValue()
+  marks.value = ms.getValue()
 
-disabledCheckbox = $('#disabled')
-disabledCheckbox.on 'change', ->
-  checked = !!disabledCheckbox.prop 'checked'
+disabledCheckbox = document.getElementById 'disabled'
+disabledCheckbox.addEventListener 'change', ->
+  checked = disabledCheckbox.checked
   ms[if checked then 'disable' else 'enable']()
 
-$('input[name="tool"]').on 'change', ({target}) ->
-  ms.tool = TOOLS[$(target).val()]
-
-mirror = new MarkingSurface
-
-getImage DEMO_IMAGE, ({width, height}) ->
-  mirror.el.style.width = "#{width}px"
-  mirror.el.style.height = "#{height}px"
-  mirrorImage = mirror.addShape 'image', 'xlink:href': DEMO_IMAGE, width: width, height: height
-  mirrorImage.filter 'invert'
-
-mirrorContainer = $('#mirror-container')
-mirrorContainer.append mirror.el
-
-ms.on 'add-tool', (tool) ->
-  mirroredTool = new tool.constructor
-    markingSurface: mirror
-    mark: tool.mark
-  mirror.addTool mirroredTool
+document.querySelector('input[name="tool"]').addEventListener 'change', ({target}) ->
+  ms.tool = TOOLS[target.value]
 
 window.ms = ms
-window.mirror = mirror
