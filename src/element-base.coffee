@@ -1,4 +1,7 @@
 class ElementBase extends BaseClass
+  @instances = {}
+
+  id: ''
   tag: 'div'
 
   disabled: false
@@ -12,6 +15,10 @@ class ElementBase extends BaseClass
     super
 
     @_createEl() unless @el?
+
+    @id ||= "#{Math.random()}".split('.')[1]
+    @attr 'data-marking-surface-id', @id
+    @constructor.instances[@id] = this
 
     @addEvent 'mousedown', @_onStart
     @addEvent 'touchstart', @_onStart
@@ -147,14 +154,29 @@ class ElementBase extends BaseClass
 
   remove: ->
     @el.parentNode?.removeChild @el
+    @trigger 'remove'
+
+  removeChildren: ->
+    for child in Array::slice.call @el.children
+      if child.hasAttribute 'data-marking-surface-id'
+        childInstance = @constructor.instances[child.getAttribute 'data-marking-surface-id']
+        childInstance.remove()
 
   destroy: ->
-    super
     @remove()
+    @removeChildren()
+
     for eventName of @_eventListeners
       @el.removeEventListener eventName, @, false
+
     for eventName of @_delegatedListeners
       continue if eventName of @_eventListeners
       @el.removeEventListener eventName, @, false
-    @_eventListeners = {}
-    @_delegatedListeners = {}
+
+    @_eventListeners = null
+    @_delegatedListeners = null
+
+    super
+
+    @constructor[@id] = null
+    @el = null

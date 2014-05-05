@@ -40,8 +40,6 @@ class BaseClass
         delete @_events[property]
 
   destroy: ->
+    # Note, call `super` at the _end_ of any methods that extend this.
     @trigger 'destroy'
-
-    # Delay event removal so extending functions can run and trigger things.
-    setTimeout ->
-      @off()
+    @off()

@@ -25,6 +25,7 @@ class SVG extends ElementBase
 
   constructor: ->
     super
+
     if @defaultAttrs?
       @attr @defaultAttrs
       @defaultAttrs = null
