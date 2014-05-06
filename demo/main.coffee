@@ -36,7 +36,7 @@ disabledCheckbox.addEventListener 'change', ->
   checked = disabledCheckbox.checked
   ms[if checked then 'disable' else 'enable']()
 
-document.querySelector('input[name="tool"]').addEventListener 'change', ({target}) ->
+document.getElementById('tools').addEventListener 'change', ({target}) ->
   ms.tool = TOOLS[target.value]
 
 window.ms = ms

@@ -23,7 +23,7 @@ class TranscriptionControls extends ToolControls
 
   render: ->
     super
-    @el.style.width = "#{@tool.mark.width}px"
+    @el.style.width = "#{@tool.outline.el.getClientRects()[0].width}px"
 
 class TranscriptionTool extends RectangleTool
   @Controls: TranscriptionControls

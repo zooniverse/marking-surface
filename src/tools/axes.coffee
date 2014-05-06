@@ -101,7 +101,7 @@ class AxesTool extends Tool
         (@mark.p0[1] + @mark.p1[1] + @mark.p2[1] + @mark.p3[1]) / 4
       ]
 
-    @controls.moveTo
+    @controls?.moveTo
       x: intersection[0]
       y: intersection[1]
 
