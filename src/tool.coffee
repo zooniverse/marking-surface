@@ -29,13 +29,6 @@ class Tool extends SVG
     @selectedRoot = @focusRoot.addShape 'g.marking-surface-tool-selected-root'
     @root = @selectedRoot.addShape 'g.marking-surface-tool-root'
 
-  setMarkingSurface: (@markingSurface) ->
-    unless this in @markingSurface.tools
-      @remove()
-      @markingSurface.addTool this
-
-    @rescale @markingSurface.getScale()
-
   onMarkChange: (property, value) ->
     @render? property, value # render: (property, value) -> swith property...
     @render?[property]?.call? @, value # render: x: (x) -> @move x
@@ -54,7 +47,7 @@ class Tool extends SVG
     super
 
   handleEvent: ->
-    unless @disabled or @markingSurface.disabled
+    unless @markingSurface.disabled
       super
 
   # NOTE: These "initial" events originate on the marking surface.
@@ -74,7 +67,7 @@ class Tool extends SVG
     @render()
 
   render: ->
-    # TODO
+    @attr 'data-complete', @isComplete() || null
 
   isComplete: ->
     # Override this if drawing the tool requires multiple drag steps (e.g. axes).
@@ -90,8 +83,8 @@ class Tool extends SVG
 
   select: ->
     @focus()
-    @attr 'data-selected', true
     @toFront()
+    @attr 'data-selected', true
     @trigger 'select'
 
   deselect: ->

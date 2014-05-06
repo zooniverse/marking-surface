@@ -78,18 +78,13 @@ class MarkingSurface extends ElementBase
 
   addTool: (tool) ->
     tool ?= new @tool
-      markingSurface: @
-
+    tool.markingSurface = this
     @tools.push tool
 
     @root.el.appendChild tool.el
-
-    unless tool.markingSurface is this
-      tool.setMarkingSurface this
+    tool.trigger 'added', [this]
 
     tool.rescale @getScale()
-
-    tool.trigger 'added', [this]
 
     @trigger 'add-tool', [tool]
     @trigger 'change'

@@ -10,7 +10,8 @@ matchesSelector = do ->
 
   MATCHES_SELECTOR = method for method in MATCH_METHODS when method of Element::
 
-  (el, selector) -> el[MATCHES_SELECTOR]? selector
+  (el, selector) ->
+    el[MATCHES_SELECTOR]? selector
 
 insertStyle = do ->
   IE_HACK_ID = 'marking-surface-element-that-only-exists-to-please-ie'
