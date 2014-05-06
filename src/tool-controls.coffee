@@ -4,25 +4,21 @@ class ToolControls extends ElementBase
 
   constructor: ->
     super
+
     @el.insertAdjacentHTML 'beforeEnd', @template
 
-    @tool.on 'select', [@, 'onToolSelect']
-    @tool.mark.on 'change', [@, 'onMarkChange']
-    @tool.on 'deselect', [@, 'onToolDeselect']
-    @tool.on 'destroy', [@, 'onToolDestroy']
+    @tool.on 'added', [@, 'followTool']
 
-  onToolSelect: ->
-    @toFront()
-    @attr 'data-selected', true
+    @tool.on 'select', [@, 'toFront']
+    @tool.on 'select', [@, 'attr', 'data-selected', true]
+    @tool.on 'deselect', [@, 'attr', 'data-selected', null]
+    @tool.on 'remove', [@, 'remove']
+    @tool.on 'destroy', [@, 'destroy']
 
-  onToolDeselect: ->
-    @attr 'data-selected', null
+    @tool.mark.on 'change', [@, 'render']
 
-  onToolDestroy: ->
-    @destroy()
-
-  onMarkChange: ->
-    @render? arguments...
+  followTool: ->
+    @tool.markingSurface.toolControlsContainer.el.appendChild @el
 
   moveTo: ({x, y}) ->
     {x, y} = @tool.markingSurface.toPixels {x, y}

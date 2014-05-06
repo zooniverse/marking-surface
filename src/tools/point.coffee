@@ -1,4 +1,4 @@
-{Tool} = window?.MarkingSurface || require 'marking-surface'
+{Tool, ToolLabel} = window?.MarkingSurface || require 'marking-surface'
 
 class PointTool extends Tool
   radius: if @mobile then 25 else 15
@@ -16,6 +16,9 @@ class PointTool extends Tool
     @disc = @addShape 'circle',
       fill: 'transparent'
       stroke: 'currentColor'
+
+    @label = new ToolLabel
+      tool: this
 
     @addEvent 'move', 'circle', @onMove
 
@@ -53,6 +56,8 @@ class PointTool extends Tool
     super
     @attr 'transform', "translate(#{@mark.x}, #{@mark.y})"
     @controls?.moveTo @mark
+    @label.setContent "#{@mark.x.toString().split('.')[0]}, #{@mark.y.toString().split('.')[0]}"
+    @label.moveTo @mark
 
 window?.MarkingSurface.PointTool = PointTool
 module?.exports = PointTool

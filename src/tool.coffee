@@ -14,24 +14,27 @@ class Tool extends SVG
 
     unless @mark?
       @mark = new @constructor.Mark
-      @trigger 'create-mark', [@mark]
 
     @mark.on 'change', [@, 'onMarkChange']
-    @mark.on 'destroy', [@, 'onMarkDestroy']
+    @mark.on 'destroy', [@, 'destroy']
 
-    if @constructor.Controls?
-      @controls = new @constructor.Controls tool: @
-      @trigger 'create-controls', [@controls]
+    @focusTarget = new ToolFocusTarget
+      tool: this
 
-    @focusTarget = new ToolFocusTarget tool: @
+    @controls = if @constructor.Controls?
+      controls = new @constructor.Controls
+        tool: this
 
     @focusRoot = SVG::addShape.call @, 'g.marking-surface-tool-focus-root'
     @selectedRoot = @focusRoot.addShape 'g.marking-surface-tool-selected-root'
     @root = @selectedRoot.addShape 'g.marking-surface-tool-root'
 
-    setTimeout =>
-      if @markingSurface?
-        @rescale @markingSurface.getScale()
+  setMarkingSurface: (@markingSurface) ->
+    unless this in @markingSurface.tools
+      @remove()
+      @markingSurface.addTool this
+
+    @rescale @markingSurface.getScale()
 
   onMarkChange: (property, value) ->
     @render? property, value # render: (property, value) -> swith property...
@@ -39,29 +42,25 @@ class Tool extends SVG
     @[@render?[property]]?() # render: x: 'move'
     @trigger 'change', [@mark]
 
-  onMarkDestroy: ->
-    @destroy()
-
   addShape: ->
     @root.addShape arguments...
 
   coords: (e) ->
     @markingSurface.toScale @markingSurface.sizeRect.pointerOffset e
 
-  # NOTE: These "initial" events originate on the marking surface.
-
   _onStart: (e) ->
     e.preventDefault()
-    super
     @select()
-    @focus()
+    super
 
   handleEvent: ->
-    unless @markingSurface.disabled
+    unless @disabled or @markingSurface.disabled
       super
 
+  # NOTE: These "initial" events originate on the marking surface.
+
   onInitialStart: (e) ->
-    @focus()
+    @select()
     @trigger 'initial-click', [e]
 
   onInitialMove: (e) ->
@@ -71,11 +70,11 @@ class Tool extends SVG
     @movements += 1
     @trigger 'initial-release', [e]
 
-  render: ->
-    # TODO
-
   rescale: (scaleX, scaleY) ->
     @render()
+
+  render: ->
+    # TODO
 
   isComplete: ->
     # Override this if drawing the tool requires multiple drag steps (e.g. axes).
@@ -90,6 +89,7 @@ class Tool extends SVG
     @trigger 'blur'
 
   select: ->
+    @focus()
     @attr 'data-selected', true
     @toFront()
     @trigger 'select'

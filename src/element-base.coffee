@@ -1,7 +1,4 @@
 class ElementBase extends BaseClass
-  @instances = {}
-
-  id: ''
   tag: 'div'
 
   disabled: false
@@ -14,11 +11,8 @@ class ElementBase extends BaseClass
 
     super
 
-    @_createEl() unless @el?
-
-    @id ||= "#{Math.random()}".split('.')[1]
-    @attr 'data-marking-surface-id', @id
-    @constructor.instances[@id] = this
+    unless @el?
+      @_createEl()
 
     @addEvent 'mousedown', @_onStart
     @addEvent 'touchstart', @_onStart
@@ -56,7 +50,7 @@ class ElementBase extends BaseClass
 
   addEvent: (eventName, [delegate]..., handler) ->
     unless eventName of @_eventListeners or eventName of @_delegatedListeners
-      @el.addEventListener eventName, @, false
+      @el.addEventListener eventName, this, false
 
     if delegate?
       @_delegatedListeners[eventName] ?= {}
@@ -68,24 +62,24 @@ class ElementBase extends BaseClass
 
   _onStart: (e) ->
     @_startEvent = e
-    addEventListener 'mousemove', @, false
-    addEventListener 'mouseup', @, false
-    addEventListener 'touchmove', @, false
-    addEventListener 'touchend', @, false
-    addEventListener 'touchcancel', @, false
+    addEventListener 'mousemove', this, false
+    addEventListener 'mouseup', this, false
+    addEventListener 'touchmove', this, false
+    addEventListener 'touchend', this, false
+    addEventListener 'touchcancel', this, false
     @dispatchEvent 'start', originalEvent: e
 
   _onMove: (e) ->
     @dispatchEvent 'move', originalEvent: e
 
   _onRelease: (e) ->
-    removeEventListener 'mousemove', @, false
-    removeEventListener 'mouseup', @, false
-    removeEventListener 'touchmove', @, false
-    removeEventListener 'touchend', @, false
-    removeEventListener 'touchcancel', @, false
-    @_startEvent = null
+    removeEventListener 'mousemove', this, false
+    removeEventListener 'mouseup', this, false
+    removeEventListener 'touchmove', this, false
+    removeEventListener 'touchend', this, false
+    removeEventListener 'touchcancel', this, false
     @dispatchEvent 'release', originalEvent: e
+    @_startEvent = null
 
   handleEvent: (e) ->
     unless @disabled
@@ -140,43 +134,37 @@ class ElementBase extends BaseClass
 
   trigger: (eventName, args = [])->
     super
-    @dispatchEvent eventName, [@, args...]
+    @dispatchEvent eventName, [this, args...]
 
   pointerOffset: (e) ->
-    e = e.touches[0] if 'touches' of e
+    if 'touches' of e
+      e = e.touches[0]
+
     {left, top} = @el.getBoundingClientRect()
     x = e.pageX - pageXOffset - left
     y = e.pageY - pageYOffset - top
+
     {x, y}
 
   toFront: ->
     @el.parentNode?.appendChild @el
 
   remove: ->
-    @el.parentNode?.removeChild @el
-    @trigger 'remove'
-
-  removeChildren: ->
-    for child in Array::slice.call @el.children
-      if child.hasAttribute 'data-marking-surface-id'
-        childInstance = @constructor.instances[child.getAttribute 'data-marking-surface-id']
-        childInstance.remove()
+    if @el.parentNode?
+      @el.parentNode?.removeChild @el
+      @trigger 'remove'
 
   destroy: ->
     @remove()
-    @removeChildren()
 
     for eventName of @_eventListeners
-      @el.removeEventListener eventName, @, false
+      @el.removeEventListener eventName, this, false
 
     for eventName of @_delegatedListeners
       continue if eventName of @_eventListeners
-      @el.removeEventListener eventName, @, false
+      @el.removeEventListener eventName, this, false
 
-    @_eventListeners = null
-    @_delegatedListeners = null
+    @_eventListeners = {}
+    @_delegatedListeners = {}
 
     super
-
-    @constructor[@id] = null
-    @el = null

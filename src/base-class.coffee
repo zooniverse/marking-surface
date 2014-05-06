@@ -1,6 +1,9 @@
+LOG_EVENTS = !!~location.search.indexOf 'log=1'
+
 class BaseClass
   constructor: (params = {}) ->
     @_events = {}
+
     for property, value of params
       @[property] = value
 
@@ -9,22 +12,28 @@ class BaseClass
     @_events[eventName].push handler
 
   trigger: (eventName, args = []) ->
+    if LOG_EVENTS
+      console?.group eventName, "(#{this.constructor.name})", args
+
     if eventName of @_events
       for handler in @_events[eventName]
         @applyHandler handler, args
+
+    if LOG_EVENTS
+      console?.groupEnd()
 
   applyHandler: (handler, givenArgs = []) ->
     context = this
 
     if handler instanceof Array
-      [context, handler, firstArgs...] = handler
+      [context, handler, savedArgs...] = handler
 
-    firstArgs ?= []
+    savedArgs ?= []
 
     if typeof handler is 'string'
       handler = context[handler]
 
-    handler.call context, firstArgs..., givenArgs...
+    handler.call context, savedArgs..., givenArgs...
 
   off: (eventName, handler) ->
     if eventName?

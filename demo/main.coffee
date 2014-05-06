@@ -1,21 +1,17 @@
 MarkingSurface = window.MarkingSurface
-{Tool, PointTool, RectangleTool, EllipseTool, AxesTool, TranscriptionTool, MagnifierPointTool, DefaultToolControls} = MarkingSurface
 
-EllipseTool.Controls = DefaultToolControls
-AxesTool.Controls = DefaultToolControls
+TOOLS =
+  point: MarkingSurface.PointTool
+  rectangle: MarkingSurface.RectangleTool
+  ellipse: MarkingSurface.EllipseTool
+  axes: MarkingSurface.AxesTool
+  transcription: MarkingSurface.TranscriptionTool
+  magnifier: MarkingSurface.MagnifierPointTool
 
 getImage = (src, callback) ->
   img = new Image
   img.onload = -> callback? img
   img.src = src
-
-TOOLS =
-  point: PointTool
-  rectangle: RectangleTool
-  ellipse: EllipseTool
-  axes: AxesTool
-  transcription: TranscriptionTool
-  magnifier: MagnifierPointTool
 
 DEMO_IMAGE = './fish.jpg'
 

@@ -39,8 +39,6 @@ class MarkingSurface extends ElementBase
       @on 'destroy', [@input, 'destroy']
       @el.appendChild @input.el
 
-    @trigger 'change'
-
     addEventListener 'resize', @, false
 
   handleEvent: (e) ->
@@ -79,21 +77,23 @@ class MarkingSurface extends ElementBase
     @selection?.onInitialRelease e
 
   addTool: (tool) ->
-    tool ?= new @tool markingSurface: @
-    tool.markingSurface = @
+    tool ?= new @tool
+      markingSurface: @
+
     @tools.push tool
-    tool.remove()
+
     @root.el.appendChild tool.el
-    tool.render?()
 
-    if tool.controls?
-      @toolControlsContainer.el.appendChild tool.controls.el
+    unless tool.markingSurface is this
+      tool.setMarkingSurface this
 
-    if tool.focusTarget?
-      @toolFocusTargetsContainer?.el.appendChild tool.focusTarget.el
+    tool.rescale @getScale()
+
+    tool.trigger 'added', [this]
 
     @trigger 'add-tool', [tool]
     @trigger 'change'
+
     tool
 
   onSelectTool: (e) ->
