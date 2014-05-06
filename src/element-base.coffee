@@ -132,7 +132,7 @@ class ElementBase extends BaseClass
     e.initCustomEvent eventName, true, true, detail
     @el.dispatchEvent e
 
-  trigger: (eventName, args = [])->
+  trigger: (eventName, args = []) ->
     super
     @dispatchEvent eventName, [this, args...]
 
@@ -155,8 +155,6 @@ class ElementBase extends BaseClass
       @trigger 'remove'
 
   destroy: ->
-    @remove()
-
     for eventName of @_eventListeners
       @el.removeEventListener eventName, this, false
 
@@ -168,3 +166,5 @@ class ElementBase extends BaseClass
     @_delegatedListeners = {}
 
     super
+
+    @remove()
