@@ -16,9 +16,6 @@ class MarkingSurface extends ElementBase
     super
 
     @svg = new SVG tag: 'svg.marking-surface-svg'
-    @sizeRect = @svg.addShape 'rect', fill: 'none', stroke: 'transparent', strokeWidth: 0, width: '100%', height: '100%'
-    @root = @svg.addShape 'g.marking-surface-svg-root'
-    @el.appendChild @svg.el
     @on 'destroy', [@svg, 'destroy']
 
     @svg.addEvent 'select', '.marking-surface-tool', [@, 'onSelectTool']
@@ -26,23 +23,37 @@ class MarkingSurface extends ElementBase
     @svg.addEvent 'deselect', '.marking-surface-tool', [@, 'onDeselectTool']
     @svg.addEvent 'destroy', '.marking-surface-tool', [@, 'onDestroyTool']
 
+    @sizeRect = @svg.addShape 'rect',
+      fill: 'none'
+      stroke: 'transparent'
+      strokeWidth: 0
+      width: '100%'
+      height: '100%'
+    @on 'destroy', [@sizeRect, 'destroy']
+
+    @root = @svg.addShape 'g.marking-surface-svg-root'
+    @on 'destroy', [@root, 'destroy']
+
+    @el.appendChild @svg.el
+
     @toolFocusTargetsContainer = if @focusable
       container = new ElementBase tag: 'div.marking-surface-tool-focusables-container'
-      @el.appendChild container.el
       @on 'destroy', [container, 'destroy']
+      @el.appendChild container.el
       container
 
     @toolControlsContainer = new ElementBase tag: 'div.marking-surface-tool-controls-container'
     @el.appendChild @toolControlsContainer.el
     @on 'destroy', [@toolControlsContainer, 'destroy']
 
-    if @inputName
-      @input = new ElementBase tag: 'input.marking-surface-input'
-      @input.el.tabIndex = -1
-      @input.el.name = @inputName
-      @on 'change', @onChange
-      @on 'destroy', [@input, 'destroy']
-      @el.appendChild @input.el
+    @input = if @inputName
+      input = new ElementBase tag: 'input.marking-surface-input'
+      @on 'destroy', [input, 'destroy']
+      input.el.tabIndex = -1
+      input.el.name = @inputName
+      @on 'change', [@, 'updateInput']
+      @el.appendChild input.el
+      input
 
   addShape: ->
     @root.addShape arguments...
@@ -106,8 +117,8 @@ class MarkingSurface extends ElementBase
     [mark] = e.detail
     @trigger 'change', [mark]
 
-  onChange: ->
-    @input?.el.value = @getValue()
+  updateInput: ->
+    @input.el.value = @getValue()
 
   onDeselectTool: (e) ->
     [tool] = e.detail
@@ -161,11 +172,6 @@ class MarkingSurface extends ElementBase
 
   destroy: ->
     @reset()
-    @root.destroy()
-    @sizeRect.destroy()
-    @svg.destroy()
-    @toolFocusTargetsContainer.destroy()
-    @toolControlsContainer.destroy()
     super
 
 MarkingSurface.defaultStyle = insertStyle 'marking-surface-default-style', '''
