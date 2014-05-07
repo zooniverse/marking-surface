@@ -8,11 +8,11 @@ class Mark extends BaseClass
       setter = @["set #{property}"]
       value = setter.call @, value if setter?
       @[property] = value
-      @trigger 'change', [property, value]
     else
       properties = property
       @set property, value for property, value of properties
 
+    @trigger 'change'
     return
 
   toJSON: ->

@@ -15,7 +15,8 @@ class Tool extends SVG
     unless @mark?
       @mark = new @constructor.Mark
 
-    @mark.on 'change', [@, 'onMarkChange']
+    @mark.on 'change', [@, 'render']
+    @mark.on 'change', [@, 'trigger', 'change']
     @mark.on 'destroy', [@, 'destroy']
 
     @focusTarget = new ToolFocusTarget
@@ -28,12 +29,6 @@ class Tool extends SVG
     @focusRoot = SVG::addShape.call @, 'g.marking-surface-tool-focus-root'
     @selectedRoot = @focusRoot.addShape 'g.marking-surface-tool-selected-root'
     @root = @selectedRoot.addShape 'g.marking-surface-tool-root'
-
-  onMarkChange: (property, value) ->
-    @render? property, value # render: (property, value) -> swith property...
-    @render?[property]?.call? @, value # render: x: (x) -> @move x
-    @[@render?[property]]?() # render: x: 'move'
-    @trigger 'change', [@mark]
 
   addShape: ->
     @root.addShape arguments...
