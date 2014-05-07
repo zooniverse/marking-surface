@@ -32,15 +32,6 @@ class AxesTool extends Tool
     @addEvent 'move', '.handle', [this, @onHandleMove]
     @addEvent 'release', '.handle', [this, @onHandleRelease]
 
-  rescale: (scale) ->
-    super
-
-    for line in @lines
-      line.attr 'strokeWidth', @strokeWidth / scale
-
-    for handle in @handles
-      handle.attr 'r', @radius / scale
-
   onInitialStart: (e) ->
     {x, y} = @coords e
     points = if @movements is 0 then ['p0', 'p1'] else ['p2', 'p3']
@@ -67,6 +58,16 @@ class AxesTool extends Tool
     handleIndex = null
 
   render: ->
+    super
+
+    scale = (@markingSurface?.scaleX + @markingSurface?.scaleY) / 2
+
+    for line in @lines
+      line.attr 'strokeWidth', @strokeWidth / scale
+
+    for handle in @handles
+      handle.attr 'r', @radius / scale
+
     @lines[0].attr 'd', "M #{@mark.p0} L #{@mark.p1}"
     # @lines[0].attr
     #   x1: @mark.p0[0], y1: @mark.p0[1]

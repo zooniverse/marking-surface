@@ -38,18 +38,6 @@ class RectangleTool extends Tool
 
     @handles = [@topLeftHandle, @topRightHandle, @bottomRightHandle, @bottomLeftHandle]
 
-  rescale: (scale) ->
-    super
-    scaledStrokeWidth = @strokeWidth / scale
-    scaledHandleSize = @handleSize / scale
-
-    @outline.attr 'strokeWidth', scaledStrokeWidth
-
-    for handle in @handles
-      handle.attr
-        r: scaledHandleSize
-        strokeWidth: scaledStrokeWidth
-
   onInitialStart: (e) ->
     super
     @startDrag e
@@ -149,6 +137,18 @@ class RectangleTool extends Tool
 
   render: ->
     super
+
+    scale = (@markingSurface?.scaleX + @markingSurface?.scaleY) / 2
+    strokeWidth = @strokeWidth / scale
+    handleSize = @handleSize / scale
+
+    @outline.attr 'strokeWidth', strokeWidth
+
+    for handle in @handles
+      handle.attr
+        r: handleSize
+        strokeWidth: strokeWidth
+
     @outline.attr
       x: @mark.left
       y: @mark.top

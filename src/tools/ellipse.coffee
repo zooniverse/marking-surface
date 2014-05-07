@@ -28,15 +28,6 @@ class EllipseTool extends Tool
     @addEvent 'move', '.x-handle', @dragXHandle
     @addEvent 'move', '.y-handle', @dragYHandle
 
-  rescale: (scale) ->
-    super
-    scaledStrokeWidth = @strokeWidth / scale
-    scaledHandleRadius = @handleRadius / scale
-    @radii.attr 'strokeWidth', scaledStrokeWidth / 2
-    @outline.attr 'strokeWidth', scaledStrokeWidth
-    @xHandle.attr 'r', scaledHandleRadius
-    @yHandle.attr 'r', scaledHandleRadius
-
   onInitialStart: (e) ->
     super
     {x, y} = @coords e
@@ -78,12 +69,24 @@ class EllipseTool extends Tool
 
   render: ->
     super
+
+    scale = (@markingSurface?.scaleX + @markingSurface?.scaleY) / 2
+    strokeWidth = @strokeWidth / scale
+    handleRadius = @handleRadius / scale
+
+    @radii.attr 'strokeWidth', strokeWidth / 2
+    @outline.attr 'strokeWidth', strokeWidth
+    @xHandle.attr 'r', handleRadius
+    @yHandle.attr 'r', handleRadius
+
     # NOTE: SVG rotates clockwise, angles are measured counterclockwise.
     @attr 'transform', "translate(#{@mark.x}, #{@mark.y}) rotate(#{-@mark.angle})"
+
     @radii.attr 'd', "M 0 #{-@mark.ry} L 0 0 M #{@mark.rx} 0 L 0 0"
     @outline.attr rx: @mark.rx, ry: @mark.ry
     @xHandle.attr 'cx', @mark.rx
     @yHandle.attr 'cy', -@mark.ry
+
     @controls?.moveTo @mark
 
   getAngle: (x1, y1, x2, y2) ->

@@ -21,7 +21,7 @@ class ToolControls extends ElementBase
     @tool.markingSurface.toolControlsContainer.el.appendChild @el
 
   moveTo: ({x, y}) ->
-    {x, y} = @tool.markingSurface.toPixels {x, y}
+    {x, y} = @tool.markingSurface.scalePixelToScreen {x, y}
     width = @tool.markingSurface.el.offsetWidth
     height = @tool.markingSurface.el.offsetHeight
     outOfBounds = x < 0 or x > width or y < 0 or y > height

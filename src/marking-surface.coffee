@@ -7,8 +7,12 @@ class MarkingSurface extends ElementBase
 
   selection: null
 
+  scaleX: 1
+  scaleY: 1
+
   constructor: ->
     @tools = []
+
     super
 
     @svg = new SVG tag: 'svg.marking-surface-svg'
@@ -22,10 +26,11 @@ class MarkingSurface extends ElementBase
     @svg.addEvent 'deselect', '.marking-surface-tool', [@, 'onDeselectTool']
     @svg.addEvent 'destroy', '.marking-surface-tool', [@, 'onDestroyTool']
 
-    if @focusable
-      @toolFocusTargetsContainer = new ElementBase tag: 'div.marking-surface-tool-focusables-container'
-      @el.appendChild @toolFocusTargetsContainer.el
-      @on 'destroy', [@toolFocusTargetsContainer, 'destroy']
+    @toolFocusTargetsContainer = if @focusable
+      container = new ElementBase tag: 'div.marking-surface-tool-focusables-container'
+      @el.appendChild container.el
+      @on 'destroy', [container, 'destroy']
+      container
 
     @toolControlsContainer = new ElementBase tag: 'div.marking-surface-tool-controls-container'
     @el.appendChild @toolControlsContainer.el
@@ -38,14 +43,6 @@ class MarkingSurface extends ElementBase
       @on 'change', @onChange
       @on 'destroy', [@input, 'destroy']
       @el.appendChild @input.el
-
-    addEventListener 'resize', @, false
-
-  handleEvent: (e) ->
-    if e.target is window and e.type is 'resize'
-      @rescaleTools()
-    else
-      super
 
   addShape: ->
     @root.addShape arguments...
@@ -76,6 +73,13 @@ class MarkingSurface extends ElementBase
     super
     @selection?.onInitialRelease e
 
+  rescale: (x = '', y = '', width = '', height = '') ->
+    @svg.attr 'viewBox', "#{x} #{y} #{width} #{height}"
+    scaled = @screenPixelToScale x: 100, y: 100
+    @scaleX = 100 / scaled.x
+    @scaleY = 100 / scaled.y
+    @renderTools()
+
   addTool: (tool) ->
     tool ?= new @tool
     tool.markingSurface = this
@@ -84,7 +88,7 @@ class MarkingSurface extends ElementBase
     @root.el.appendChild tool.el
     tool.trigger 'added', [this]
 
-    tool.rescale @getScale()
+    tool.render()
 
     @trigger 'add-tool', [tool]
     @trigger 'change'
@@ -118,8 +122,8 @@ class MarkingSurface extends ElementBase
     @trigger 'remove-tool', [tool]
     @trigger 'change'
 
-  toScale: ({x, y}) ->
-    if @svg.el.hasAttribute 'viewBox'
+  screenPixelToScale: ({x, y}) ->
+    if @svg.el.viewBox.animVal?
       viewBox = @svg.el.viewBox.animVal
       sizeRect = @sizeRect.el.getBoundingClientRect()
       x += viewBox.x
@@ -128,8 +132,8 @@ class MarkingSurface extends ElementBase
       y *= viewBox.height / sizeRect.height
     {x, y}
 
-  toPixels: ({x, y}) ->
-    if @svg.el.hasAttribute 'viewBox'
+  scalePixelToScreen: ({x, y}) ->
+    if @svg.el.viewBox.animVal?
       viewBox = @svg.el.viewBox.animVal
       sizeRect = @sizeRect.el.getBoundingClientRect()
       x /= viewBox.width / sizeRect.width
@@ -138,16 +142,9 @@ class MarkingSurface extends ElementBase
       y -= viewBox.y
     {x, y}
 
-  rescale: (x, y, width, height) ->
-    @svg.attr 'viewBox', "#{x} #{y} #{width} #{height}"
-    @rescaleTools()
-
-  rescaleTools: ->
-    tool.rescale? @getScale() for tool in @tools
-
-  getScale: ->
-    scaled = @toScale x: 100, y: 100
-    2 / ((scaled.x / 100) + (scaled.y / 100))
+  renderTools: ->
+    for tool in @tools
+      tool.render()
 
   getValue: ->
     JSON.stringify (tool.mark for tool in @tools)
@@ -164,7 +161,11 @@ class MarkingSurface extends ElementBase
 
   destroy: ->
     @reset()
-    removeEventListener 'resize', @, false
+    @root.destroy()
+    @sizeRect.destroy()
+    @svg.destroy()
+    @toolFocusTargetsContainer.destroy()
+    @toolControlsContainer.destroy()
     super
 
 MarkingSurface.defaultStyle = insertStyle 'marking-surface-default-style', '''

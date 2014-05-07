@@ -3,6 +3,8 @@
 class PointTool extends Tool
   radius: if @mobile then 25 else 15
   strokeWidth: 2
+  pointerOffsetX: 0
+  pointerOffsetY: 0
 
   constructor: ->
     super
@@ -22,10 +24,28 @@ class PointTool extends Tool
 
     @addEvent 'move', 'circle', @onMove
 
-  rescale: (scale) ->
+  onInitialStart: (e) ->
     super
+    @onInitialMove e
+
+  onInitialMove: (e) ->
+    super
+    @onMove e
+
+  onMove: (e) ->
+    {x, y} = @coords e
+    x -= @pointerOffsetX
+    y -= @pointerOffsetY
+    @mark.set {x, y}
+
+  render: ->
+    super
+
+    scale = (@markingSurface?.scaleX + @markingSurface?.scaleY) / 2
     scaledRadius = @radius / scale
     scaledStrokeWidth = @strokeWidth / scale
+
+    @attr 'transform', "translate(#{@mark.x}, #{@mark.y})"
 
     @ticks.attr
       d: """
@@ -38,23 +58,6 @@ class PointTool extends Tool
       r: scaledRadius
       strokeWidth: scaledStrokeWidth
 
-  onInitialStart: (e) ->
-    super
-    @onInitialMove e
-
-  onInitialMove: (e) ->
-    super
-    @onMove e
-
-  onMove: (e) ->
-    {x, y} = @coords e
-    x -= 10
-    y -= 10
-    @mark.set {x, y}
-
-  render: ->
-    super
-    @attr 'transform', "translate(#{@mark.x}, #{@mark.y})"
     @controls?.moveTo @mark
     @label.setContent "#{@mark.x.toString().split('.')[0]}, #{@mark.y.toString().split('.')[0]}"
     @label.moveTo @mark

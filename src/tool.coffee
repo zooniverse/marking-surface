@@ -39,7 +39,7 @@ class Tool extends SVG
     @root.addShape arguments...
 
   coords: (e) ->
-    @markingSurface.toScale @markingSurface.sizeRect.pointerOffset e
+    @markingSurface.screenPixelToScale @markingSurface.sizeRect.pointerOffset e
 
   _onStart: (e) ->
     e.preventDefault()
@@ -94,6 +94,9 @@ class Tool extends SVG
   destroy: ->
     @deselect()
     super
+    @root.destroy()
+    @selectedRoot.destroy()
+    @focusRoot.destroy()
 
 Tool.defaultStyle = insertStyle 'marking-surface-tool-default-style', """
   .marking-surface-tool[data-focused] .marking-surface-tool-focus-root {
