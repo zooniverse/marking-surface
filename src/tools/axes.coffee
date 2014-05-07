@@ -11,12 +11,21 @@ class AxesTool extends Tool
       id: "marking-surface-axis-cap-#{Math.random().toString().split('.')[1]}"
       refX: 0.5
       refY: 5
-      markerWidth: 1
-      markerHeight: 10
       orient: 'auto'
 
-    @marker.addShape 'rect', x: 0, y: 0, width: 1, height: 10/3, fill: 'currentColor'
-    @marker.addShape 'rect', x: 0, y: 20/3, width: 1, height: 10/3, fill: 'currentColor'
+    @marker.addShape 'rect',
+      x: 0
+      y: 0
+      width: 1
+      height: 2.5
+      fill: 'currentColor'
+
+    @marker.addShape 'rect',
+      x: 0
+      y: 7.5
+      width: 1
+      height: 2.5
+      fill: 'currentColor'
 
     @lines = for i in [0...2]
       @addShape 'path.axis',
@@ -26,8 +35,10 @@ class AxesTool extends Tool
 
     @handles = for i in [0...4]
       @mark["p#{i}"] = [-2 * @radius, -2 * @radius]
-      handle = @addShape 'circle.handle', fill: 'currentColor', 'data-handle-index': i
-      handle
+      @addShape 'circle.handle',
+        fill: 'transparent'
+        stroke: 'currentColor'
+        'data-handle-index': i
 
     @addEvent 'move', '.handle', [this, @onHandleMove]
     @addEvent 'release', '.handle', [this, @onHandleRelease]
@@ -62,21 +73,20 @@ class AxesTool extends Tool
 
     scale = (@markingSurface?.scaleX + @markingSurface?.scaleY) / 2
 
+    @marker.attr
+      markerWidth: @radius / scale
+      markerHeight: @radius / scale
+
     for line in @lines
       line.attr 'strokeWidth', @strokeWidth / scale
 
     for handle in @handles
-      handle.attr 'r', @radius / scale
+      handle.attr
+        r: @radius / scale
+        strokeWidth: @strokeWidth / scale
 
     @lines[0].attr 'd', "M #{@mark.p0} L #{@mark.p1}"
-    # @lines[0].attr
-    #   x1: @mark.p0[0], y1: @mark.p0[1]
-    #   x2: @mark.p1[0], y2: @mark.p1[1]
-
     @lines[1].attr 'd', "M #{@mark.p2} L #{@mark.p3}"
-    # @lines[1].attr
-    #   x1: @mark.p2[0], y1: @mark.p2[1]
-    #   x2: @mark.p3[0], y2: @mark.p3[1]
 
     for point, i in ['p0', 'p1', 'p2', 'p3']
       @handles[i].attr cx: @mark[point][0], cy: @mark[point][1]
