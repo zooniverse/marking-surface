@@ -29,10 +29,8 @@ class MarkingSurface extends ElementBase
       strokeWidth: 0
       width: '100%'
       height: '100%'
-    @on 'destroy', [@sizeRect, 'destroy']
 
     @root = @svg.addShape 'g.marking-surface-svg-root'
-    @on 'destroy', [@root, 'destroy']
 
     @el.appendChild @svg.el
 
