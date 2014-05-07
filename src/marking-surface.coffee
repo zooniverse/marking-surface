@@ -23,7 +23,7 @@ class MarkingSurface extends ElementBase
     @svg.addEvent 'deselect', '.marking-surface-tool', [@, 'onDeselectTool']
     @svg.addEvent 'destroy', '.marking-surface-tool', [@, 'onDestroyTool']
 
-    @sizeRect = @svg.addShape 'rect',
+    @sizeRect = @svg.addShape 'rect.marking-surface-size-rect',
       fill: 'none'
       stroke: 'transparent'
       strokeWidth: 0

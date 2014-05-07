@@ -79,32 +79,33 @@ class SVG extends ElementBase
     else
       ''
 
-SVG.filtersContainer = new SVG defaultAttrs:
-  id: 'marking-surface-filters-container'
-  width: 0
-  height: 0
-  style: 'bottom: 0; position: absolute; right: 0;'
+document.body.insertAdjacentHTML 'afterBegin', """
+  <svg id="marking-surface-filters-container" width="0" height="0" style="bottom: 0; position: absolute; right: 0;">
+    <defs>
+      <filter id="#{FILTER_ID_PREFIX}shadow">
+        <feGaussianBlur stdDeviation="2" in="SourceAlpha" />
+        <feOffset dx="0.5" dy="1" />
+        <feMerge>
+          <feMergeNode />
+          <feMergeNode in="SourceGraphic" />
+        </feMerge>
+      </filter>
 
-SVG.filterDefs = SVG.filtersContainer.addShape 'defs'
+      <filter id="#{FILTER_ID_PREFIX}focus">
+        <feGaussianBlur stdDeviation="3" />
+        <feMerge>
+          <feMergeNode />
+          <feMergeNode in="SourceGraphic" />
+        </feMerge>
+      </filter>
 
-shadowFilter = SVG.filterDefs.addShape 'filter', id: "#{FILTER_ID_PREFIX}shadow"
-shadowFilter.addShape 'feGaussianBlur', stdDeviation: 2, in: 'SourceAlpha'
-shadowFilter.addShape 'feOffset', dx: 0.5, dy: 1
-shadowMerge = shadowFilter.addShape 'feMerge'
-shadowMerge.addShape 'feMergeNode'
-shadowMerge.addShape 'feMergeNode', in: 'SourceGraphic'
-
-focusFilter = SVG.filterDefs.addShape 'filter', id: "#{FILTER_ID_PREFIX}focus"
-focusFilter.addShape 'feGaussianBlur', stdDeviation: 3
-focusMerge = focusFilter.addShape 'feMerge'
-focusMerge.addShape 'feMergeNode'
-focusMerge.addShape 'feMergeNode', in: 'SourceGraphic'
-
-# NOTE: The "invert" filter won't work in IE<10.
-invertFilter = SVG.filterDefs.addShape 'filter', id: "#{FILTER_ID_PREFIX}invert", colorInterpolationFilters: 'sRGB'
-invertTransfer = invertFilter.addShape 'feComponentTransfer'
-invertTransfer.addShape 'feFuncR', type: 'table', tableValues: '1 0'
-invertTransfer.addShape 'feFuncG', type: 'table', tableValues: '1 0'
-invertTransfer.addShape 'feFuncB', type: 'table', tableValues: '1 0'
-
-document.body.appendChild SVG.filtersContainer.el
+      <filter id="#{FILTER_ID_PREFIX}invert" color-interpolation-filters="sRGB">
+        <feComponentTransfer>
+          <feFuncR type="table" tableValues="1 0" />
+          <feFuncG type="table" tableValues="1 0" />
+          <feFuncB type="table" tableValues="1 0" />
+        </feComponentTransfer>
+      </filter>
+    </defs>
+  </svg>
+"""
