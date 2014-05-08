@@ -21,7 +21,7 @@ class MarkingSurface extends ElementBase
     @svg.addEvent 'marking-surface:mark:change', [@, 'onChangeMark']
     @svg.addEvent 'marking-surface:tool:select', [@, 'onSelectTool']
     @svg.addEvent 'marking-surface:tool:deselect', [@, 'onDeselectTool']
-    @svg.addEvent 'marking-surface:base:destroy', '.marking-surface-tool', [@, 'onDestroyTool']
+    @svg.addEvent 'marking-surface:tool:destroy', [@, 'onDestroyTool']
 
     @sizeRect = @svg.addShape 'rect.marking-surface-size-rect',
       fill: 'none'
@@ -125,6 +125,7 @@ class MarkingSurface extends ElementBase
       @trigger 'marking-surface:deselect-tool', [tool]
 
   onDestroyTool: (e) ->
+    console?.info? 'Destroying tool'
     [tool] = e.detail
     index = @tools.indexOf tool
     @tools.splice index, 1

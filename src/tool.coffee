@@ -9,6 +9,8 @@ class Tool extends SVG
 
   movements: 0
 
+  focused: false
+
   constructor: ->
     super
 
@@ -16,7 +18,7 @@ class Tool extends SVG
       @mark = new @constructor.Mark
 
     @mark.on 'marking-surface:mark:change', [@, 'render']
-    @mark.on 'marking-surface:mark:change', [@, 'trigger', 'marking-surface:mark:change'] # Faux-bubbling
+    @mark.on 'marking-surface:mark:change', [@, 'dispatchEvent', 'marking-surface:mark:change', [@mark]] # Faux-bubbling
     @mark.on 'marking-surface:base:destroy', [@, 'destroy']
 
     @focusTarget = new ToolFocusTarget
@@ -26,7 +28,7 @@ class Tool extends SVG
       controls = new @constructor.Controls
         tool: this
 
-    @focusRoot = SVG::addShape.call @, 'g.marking-surface-tool-focus-root'
+    @focusRoot = SVG::addShape.call this, 'g.marking-surface-tool-focus-root'
     @selectedRoot = @focusRoot.addShape 'g.marking-surface-tool-selected-root'
     @root = @selectedRoot.addShape 'g.marking-surface-tool-root'
 
@@ -49,14 +51,14 @@ class Tool extends SVG
 
   onInitialStart: (e) ->
     @select()
-    @trigger 'marking-surface:tool:initial-click', [e]
+    @dispatchEvent 'marking-surface:tool:initial-click', [e]
 
   onInitialMove: (e) ->
-    @trigger 'marking-surface:tool:initial-drag', [e]
+    @dispatchEvent 'marking-surface:tool:initial-drag', [e]
 
   onInitialRelease: (e) ->
     @movements += 1
-    @trigger 'marking-surface:tool:initial-release', [e]
+    @dispatchEvent 'marking-surface:tool:initial-release', [e]
 
   rescale: (scaleX, scaleY) ->
     @render()
@@ -69,29 +71,33 @@ class Tool extends SVG
     @movements is 1
 
   focus: ->
-    @attr 'data-focused', true
-    @trigger 'marking-surface:tool:focus'
+    unless @focused
+      @focused = true
+      @attr 'data-focused', true
+      @dispatchEvent 'marking-surface:tool:focus', [this]
 
   blur: ->
-    @attr 'data-focused', null
-    @trigger 'marking-surface:tool:blur'
+    if @focused
+      @focused = false
+      @attr 'data-focused', null
+      @dispatchEvent 'marking-surface:tool:blur', [this]
 
   select: ->
-    @focus()
-    @toFront()
-    @attr 'data-selected', true
-    @trigger 'marking-surface:tool:select'
+    unless @markingSurface.selection is this
+      @focus()
+      @toFront()
+      @attr 'data-selected', true
+      @dispatchEvent 'marking-surface:tool:select', [this]
 
   deselect: ->
-    @attr 'data-selected', null
-    @trigger 'marking-surface:tool:deselect'
+    if @markingSurface.selection is this
+      @attr 'data-selected', null
+      @dispatchEvent 'marking-surface:tool:deselect', [this]
 
   destroy: ->
     @deselect()
+    @dispatchEvent 'marking-surface:tool:destroy', [this]
     super
-    @root.destroy()
-    @selectedRoot.destroy()
-    @focusRoot.destroy()
 
 Tool.defaultStyle = insertStyle 'marking-surface-tool-default-style', """
   .marking-surface-tool[data-focused] .marking-surface-tool-focus-root {

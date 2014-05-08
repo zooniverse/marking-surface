@@ -8,11 +8,11 @@ class ToolControls extends ElementBase
     @el.insertAdjacentHTML 'beforeEnd', @template
 
     @tool.on 'marking-surface:tool:added', [@, 'followTool']
-    @tool.on 'marking-surface:tool:select', [@, 'toFront']
-    @tool.on 'marking-surface:tool:select', [@, 'attr', 'data-selected', true]
-    @tool.on 'marking-surface:tool:deselect', [@, 'attr', 'data-selected', null]
+    @tool.addEvent 'marking-surface:tool:select', [@, 'toFront']
+    @tool.addEvent 'marking-surface:tool:select', [@, 'attr', 'data-selected', true]
+    @tool.addEvent 'marking-surface:tool:deselect', [@, 'attr', 'data-selected', null]
     @tool.on 'marking-surface:element:remove', [@, 'remove']
-    @tool.on 'marking-surface:base:destroy', [@, 'destroy']
+    @tool.addEvent 'marking-surface:tool:destroy', [@, 'destroy']
 
     @tool.mark.on 'marking-surface:mark:change', [@, 'render']
 

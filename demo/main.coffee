@@ -28,7 +28,7 @@ container = document.getElementById 'container'
 container.appendChild ms.el
 
 marks = document.getElementById 'marks'
-ms.on 'change', ->
+ms.on 'marking-surface:change', ->
   marks.value = ms.getValue()
 
 disabledCheckbox = document.getElementById 'disabled'

@@ -2,7 +2,7 @@ class Mark extends BaseClass
   precision: 3
   ignore: ['disabled', 'ignore', 'precision']
 
-  set: (property, value) ->
+  set: (property, value, _partial = false) ->
     if typeof property is 'string'
       # The return value of the method `set propertyName` will be used, if available.
       setter = @["set #{property}"]
@@ -10,9 +10,12 @@ class Mark extends BaseClass
       @[property] = value
     else
       properties = property
-      @set property, value for property, value of properties
+      for property, value of properties
+        @set property, value, true
 
-    @trigger 'marking-surface:mark:change'
+    unless _partial
+      @trigger 'marking-surface:mark:change'
+
     return
 
   toJSON: ->

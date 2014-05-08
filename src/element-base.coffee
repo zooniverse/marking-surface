@@ -132,10 +132,6 @@ class ElementBase extends BaseClass
     e.initCustomEvent eventName, true, true, detail
     @el.dispatchEvent e
 
-  trigger: (eventName, args = []) ->
-    super
-    @dispatchEvent eventName, [this, args...]
-
   pointerOffset: (e) ->
     if 'touches' of e
       e = e.touches[0]
