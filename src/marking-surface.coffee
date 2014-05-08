@@ -16,12 +16,12 @@ class MarkingSurface extends ElementBase
     super
 
     @svg = new SVG tag: 'svg.marking-surface-svg'
-    @on 'destroy', [@svg, 'destroy']
+    @on 'marking-surface:base:destroy', [@svg, 'destroy']
 
-    @svg.addEvent 'select', '.marking-surface-tool', [@, 'onSelectTool']
-    @svg.addEvent 'change', '.marking-surface-tool', [@, 'onChangeMark']
-    @svg.addEvent 'deselect', '.marking-surface-tool', [@, 'onDeselectTool']
-    @svg.addEvent 'destroy', '.marking-surface-tool', [@, 'onDestroyTool']
+    @svg.addEvent 'marking-surface:mark:change', [@, 'onChangeMark']
+    @svg.addEvent 'marking-surface:tool:select', [@, 'onSelectTool']
+    @svg.addEvent 'marking-surface:tool:deselect', [@, 'onDeselectTool']
+    @svg.addEvent 'marking-surface:base:destroy', '.marking-surface-tool', [@, 'onDestroyTool']
 
     @sizeRect = @svg.addShape 'rect.marking-surface-size-rect',
       fill: 'none'
@@ -36,20 +36,20 @@ class MarkingSurface extends ElementBase
 
     @toolFocusTargetsContainer = if @focusable
       container = new ElementBase tag: 'div.marking-surface-tool-focusables-container'
-      @on 'destroy', [container, 'destroy']
+      @on 'marking-surface:base:destroy', [container, 'destroy']
       @el.appendChild container.el
       container
 
     @toolControlsContainer = new ElementBase tag: 'div.marking-surface-tool-controls-container'
     @el.appendChild @toolControlsContainer.el
-    @on 'destroy', [@toolControlsContainer, 'destroy']
+    @on 'marking-surface:base:destroy', [@toolControlsContainer, 'destroy']
 
     @input = if @inputName
       input = new ElementBase tag: 'input.marking-surface-input'
-      @on 'destroy', [input, 'destroy']
+      @on 'marking-surface:base:destroy', [input, 'destroy']
       input.el.tabIndex = -1
       input.el.name = @inputName
-      @on 'change', [@, 'updateInput']
+      @on 'marking-surface:mark:change', [@, 'updateInput']
       @el.appendChild input.el
       input
 
@@ -95,12 +95,12 @@ class MarkingSurface extends ElementBase
     @tools.push tool
 
     @root.el.appendChild tool.el
-    tool.trigger 'added', [this]
+    tool.trigger 'marking-surface:tool:added', [this]
 
     tool.render()
 
-    @trigger 'add-tool', [tool]
-    @trigger 'change'
+    @trigger 'marking-surface:add-tool', [tool]
+    @trigger 'marking-surface:change'
 
     tool
 
@@ -109,11 +109,11 @@ class MarkingSurface extends ElementBase
     unless @selection is tool
       @selection?.deselect()
       @selection = tool
-      @trigger 'select-tool', [@selection]
+      @trigger 'marking-surface:select-tool', [@selection]
 
   onChangeMark: (e) ->
     [mark] = e.detail
-    @trigger 'change', [mark]
+    @trigger 'marking-surface:change', [mark]
 
   updateInput: ->
     @input.el.value = @getValue()
@@ -122,14 +122,14 @@ class MarkingSurface extends ElementBase
     [tool] = e.detail
     if @selection is tool
       @selection = null
-      @trigger 'deselect-tool', [tool]
+      @trigger 'marking-surface:deselect-tool', [tool]
 
   onDestroyTool: (e) ->
     [tool] = e.detail
     index = @tools.indexOf tool
     @tools.splice index, 1
-    @trigger 'remove-tool', [tool]
-    @trigger 'change'
+    @trigger 'marking-surface:remove-tool', [tool]
+    @trigger 'marking-surface:change'
 
   screenPixelToScale: ({x, y}) ->
     if @svg.el.viewBox.animVal?
@@ -163,10 +163,9 @@ class MarkingSurface extends ElementBase
     super
 
   reset: ->
-    # Tools destroy themselves with their marks.
-    # Tool controls destroy themselves with their tools.
-    @tools[0].destroy() until @tools.length is 0
-    null
+    until @tools.length is 0
+      @tools[0].destroy()
+    @trigger 'marking-surface:reset'
 
   destroy: ->
     @reset()

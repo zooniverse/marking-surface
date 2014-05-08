@@ -17,9 +17,6 @@ class RectangleTool extends Tool
 
     @outline = @addShape 'rect.outline', fill: 'transparent', stroke: 'currentColor'
 
-    @addEvent 'start', '.outline', @startDrag
-    @addEvent 'move', '.outline', @moveOutline
-
     handleDefaults =
       r: @handleSize
       fill: 'currentColor'
@@ -29,14 +26,16 @@ class RectangleTool extends Tool
     @topRightHandle = @addShape 'circle.top-right.handle', handleDefaults
     @bottomRightHandle = @addShape 'circle.bottom-right.handle', handleDefaults
     @bottomLeftHandle = @addShape 'circle.bottom-left.handle', handleDefaults
-
-    @addEvent 'start', '.top-left.handle', @startTopLeftHandle
-    @addEvent 'start', '.top-right.handle', @startTopRightHandle
-    @addEvent 'start', '.bottom-right.handle', @startBottomRightHandle
-    @addEvent 'start', '.bottom-left.handle', @startBottomLeftHandle
-    @addEvent 'move', '.handle', @moveAnyHandle
-
     @handles = [@topLeftHandle, @topRightHandle, @bottomRightHandle, @bottomLeftHandle]
+
+    @addEvent 'marking-surface:element:start', '.outline', @startDrag
+    @addEvent 'marking-surface:element:move', '.outline', @moveOutline
+
+    @addEvent 'marking-surface:element:start', '.top-left.handle', @startTopLeftHandle
+    @addEvent 'marking-surface:element:start', '.top-right.handle', @startTopRightHandle
+    @addEvent 'marking-surface:element:start', '.bottom-right.handle', @startBottomRightHandle
+    @addEvent 'marking-surface:element:start', '.bottom-left.handle', @startBottomLeftHandle
+    @addEvent 'marking-surface:element:move', '.handle', @moveAnyHandle
 
   onInitialStart: (e) ->
     super

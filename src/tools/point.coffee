@@ -22,7 +22,7 @@ class PointTool extends Tool
     @label = new ToolLabel
       tool: this
 
-    @addEvent 'move', 'circle', @onMove
+    @addEvent 'marking-surface:element:move', 'circle', @onMove
 
   onInitialStart: (e) ->
     super

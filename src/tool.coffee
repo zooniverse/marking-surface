@@ -15,9 +15,9 @@ class Tool extends SVG
     unless @mark?
       @mark = new @constructor.Mark
 
-    @mark.on 'change', [@, 'render']
-    @mark.on 'change', [@, 'trigger', 'change']
-    @mark.on 'destroy', [@, 'destroy']
+    @mark.on 'marking-surface:mark:change', [@, 'render']
+    @mark.on 'marking-surface:mark:change', [@, 'trigger', 'marking-surface:mark:change'] # Faux-bubbling
+    @mark.on 'marking-surface:base:destroy', [@, 'destroy']
 
     @focusTarget = new ToolFocusTarget
       tool: this
@@ -49,14 +49,14 @@ class Tool extends SVG
 
   onInitialStart: (e) ->
     @select()
-    @trigger 'initial-click', [e]
+    @trigger 'marking-surface:tool:initial-click', [e]
 
   onInitialMove: (e) ->
-    @trigger 'initial-drag', [e]
+    @trigger 'marking-surface:tool:initial-drag', [e]
 
   onInitialRelease: (e) ->
     @movements += 1
-    @trigger 'initial-release', [e]
+    @trigger 'marking-surface:tool:initial-release', [e]
 
   rescale: (scaleX, scaleY) ->
     @render()
@@ -70,21 +70,21 @@ class Tool extends SVG
 
   focus: ->
     @attr 'data-focused', true
-    @trigger 'focus'
+    @trigger 'marking-surface:tool:focus'
 
   blur: ->
     @attr 'data-focused', null
-    @trigger 'blur'
+    @trigger 'marking-surface:tool:blur'
 
   select: ->
     @focus()
     @toFront()
     @attr 'data-selected', true
-    @trigger 'select'
+    @trigger 'marking-surface:tool:select'
 
   deselect: ->
     @attr 'data-selected', null
-    @trigger 'deselect'
+    @trigger 'marking-surface:tool:deselect'
 
   destroy: ->
     @deselect()

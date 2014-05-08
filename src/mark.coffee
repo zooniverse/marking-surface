@@ -12,15 +12,16 @@ class Mark extends BaseClass
       properties = property
       @set property, value for property, value of properties
 
-    @trigger 'change'
+    @trigger 'marking-surface:mark:change'
     return
 
   toJSON: ->
-    # Underscore-prefixed properties will not be included in the output.
     result = {}
+
     for property, value of @
-      continue if property in @ignore
+      # Underscore-prefixed properties will not be included in the output.
       continue if property.charAt(0) is '_'
+      continue if property in @ignore
 
       if typeof value is 'number'
         parts = value.toString().split('.')

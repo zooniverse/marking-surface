@@ -69,7 +69,7 @@ class SVG extends ElementBase
   addShape: (tag, defaultAttrs) ->
     # Added shapes are automatically added as children, useful for SVG roots and groups.
     shape = new SVG {tag, defaultAttrs}
-    @on 'destroy', [shape, 'destroy']
+    @on 'marking-surface:base:destroy', [shape, 'destroy']
     @el.appendChild shape.el
     shape
 

@@ -41,12 +41,12 @@ class ElementBase extends BaseClass
   enable: (e) ->
     @disabled = false
     @attr 'disabled', null
-    @trigger 'enable'
+    @trigger 'marking-surface:element:enable'
 
   disable: (e) ->
     @disabled = true
     @attr 'disabled', true
-    @trigger 'disable'
+    @trigger 'marking-surface:element:disable'
 
   addEvent: (eventName, [delegate]..., handler) ->
     unless eventName of @_eventListeners or eventName of @_delegatedListeners
@@ -67,10 +67,10 @@ class ElementBase extends BaseClass
     addEventListener 'touchmove', this, false
     addEventListener 'touchend', this, false
     addEventListener 'touchcancel', this, false
-    @dispatchEvent 'start', originalEvent: e
+    @dispatchEvent 'marking-surface:element:start', originalEvent: e
 
   _onMove: (e) ->
-    @dispatchEvent 'move', originalEvent: e
+    @dispatchEvent 'marking-surface:element:move', originalEvent: e
 
   _onRelease: (e) ->
     removeEventListener 'mousemove', this, false
@@ -78,7 +78,7 @@ class ElementBase extends BaseClass
     removeEventListener 'touchmove', this, false
     removeEventListener 'touchend', this, false
     removeEventListener 'touchcancel', this, false
-    @dispatchEvent 'release', originalEvent: e
+    @dispatchEvent 'marking-surface:element:release', originalEvent: e
     @_startEvent = null
 
   handleEvent: (e) ->
@@ -152,7 +152,7 @@ class ElementBase extends BaseClass
   remove: ->
     if @el.parentNode?
       @el.parentNode?.removeChild @el
-      @trigger 'remove'
+      @trigger 'marking-surface:element:remove'
 
   destroy: ->
     for eventName of @_eventListeners

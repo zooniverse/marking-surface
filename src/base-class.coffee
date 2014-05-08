@@ -13,7 +13,7 @@ class BaseClass
 
   trigger: (eventName, args = []) ->
     if LOG_EVENTS
-      console?.group eventName, "(#{this.constructor.name})", args
+      console?.group @el ? @constructor.name, eventName, args
 
     if eventName of @_events
       for handler in @_events[eventName]
@@ -50,5 +50,5 @@ class BaseClass
 
   destroy: ->
     # Note, call `super` at the _end_ of any methods that extend this.
-    @trigger 'destroy'
+    @trigger 'marking-surface:base:destroy'
     @off()

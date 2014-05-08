@@ -10,7 +10,7 @@ class ToolFocusTarget extends ToolControls
 
     @el.type = 'button'
 
-    @tool.on 'focus', [@el, 'focus']
+    @tool.on 'marking-surface:tool:focus', [@el, 'focus']
 
     @addEvent 'focus', [@tool, 'focus']
     @addEvent 'blur', [@tool, 'blur']

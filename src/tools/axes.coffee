@@ -40,8 +40,8 @@ class AxesTool extends Tool
         stroke: 'currentColor'
         'data-handle-index': i
 
-    @addEvent 'move', '.handle', [this, @onHandleMove]
-    @addEvent 'release', '.handle', [this, @onHandleRelease]
+    @addEvent 'marking-surface:element:move', '.handle', [this, @onHandleMove]
+    @addEvent 'marking-surface:element:release', '.handle', [this, @onHandleRelease]
 
   onInitialStart: (e) ->
     {x, y} = @coords e
