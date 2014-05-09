@@ -1,7 +1,14 @@
+DEV_PORT = +location.port > 1023
 LOG_EVENTS = !!~location.search.indexOf 'log=1'
+
+if DEV_PORT
+  window.MARKING_SURFACE_OBJECTS = []
 
 class BaseClass
   constructor: (params = {}) ->
+    if DEV_PORT
+      window.MARKING_SURFACE_OBJECTS.push this
+
     @_events = {}
 
     for property, value of params
@@ -52,3 +59,7 @@ class BaseClass
     # Note, call `super` at the _end_ of any methods that extend this.
     @trigger 'marking-surface:base:destroy'
     @off()
+
+    if DEV_PORT
+      index = window.MARKING_SURFACE_OBJECTS.indexOf this
+      window.MARKING_SURFACE_OBJECTS.splice index, 1
