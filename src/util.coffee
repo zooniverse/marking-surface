@@ -17,7 +17,7 @@ insertStyle = do ->
   IE_HACK_ID = 'marking-surface-element-that-only-exists-to-please-ie'
 
   (id, styleContent) ->
-    document.querySelector('style, link[rel="stylesheet"]').insertAdjacentHTML 'beforeBegin', """
+    document.querySelector('head > :first-child').insertAdjacentHTML 'beforeBegin', """
       <span id="#{IE_HACK_ID}"></span>
       <style id="#{id}">#{styleContent}</style>
     """
