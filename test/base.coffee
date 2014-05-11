@@ -1,6 +1,7 @@
 MarkingSurface = require '../lib/marking-surface'
-{BaseClass} = MarkingSurface
 tape = require 'tape'
+
+{BaseClass} = MarkingSurface
 
 tape.test 'BaseClass', (t) ->
   baseInstance = new BaseClass
@@ -34,29 +35,44 @@ tape.test 'BaseClass', (t) ->
     baseInstance.trigger 'foo', ['bar']
 
   t.test 'Non-DOM event removal', (t) ->
-    specificHandler = ->
-      t.fail 'Specific event was not removed'
+    specificFunction = ->
+      t.fail 'Specific event was not removed by function reference'
 
-    baseInstance.on 'specific-handler', specificHandler
+    baseInstance.on 'specific-handler-function', specificFunction
+    baseInstance.off 'specific-handler-function', specificFunction
+    baseInstance.trigger 'specific-handler-function'
 
-    baseInstance.off 'specific-handler', specificHandler
+    baseInstance.specificMethod = ->
+      t.fail 'Specific event was not removed by method name'
 
-    baseInstance.trigger 'specific-handler'
+    baseInstance.on 'specific-handler-method-reference', 'specificMethod'
+    baseInstance.off 'specific-handler-method-reference', 'specificMethod'
+    baseInstance.trigger 'specific-handler-method-reference'
+
+    specificFunctionChangedContext = ->
+      t.fail 'Specific event was not removed by function reference with a changed context'
+
+    otherObject =
+      otherObjectMethod: ->
+        t.fail 'Specific event was not removed by method name on another object'
+
+    baseInstance.on 'specific-handler-function-changed-context', [otherObject, specificFunctionChangedContext]
+    baseInstance.off 'specific-handler-function-changed-context', [otherObject, specificFunctionChangedContext]
+    baseInstance.trigger 'specific-handler-function-changed-context'
+
+    baseInstance.on 'specific-handler-function-changed-context', [otherObject, 'otherObjectMethod']
+    baseInstance.off 'specific-handler-function-changed-context', [otherObject, 'otherObjectMethod']
+    baseInstance.trigger 'specific-handler-function-changed-context'
 
     baseInstance.on 'by-event-name', ->
       t.fail 'Event was not removed by event name'
-
     baseInstance.off 'by-event-name'
-
     baseInstance.trigger 'by-event-name'
 
     baseInstance.on 'all-events', ->
       t.fail 'Not all events were not removed'
-
     baseInstance.off()
-
     baseInstance.trigger 'all-events'
 
     setTimeout ->
-      t.pass 'All events appear to have been removed'
       t.end()

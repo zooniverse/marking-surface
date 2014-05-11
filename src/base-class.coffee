@@ -4,6 +4,17 @@ LOG_EVENTS = !!~location.search.indexOf 'log=1'
 if DEV_PORT
   window.MARKING_SURFACE_OBJECTS = []
 
+arraysMatch = (a1, a2) ->
+  if a1 is a2
+    true
+  else if a1.length is a2.length
+    for i in [0...a1.length]
+      unless a1[i] is a2[i]
+        return false
+    true
+  else
+    false
+
 class BaseClass
   constructor: (params = {}) ->
     if DEV_PORT
@@ -47,13 +58,18 @@ class BaseClass
       if eventName of @_events
         handlerList = @_events[eventName]
         if handler?
-          handlerIndex = handlerList.indexOf handler
-          handlerList.splice handlerIndex, 1
+          handlerIndex = if handler instanceof Array
+            (i for h, i in handlerList by -1 when arraysMatch handler, h)[0] ? -1
+          else
+            handlerList.indexOf handler
+
+          if handlerIndex >= 0
+            handlerList.splice handlerIndex, 1
         else
           handlerList.splice 0
     else
       for property of @_events
-        delete @_events[property]
+        @_events[property].splice 0
 
   destroy: ->
     # Note, call `super` at the _end_ of any methods that extend this.
