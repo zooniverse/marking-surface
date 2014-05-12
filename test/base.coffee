@@ -35,44 +35,65 @@ tape.test 'BaseClass', (t) ->
     baseInstance.trigger 'foo', ['bar']
 
   t.test 'Non-DOM event removal', (t) ->
-    specificFunction = ->
-      t.fail 'Specific event was not removed by function reference'
+    t.test 'By specific function', (t) ->
+      specificFunction = ->
+        t.fail 'Specific event was not removed by function reference'
 
-    baseInstance.on 'specific-handler-function', specificFunction
-    baseInstance.off 'specific-handler-function', specificFunction
-    baseInstance.trigger 'specific-handler-function'
+      baseInstance.on 'specific-handler-function', specificFunction
+      baseInstance.off 'specific-handler-function', specificFunction
+      baseInstance.trigger 'specific-handler-function'
 
-    baseInstance.specificMethod = ->
-      t.fail 'Specific event was not removed by method name'
+      setTimeout ->
+        t.end()
 
-    baseInstance.on 'specific-handler-method-reference', 'specificMethod'
-    baseInstance.off 'specific-handler-method-reference', 'specificMethod'
-    baseInstance.trigger 'specific-handler-method-reference'
+    t.test 'By method name', (t) ->
+      baseInstance.specificMethod = ->
+        t.fail 'Specific event was not removed by method name'
 
-    specificFunctionChangedContext = ->
-      t.fail 'Specific event was not removed by function reference with a changed context'
+      baseInstance.on 'specific-handler-method-reference', 'specificMethod'
+      baseInstance.off 'specific-handler-method-reference', 'specificMethod'
+      baseInstance.trigger 'specific-handler-method-reference'
+
+      setTimeout ->
+        t.end()
 
     otherObject =
       otherObjectMethod: ->
         t.fail 'Specific event was not removed by method name on another object'
 
-    baseInstance.on 'specific-handler-function-changed-context', [otherObject, specificFunctionChangedContext]
-    baseInstance.off 'specific-handler-function-changed-context', [otherObject, specificFunctionChangedContext]
-    baseInstance.trigger 'specific-handler-function-changed-context'
+    t.test 'By specific function with a different context', (t) ->
+      specificFunctionChangedContext = ->
+        t.fail 'Specific event was not removed by function reference with a changed context'
 
-    baseInstance.on 'specific-handler-function-changed-context', [otherObject, 'otherObjectMethod']
-    baseInstance.off 'specific-handler-function-changed-context', [otherObject, 'otherObjectMethod']
-    baseInstance.trigger 'specific-handler-function-changed-context'
+      baseInstance.on 'specific-handler-function-changed-context', [otherObject, specificFunctionChangedContext]
+      baseInstance.off 'specific-handler-function-changed-context', [otherObject, specificFunctionChangedContext]
+      baseInstance.trigger 'specific-handler-function-changed-context'
 
-    baseInstance.on 'by-event-name', ->
-      t.fail 'Event was not removed by event name'
-    baseInstance.off 'by-event-name'
-    baseInstance.trigger 'by-event-name'
+      setTimeout ->
+        t.end()
 
-    baseInstance.on 'all-events', ->
-      t.fail 'Not all events were not removed'
-    baseInstance.off()
-    baseInstance.trigger 'all-events'
+    t.test 'By method name of another object', (t) ->
+      baseInstance.on 'specific-handler-function-changed-context', [otherObject, 'otherObjectMethod']
+      baseInstance.off 'specific-handler-function-changed-context', [otherObject, 'otherObjectMethod']
+      baseInstance.trigger 'specific-handler-function-changed-context'
 
-    setTimeout ->
-      t.end()
+      setTimeout ->
+        t.end()
+
+    t.test 'By event name', (t) ->
+      baseInstance.on 'by-event-name', ->
+        t.fail 'Event was not removed by event name'
+      baseInstance.off 'by-event-name'
+      baseInstance.trigger 'by-event-name'
+
+      setTimeout ->
+        t.end()
+
+    t.test 'All events', ->
+      baseInstance.on 'all-events', ->
+        t.fail 'Not all events were not removed'
+      baseInstance.off()
+      baseInstance.trigger 'all-events'
+
+      setTimeout ->
+        t.end()
