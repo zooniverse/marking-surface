@@ -22,7 +22,7 @@
     return img.src = src;
   };
 
-  DEMO_IMAGE = '../demo/fish.jpg';
+  DEMO_IMAGE = './demo/fish.jpg';
 
   ms = new MarkingSurface({
     inputName: 'marks',
