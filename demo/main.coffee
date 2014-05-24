@@ -13,7 +13,7 @@ getImage = (src, callback) ->
   img.onload = -> callback? img
   img.src = src
 
-DEMO_IMAGE = './fish.jpg'
+DEMO_IMAGE = '../demo/fish.jpg'
 
 ms = new MarkingSurface
   inputName: 'marks'
