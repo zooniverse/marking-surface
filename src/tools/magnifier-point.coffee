@@ -1,82 +1,104 @@
 {Tool} = window?.MarkingSurface || require 'marking-surface'
 
 class MagnifierPointTool extends Tool
+  selectedRadius: 40
+  deselectedRadius: 8
+  strokeWidth: 1
+  crosshairsSpan: 4 / 5
+
   href: ''
-  radius: 40
-  zoom: 1.5
-
-  stroke: 'white'
-  strokeWidth: 2
-
-  cursors:
-    disc: '*grab'
+  zoom: 2
 
   startOffset: null
 
-  initialize: ->
-    @href ||= @surface.el.querySelector('image').href.baseVal
+  constructor: ->
+    super
 
-    @clip = @addShape 'clipPath', id: "_#{Math.random().toString()[2...]}"
+    clipID = 'marking-surface-magnifier-clip-' + Math.random().toString().split('.')[1]
+
+    @clip = @addShape 'clipPath', id: clipID
     @clipCircle = @clip.addShape 'circle'
-    @image = @addShape 'image', clipPath: "url(##{@clip.attr 'id'})"
-    @disc = @addShape 'circle.disc'
 
-    @root.filter 'shadow'
-    @redraw()
+    @image = @addShape 'image', clipPath: "url(##{clipID})"
+    @crosshairs = @addShape 'path.crosshairs', stroke: 'currentColor'
+    @disc = @addShape 'circle.disc', fill: 'transparent', stroke: 'currentColor'
 
-  onInitialClick: ->
-    @['on *start disc'] arguments...
+    @addEvent 'marking-surface:element:start', 'circle', @onStart
+    @addEvent 'marking-surface:element:move', 'circle', @onMove
 
-  onInitialDrag: ->
-    @['on *drag disc'] arguments...
+    setTimeout =>
+      @href ||= @markingSurface.el.querySelector('image').href.baseVal
+      @image.attr 'xlink:href': @href
 
-  'on *start disc': (e) ->
-    offset = @pointerOffset e
+  onInitialStart: (e) ->
+    {x, y} = @coords e
+
+    @mark.x = x
+    @mark.y = y
+
+    @onStart arguments...
+    @onInitialMove arguments...
+
+  onInitialMove: ->
+    @onMove arguments...
+
+  onStart: (e) ->
+    {x, y} = @coords e
+
     @startOffset =
-      x: (offset.x - @mark.x) || 0
-      y: (offset.y - @mark.y) || 0
+      x: x - @mark.x
+      y: y - @mark.y
 
-    @['on *drag disc'] arguments...
-
-  'on *drag disc': (e) ->
-    {x, y} = @pointerOffset e
+  onMove: (e) ->
+    {x, y} = @coords e
     x -= @startOffset.x
     y -= @startOffset.y
     @mark.set {x, y}
 
-  redraw: ->
-    @clipCircle.attr 'r', @radius
+  select: ->
+    super
+    @render()
 
-    @disc.attr
-      r: @radius
-      stroke: @stroke
-      strokeWidth: @strokeWidth
-
-    img = new Image
-    img.onload = =>
-      {width, height} = img
-      @image.attr
-        'xlink:href': @href
-        width: width * @zoom
-        height: height * @zoom
-
-      @render()
-
-    img.src = @href
+  deselect: ->
+    super
+    @render()
 
   render: ->
-    if @mark.x? and @mark.y?
-      @group.attr 'transform', "translate(#{@mark.x}, #{@mark.y})"
-      @controls?.moveTo @getControlsPosition()...
+    super
 
-      width = @image.attr 'width'
-      height = @image.attr 'height'
+    currentRadius = if @markingSurface.selection is this
+      @selectedRadius
+    else
+      @deselectedRadius
 
-      if width? and height?
-        pctX = @mark.x / @surface.el.clientWidth
-        pctY = @mark.y / @surface.el.clientHeight
-        @clipCircle.attr 'transform', "translate(#{width * pctX}, #{height * pctY})"
-        @image.attr 'transform', "translate(#{width * -pctX}, #{height * -pctY})"
+    scale = (@markingSurface?.scaleX + @markingSurface?.scaleY) / 2
+    scaledRadius = currentRadius / scale
+    scaledStrokeWidth = @strokeWidth / scale
+    width = @markingSurface.el.offsetWidth / scale
+    height = @markingSurface.el.offsetHeight / scale
+
+    @clipCircle.attr
+      transform: "translate(#{@mark.x * @zoom}, #{@mark.y * @zoom})"
+      r: scaledRadius
+
+    @image.attr
+      width: width * @zoom
+      height: height * @zoom
+      transform: "translate(#{-1 * @mark.x * @zoom}, #{-1 * @mark.y * @zoom})"
+
+    @crosshairs.attr
+      strokeWidth: scaledStrokeWidth * @strokeWidth
+      d: """
+        M #{-scaledRadius * @crosshairsSpan} 0 L #{scaledRadius * @crosshairsSpan} 0
+        M 0 #{-scaledRadius * @crosshairsSpan} L 0 #{scaledRadius * @crosshairsSpan}
+      """
+
+    @disc.attr
+      r: scaledRadius
+      strokeWidth: scaledStrokeWidth
+
+    @attr 'transform', "translate(#{@mark.x}, #{@mark.y})"
+    @controls?.moveTo @getControlsPosition()...
 
   getControlsPosition: ->
     [@mark.x, @mark.y]
