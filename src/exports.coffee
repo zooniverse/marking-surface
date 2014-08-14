@@ -6,6 +6,7 @@ MarkingSurface.ToolFocusTarget = ToolFocusTarget
 MarkingSurface.ToolControls = ToolControls
 MarkingSurface.ToolLabel = ToolLabel
 MarkingSurface.Tool = Tool
+MarkingSurface.insertStyle = insertStyle
 
 window?.MarkingSurface = MarkingSurface
 module?.exports = MarkingSurface
