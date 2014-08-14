@@ -6,6 +6,7 @@ class MagnifierPointTool extends Tool
   strokeWidth: 1
   crosshairsSpan: 4 / 5
 
+  tag: 'g.magnifier-point-tool'
   href: ''
   zoom: 2
 
@@ -23,14 +24,17 @@ class MagnifierPointTool extends Tool
     @crosshairs = @addShape 'path.crosshairs', stroke: 'currentColor'
     @disc = @addShape 'circle.disc', fill: 'transparent', stroke: 'currentColor'
 
-    @addEvent 'marking-surface:element:start', 'circle', @onStart
-    @addEvent 'marking-surface:element:move', 'circle', @onMove
+    @disc.addEvent 'marking-surface:element:start', [@, 'onStart']
+    @disc.addEvent 'marking-surface:element:move', [@, 'onMove']
+    @disc.addEvent 'marking-surface:element:release', [@, 'onRelease']
 
     setTimeout =>
       @href ||= @markingSurface.el.querySelector('image').href.baseVal
       @image.attr 'xlink:href': @href
 
   onInitialStart: (e) ->
+    super
+
     {x, y} = @coords e
 
     @mark.x = x
@@ -40,7 +44,12 @@ class MagnifierPointTool extends Tool
     @onInitialMove arguments...
 
   onInitialMove: ->
+    super
     @onMove arguments...
+
+  onInitialRelease: ->
+    super
+    @onRelease arguments...
 
   onStart: (e) ->
     {x, y} = @coords e
@@ -49,11 +58,16 @@ class MagnifierPointTool extends Tool
       x: x - @mark.x
       y: y - @mark.y
 
+    @attr 'data-active', true
+
   onMove: (e) ->
     {x, y} = @coords e
     x -= @startOffset.x
     y -= @startOffset.y
     @mark.set {x, y}
+
+  onRelease: ->
+    @attr 'data-active', null
 
   select: ->
     super
@@ -74,34 +88,53 @@ class MagnifierPointTool extends Tool
     scale = (@markingSurface?.scaleX + @markingSurface?.scaleY) / 2
     scaledRadius = currentRadius / scale
     scaledStrokeWidth = @strokeWidth / scale
-    width = @markingSurface.el.offsetWidth / scale
-    height = @markingSurface.el.offsetHeight / scale
+    width = @markingSurface.el.offsetWidth / @markingSurface?.scaleX
+    height = @markingSurface.el.offsetHeight / @markingSurface?.scaleY
 
-    @clipCircle.attr
-      transform: "translate(#{@mark.x * @zoom}, #{@mark.y * @zoom})"
-      r: scaledRadius
+    console.log scale, @markingSurface?.scaleX, @markingSurface?.scaleY
 
-    @image.attr
-      width: width * @zoom
-      height: height * @zoom
-      transform: "translate(#{-1 * @mark.x * @zoom}, #{-1 * @mark.y * @zoom})"
+    if @mark.x? and @mark.y?
+      @clipCircle.attr
+        transform: "translate(#{@mark.x * @zoom}, #{@mark.y * @zoom})"
+        r: scaledRadius
 
-    @crosshairs.attr
-      strokeWidth: scaledStrokeWidth * @strokeWidth
-      d: """
-        M #{-scaledRadius * @crosshairsSpan} 0 L #{scaledRadius * @crosshairsSpan} 0
-        M 0 #{-scaledRadius * @crosshairsSpan} L 0 #{scaledRadius * @crosshairsSpan}
-      """
+      @image.attr
+        width: width * @zoom
+        height: height * @zoom
+        transform: "translate(#{-1 * @mark.x * @zoom}, #{-1 * @mark.y * @zoom})"
 
-    @disc.attr
-      r: scaledRadius
-      strokeWidth: scaledStrokeWidth
+      @crosshairs.attr
+        strokeWidth: scaledStrokeWidth * @strokeWidth
+        d: """
+          M #{-scaledRadius * @crosshairsSpan} 0 L #{scaledRadius * @crosshairsSpan} 0
+          M 0 #{-scaledRadius * @crosshairsSpan} L 0 #{scaledRadius * @crosshairsSpan}
+        """
 
-    @attr 'transform', "translate(#{@mark.x}, #{@mark.y})"
-    @controls?.moveTo @getControlsPosition()...
+      @disc.attr
+        r: scaledRadius
+        strokeWidth: scaledStrokeWidth
+
+      @attr 'transform', "translate(#{@mark.x}, #{@mark.y})"
+      @controls?.moveTo @getControlsPosition()...
 
   getControlsPosition: ->
     [@mark.x, @mark.y]
+
+MarkingSurface.insertStyle 'marking-surface-magnifier-point-tool-default-style', '''
+  .magnifier-point-tool {
+    cursor: move;
+    cursor: -moz-grab;
+    cursor: -webkit-grab;
+    cursor: grab;
+  }
+
+  .magnifier-point-tool[data-active] {
+    cursor: move;
+    cursor: -moz-grabbing;
+    cursor: -webkit-grabbing;
+    cursor: grabbing;
+  }
+'''
 
 window?.MarkingSurface.MagnifierPointTool = MagnifierPointTool
 module?.exports = MagnifierPointTool
