@@ -130,7 +130,6 @@ class MarkingSurface extends ElementBase
       @trigger 'marking-surface:deselect-tool', [tool]
 
   onDestroyTool: (e) ->
-    console?.info? 'Destroying tool'
     [tool] = e.detail
     index = @tools.indexOf tool
     @tools.splice index, 1

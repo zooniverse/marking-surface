@@ -91,17 +91,15 @@ class MagnifierPointTool extends Tool
     width = @markingSurface.el.offsetWidth / @markingSurface?.scaleX
     height = @markingSurface.el.offsetHeight / @markingSurface?.scaleY
 
-    console.log scale, @markingSurface?.scaleX, @markingSurface?.scaleY
-
     if @mark.x? and @mark.y?
       @clipCircle.attr
         transform: "translate(#{@mark.x * @zoom}, #{@mark.y * @zoom})"
         r: scaledRadius
 
       @image.attr
+        transform: "translate(#{-1 * @mark.x * @zoom}, #{-1 * @mark.y * @zoom})"
         width: width * @zoom
         height: height * @zoom
-        transform: "translate(#{-1 * @mark.x * @zoom}, #{-1 * @mark.y * @zoom})"
 
       @crosshairs.attr
         strokeWidth: scaledStrokeWidth * @strokeWidth
