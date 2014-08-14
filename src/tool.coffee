@@ -11,13 +11,15 @@ class Tool extends SVG
 
   focused: false
 
+  fps: 60
+
   constructor: ->
     super
 
     unless @mark?
       @mark = new @constructor.Mark
 
-    @mark.on 'marking-surface:mark:change', [@, 'render']
+    @mark.on 'marking-surface:mark:change', [@, 'throttleRender']
     @mark.on 'marking-surface:mark:change', [@, 'dispatchEvent', 'marking-surface:mark:change', [@mark]] # Faux-bubbling
     @mark.on 'marking-surface:base:destroy', [@, 'destroy']
 
@@ -62,6 +64,12 @@ class Tool extends SVG
 
   rescale: (scaleX, scaleY) ->
     @render()
+
+  renderTimeout: NaN
+  throttleRender: ->
+    if isNaN @renderTimeout
+      @render arguments...
+      @renderTimeout = setTimeout (=> @renderTimeout = NaN), 1000 / @fps
 
   render: ->
     @attr 'data-complete', @isComplete() || null
