@@ -107,12 +107,12 @@ class Tool extends SVG
     @dispatchEvent 'marking-surface:tool:destroy', [this]
     super
 
-Tool.defaultStyle = insertStyle 'marking-surface-tool-default-style', """
-  .marking-surface-tool[data-focused] .marking-surface-tool-focus-root {
-    filter: url(##{FILTER_ID_PREFIX}focus);
-  }
+# Tool.defaultStyle = insertStyle 'marking-surface-tool-default-style', """
+#   .marking-surface-tool[data-focused] .marking-surface-tool-focus-root {
+#     filter: url(##{FILTER_ID_PREFIX}focus);
+#   }
 
-  .marking-surface-tool[data-selected] .marking-surface-tool-selected-root {
-    filter: url(##{FILTER_ID_PREFIX}shadow);
-  }
-"""
+#   .marking-surface-tool[data-selected] .marking-surface-tool-selected-root {
+#     filter: url(##{FILTER_ID_PREFIX}shadow);
+#   }
+# """
