@@ -44,12 +44,18 @@ class AxesTool extends Tool
     @addEvent 'marking-surface:element:release', '.handle', [this, @onHandleRelease]
 
   onInitialStart: (e) ->
+    super
     {x, y} = @coords e
     points = if @movements is 0 then ['p0', 'p1'] else ['p2', 'p3']
+
+    startProps = {}
     for point in points
-      @mark.set point, [x, y]
+      startProps[point] = [x, y]
+
+    @mark.set startProps
 
   onInitialMove: (e) ->
+    super
     {x, y} = @coords e
     point = if @movements is 0 then 'p1' else 'p3'
     @mark.set point, [x, y]
