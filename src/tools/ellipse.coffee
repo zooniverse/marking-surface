@@ -23,10 +23,10 @@ class EllipseTool extends Tool
     @xHandle = @addShape 'circle.x-handle', fill: 'currentColor'
     @yHandle = @addShape 'circle.y-handle', fill: 'currentColor'
 
-    @addEvent 'marking-surface:element:start', '.outline', @startDrag
-    @addEvent 'marking-surface:element:move', '.outline', @moveOutline
-    @addEvent 'marking-surface:element:move', '.x-handle', @dragXHandle
-    @addEvent 'marking-surface:element:move', '.y-handle', @dragYHandle
+    @outline.addEvent 'marking-surface:element:start', [@, 'startDrag']
+    @outline.addEvent 'marking-surface:element:move', [@, 'moveOutline']
+    @xHandle.addEvent 'marking-surface:element:move', [@, 'dragXHandle']
+    @yHandle.addEvent 'marking-surface:element:move', [@, 'dragYHandle']
 
   onInitialStart: (e) ->
     super
