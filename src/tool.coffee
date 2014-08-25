@@ -66,10 +66,14 @@ class Tool extends SVG
     @render()
 
   renderTimeout: NaN
-  throttleRender: ->
+  throttleRender: (args...) ->
+    doRender = =>
+      @renderTimeout = NaN
+      @render args...
+
     if isNaN @renderTimeout
-      @render arguments...
-      @renderTimeout = setTimeout (=> @renderTimeout = NaN), 1000 / @fps
+      @render args...
+      @renderTimeout = setTimeout doRender, 1000 / @fps
 
   render: ->
     @attr 'data-complete', @isComplete() || null
