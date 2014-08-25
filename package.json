@@ -4,7 +4,7 @@
   "main": "./lib/marking-surface.js",
   "devDependencies": {
     "browserify": "^4.1.2",
-    "coffee-script": "~1.6.3",
+    "coffee-script": "^1.7.1",
     "coffeeify": "~0.6.0",
     "easy-exec": "~0.0.1",
     "silver-server": "~0.1.1",
