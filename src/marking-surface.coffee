@@ -83,11 +83,11 @@ class MarkingSurface extends ElementBase
     @selection?.onInitialRelease e
 
   rescale: (x, y, width, height) ->
-    currentViewBox = @svg.attr('viewBox').split /\s+/
-    x ?= currentViewBox[0]
-    y ?= currentViewBox[1]
-    width ?= currentViewBox[2]
-    height ?= currentViewBox[3]
+    currentViewBox = @svg.attr('viewBox')?.split /\s+/
+    x ?= currentViewBox?[0] ? 0
+    y ?= currentViewBox?[1] ? 0
+    width ?= currentViewBox?[2] ? 0
+    height ?= currentViewBox?[3] ? 0
     @svg.attr 'viewBox', [x, y, width, height].join ' '
     scaled = @screenPixelToScale x: 100, y: 100
     @scaleX = 100 / scaled.x
