@@ -123,24 +123,24 @@ class AxesTool extends Tool
       y: intersection[1]
 
   getIntersection: (p0, p1, p2, p3) ->
-      grads = [
-        (p0[1] - p1[1]) / ((p0[0] - p1[0]) || 0.00001)
-        (p2[1] - p3[1]) / ((p2[0] - p3[0]) || 0.00001)
-      ]
+    grads = [
+      (p0[1] - p1[1]) / ((p0[0] - p1[0]) || 0.00001)
+      (p2[1] - p3[1]) / ((p2[0] - p3[0]) || 0.00001)
+    ]
 
-      interX = ((p2[1] - p0[1]) + (grads[0] * p0[0] - grads[1] * p2[0])) / (grads[0] - grads[1])
-      interY = grads[0] * (interX - p0[0]) + p0[1]
+    interX = ((p2[1] - p0[1]) + (grads[0] * p0[0] - grads[1] * p2[0])) / (grads[0] - grads[1])
+    interY = grads[0] * (interX - p0[0]) + p0[1]
 
-      sortedX = [p0[0], p1[0], p2[0], p3[0], interX].sort (a, b) -> a - b
-      sortedY = [p0[1], p1[1], p2[1], p3[1], interY].sort (a, b) -> a - b
+    sortedX = [p0[0], p1[0], p2[0], p3[0], interX].sort (a, b) -> a - b
+    sortedY = [p0[1], p1[1], p2[1], p3[1], interY].sort (a, b) -> a - b
 
-      interX = NaN unless sortedX[2] is interX
-      interY = NaN unless sortedY[2] is interY
+    interX = NaN unless sortedX[2] is interX
+    interY = NaN unless sortedY[2] is interY
 
-      if (isNaN interX) or (isNaN interY)
-        null
-      else
-        [interX, interY]
+    if (isNaN interX) or (isNaN interY)
+      null
+    else
+      [interX, interY]
 
 window?.MarkingSurface.AxesTool = AxesTool
 module?.exports = AxesTool
