@@ -3,8 +3,9 @@
 class MagnifierPointTool extends Tool
   selectedRadius: 40
   deselectedRadius: 8
-  strokeWidth: 1
-  crosshairsSpan: 4 / 5
+  strokeWidth: 2
+  crosshairsWidth: 1
+  crosshairsGap: 0.1
 
   tag: 'g.magnifier-point-tool'
   href: ''
@@ -21,7 +22,7 @@ class MagnifierPointTool extends Tool
     @clipCircle = @clip.addShape 'circle'
 
     @image = @addShape 'image', clipPath: "url(##{clipID})"
-    @crosshairs = @addShape 'path.crosshairs', stroke: 'currentColor'
+    @crosshairs = @addShape 'path.crosshairs', stroke: 'currentColor', transform: 'translate(-0.5, -0.5)'
     @disc = @addShape 'circle.disc', fill: 'transparent', stroke: 'currentColor'
 
     @disc.addEvent 'marking-surface:element:start', [@, 'onStart']
@@ -80,7 +81,9 @@ class MagnifierPointTool extends Tool
   render: ->
     super
 
-    currentRadius = if @markingSurface.selection is this
+    isSelected = @markingSurface.selection is this
+
+    currentRadius = if isSelected
       @selectedRadius
     else
       @deselectedRadius
@@ -88,6 +91,7 @@ class MagnifierPointTool extends Tool
     scale = (@markingSurface?.scaleX + @markingSurface?.scaleY) / 2
     scaledRadius = currentRadius / scale
     scaledStrokeWidth = @strokeWidth / scale
+    scaledCrosshairsWidth = @crosshairsWidth / scale
     width = @markingSurface.el.offsetWidth / @markingSurface?.scaleX
     height = @markingSurface.el.offsetHeight / @markingSurface?.scaleY
 
@@ -96,16 +100,20 @@ class MagnifierPointTool extends Tool
         transform: "translate(#{@mark.x * @zoom}, #{@mark.y * @zoom})"
         r: scaledRadius
 
+      window.img = @image
       @image.attr
         transform: "translate(#{-1 * @mark.x * @zoom}, #{-1 * @mark.y * @zoom})"
         width: width * @zoom
         height: height * @zoom
+        opacity: if isSelected then 1 else 0
 
       @crosshairs.attr
-        strokeWidth: scaledStrokeWidth * @strokeWidth
+        strokeWidth: scaledCrosshairsWidth
         d: """
-          M #{-scaledRadius * @crosshairsSpan} 0 L #{scaledRadius * @crosshairsSpan} 0
-          M 0 #{-scaledRadius * @crosshairsSpan} L 0 #{scaledRadius * @crosshairsSpan}
+          M #{-scaledRadius} 0 L #{-1 * scaledRadius * @crosshairsGap} 0
+          M #{scaledRadius * @crosshairsGap} 0 L #{scaledRadius} 0
+          M 0 #{-scaledRadius} L 0 #{-1 * scaledRadius * @crosshairsGap}
+          M 0 #{scaledRadius * @crosshairsGap} L 0 #{scaledRadius}
         """
 
       @disc.attr
