@@ -30,6 +30,12 @@ class MagnifierPointTool extends Tool
     @disc.addEvent 'marking-surface:element:move', [@, 'onMove']
     @disc.addEvent 'marking-surface:element:release', [@, 'onRelease']
 
+    @closeButtonGroup = @addShape 'g.close-button'
+    @closeButton = @closeButtonGroup.addShape 'circle', fill: 'black', stroke: 'currentColor'
+    @closeCross = @closeButtonGroup.addShape 'path', fill: 'none', stroke: 'white', transform: 'rotate(-45)'
+
+    @closeButtonGroup.addEvent 'click', [@mark, 'destroy']
+
     setTimeout =>
       @href ||= @markingSurface.el.querySelector('image').href.baseVal
       @image.attr 'xlink:href': @href
@@ -93,6 +99,7 @@ class MagnifierPointTool extends Tool
     scaledRadius = currentRadius / scale
     scaledStrokeWidth = @strokeWidth / scale
     scaledCrosshairsWidth = @crosshairsWidth / scale
+    scaledCloseButtonRadius = @closeButtonRadius / scale
     width = @markingSurface.el.offsetWidth / @markingSurface?.scaleX
     height = @markingSurface.el.offsetHeight / @markingSurface?.scaleY
 
@@ -121,6 +128,22 @@ class MagnifierPointTool extends Tool
         r: scaledRadius
         strokeWidth: scaledStrokeWidth
 
+      radiusAt45Deg = scaledRadius * Math.sin 45 / (180 / Math.PI)
+
+      @closeButtonGroup.attr
+        transform: "translate(#{radiusAt45Deg}, #{-1 * radiusAt45Deg})"
+
+      @closeButton.attr
+        r: scaledCloseButtonRadius
+        strokeWidth: scaledStrokeWidth
+
+      @closeCross.attr
+        strokeWidth: scaledStrokeWidth
+        d: """
+          M #{-0.7 * scaledCloseButtonRadius} 0 L #{0.7 * scaledCloseButtonRadius} 0
+          M 0 #{-0.7 * scaledCloseButtonRadius} L 0 #{0.7 * scaledCloseButtonRadius}
+        """
+
       @attr 'transform', "translate(#{@mark.x}, #{@mark.y})"
       @controls?.moveTo @getControlsPosition()...
 
@@ -140,6 +163,14 @@ MarkingSurface.insertStyle 'marking-surface-magnifier-point-tool-default-style',
     cursor: -moz-grabbing;
     cursor: -webkit-grabbing;
     cursor: grabbing;
+  }
+
+  .magnifier-point-tool .close-button {
+    cursor: pointer;
+  }
+
+  .magnifier-point-tool:not([data-selected]) .close-button {
+    display: none
   }
 '''
 
