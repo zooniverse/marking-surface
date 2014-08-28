@@ -1,11 +1,12 @@
 {Tool} = window?.MarkingSurface || require 'marking-surface'
 
 class MagnifierPointTool extends Tool
-  selectedRadius: 40
-  deselectedRadius: 8
+  selectedRadius: if @mobile then 60 else 40
+  deselectedRadius: if @mobile then 20 else 10
   strokeWidth: 2
   crosshairsWidth: 1
   crosshairsGap: 0.1
+  closeButtonRadius: if @mobile then 15 else 7
 
   tag: 'g.magnifier-point-tool'
   href: ''
