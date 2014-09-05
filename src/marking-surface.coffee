@@ -92,7 +92,9 @@ class MarkingSurface extends ElementBase
     scaled = @screenPixelToScale x: 100, y: 100
     @scaleX = 100 / scaled.x
     @scaleY = 100 / scaled.y
-    @renderTools()
+
+    unless @scaleX is 0 or @scaleY is 0
+      @renderTools()
 
   addTool: (tool) ->
     tool ?= new @tool
