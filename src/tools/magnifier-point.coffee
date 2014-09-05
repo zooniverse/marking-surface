@@ -17,13 +17,15 @@ class MagnifierPointTool extends Tool
   constructor: ->
     super
 
+    @root.attr 'transform', 'translate(-0.5, -0.5)'
+
     clipID = 'marking-surface-magnifier-clip-' + Math.random().toString().split('.')[1]
 
     @clip = @addShape 'clipPath', id: clipID
     @clipCircle = @clip.addShape 'circle'
 
     @image = @addShape 'image', clipPath: "url(##{clipID})"
-    @crosshairs = @addShape 'path.crosshairs', stroke: 'currentColor', transform: 'translate(-0.5, -0.5)'
+    @crosshairs = @addShape 'path.crosshairs', stroke: 'currentColor'
     @disc = @addShape 'circle.disc', fill: 'transparent', stroke: 'currentColor'
 
     @disc.addEvent 'marking-surface:element:start', [@, 'onStart']
