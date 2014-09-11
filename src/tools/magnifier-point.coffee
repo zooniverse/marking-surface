@@ -5,7 +5,7 @@ class MagnifierPointTool extends Tool
   deselectedRadius: if @mobile then 20 else 10
   strokeWidth: 2
   crosshairsWidth: 1
-  crosshairsGap: 0.1
+  crosshairsGap: 0.2
   closeButtonRadius: if @mobile then 15 else 7
 
   tag: 'g.magnifier-point-tool'
@@ -16,6 +16,8 @@ class MagnifierPointTool extends Tool
 
   constructor: ->
     super
+
+    radiusAt45Deg = @selectedRadius * Math.sin 45 / (180 / Math.PI)
 
     @root.attr 'transform', 'translate(-0.5, -0.5)'
 
@@ -32,15 +34,20 @@ class MagnifierPointTool extends Tool
     @disc.addEvent 'marking-surface:element:move', [@, 'onMove']
     @disc.addEvent 'marking-surface:element:release', [@, 'onRelease']
 
-    @closeButtonGroup = @addShape 'g.button'
-    @closeButton = @closeButtonGroup.addShape 'circle', fill: 'black', stroke: 'currentColor'
-    @closeCross = @closeButtonGroup.addShape 'path', fill: 'none', stroke: 'white', transform: 'rotate(-45)'
+    @closeButtonGroup = @addShape 'g.button', strokeWidth: @strokeWidth, transform: "translate(#{radiusAt45Deg}, #{-1 * radiusAt45Deg})"
+    @closeButtonGroup.addShape 'circle', r: @closeButtonRadius, fill: 'black', stroke: 'currentColor'
+    @closeButtonGroup.addShape 'path', d: "
+      M #{-0.7 * @closeButtonRadius} 0 L #{0.7 * @closeButtonRadius} 0
+      M 0 #{-0.7 * @closeButtonRadius} L 0 #{0.7 * @closeButtonRadius}
+    ", stroke: 'white', transform: 'rotate(-45)'
 
     @closeButtonGroup.addEvent 'click', [@mark, 'destroy']
 
-    @deselectButtonGroup = @addShape 'g.button'
-    @deselectButton = @deselectButtonGroup.addShape 'circle', fill: 'black', stroke: 'currentColor'
-    @deselectLine = @deselectButtonGroup.addShape 'path', fill: 'none', stroke: 'white', transform: 'rotate(45)'
+    @deselectButtonGroup = @addShape 'g.button', strokeWidth: @strokeWidth, transform: "translate(#{@selectedRadius}, 0)"
+    @deselectButtonGroup.addShape 'circle', r: @closeButtonRadius, fill: 'black', stroke: 'currentColor'
+    @magnifyIcon = @deselectButtonGroup.addShape 'g', stroke: 'white', transform: 'rotate(45)'
+    @magnifyIcon.addShape 'circle', r: @closeButtonRadius / 3
+    @magnifyIcon.addShape 'path', d: "M #{@closeButtonRadius / 3} 0 L #{@closeButtonRadius} 0"
 
     @deselectButtonGroup.addEvent 'click', [@, 'deselect']
 
@@ -103,20 +110,14 @@ class MagnifierPointTool extends Tool
     else
       @deselectedRadius
 
-    scale = (@markingSurface?.scaleX + @markingSurface?.scaleY) / 2
-    scaledRadius = currentRadius / scale
-    scaledStrokeWidth = @strokeWidth / scale
-    scaledCrosshairsWidth = @crosshairsWidth / scale
-    scaledCloseButtonRadius = @closeButtonRadius / scale
     width = @markingSurface.el.offsetWidth / @markingSurface?.scaleX
     height = @markingSurface.el.offsetHeight / @markingSurface?.scaleY
 
     if @mark.x? and @mark.y?
       @clipCircle.attr
         transform: "translate(#{@mark.x * @zoom}, #{@mark.y * @zoom})"
-        r: scaledRadius
+        r: currentRadius
 
-      window.img = @image
       @image.attr
         transform: "translate(#{-1 * @mark.x * @zoom}, #{-1 * @mark.y * @zoom})"
         width: width * @zoom
@@ -124,48 +125,19 @@ class MagnifierPointTool extends Tool
         opacity: if isSelected then 1 else 0
 
       @crosshairs.attr
-        strokeWidth: scaledCrosshairsWidth
+        strokeWidth: if isSelected then @crosshairsWidth else @strokeWidth
         d: """
-          M #{-scaledRadius} 0 L #{-1 * scaledRadius * @crosshairsGap} 0
-          M #{scaledRadius * @crosshairsGap} 0 L #{scaledRadius} 0
-          M 0 #{-scaledRadius} L 0 #{-1 * scaledRadius * @crosshairsGap}
-          M 0 #{scaledRadius * @crosshairsGap} L 0 #{scaledRadius}
+          M #{-currentRadius} 0 L #{-1 * currentRadius * @crosshairsGap} 0
+          M #{currentRadius * @crosshairsGap} 0 L #{currentRadius} 0
+          M 0 #{-currentRadius} L 0 #{-1 * currentRadius * @crosshairsGap}
+          M 0 #{currentRadius * @crosshairsGap} L 0 #{currentRadius}
         """
 
       @disc.attr
-        r: scaledRadius
-        strokeWidth: scaledStrokeWidth
+        r: currentRadius
+        strokeWidth: if isSelected then @strokeWidth else 0
 
-      radiusAt45Deg = scaledRadius * Math.sin 45 / (180 / Math.PI)
-
-      @closeButtonGroup.attr
-        transform: "translate(#{radiusAt45Deg}, #{-1 * radiusAt45Deg})"
-
-      @closeButton.attr
-        r: scaledCloseButtonRadius
-        strokeWidth: scaledStrokeWidth
-
-      @closeCross.attr
-        strokeWidth: scaledStrokeWidth
-        d: """
-          M #{-0.7 * scaledCloseButtonRadius} 0 L #{0.7 * scaledCloseButtonRadius} 0
-          M 0 #{-0.7 * scaledCloseButtonRadius} L 0 #{0.7 * scaledCloseButtonRadius}
-        """
-
-      @deselectButtonGroup.attr
-        transform: "translate(#{scaledRadius}, 0)"
-
-      @deselectButton.attr
-        r: scaledCloseButtonRadius
-        strokeWidth: scaledStrokeWidth
-
-      @deselectLine.attr
-        strokeWidth: scaledStrokeWidth
-        d: """
-          M #{-0.7 * scaledCloseButtonRadius} 0 L #{0.7 * scaledCloseButtonRadius} 0
-        """
-
-      @attr 'transform', "translate(#{@mark.x}, #{@mark.y})"
+      @attr 'transform', "translate(#{@mark.x}, #{@mark.y}) scale(#{1 / @markingSurface.scaleX}, #{1 / @markingSurface.scaleY})"
       @controls?.moveTo @getControlsPosition()...
 
   getControlsPosition: ->
