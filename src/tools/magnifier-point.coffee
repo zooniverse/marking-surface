@@ -32,11 +32,17 @@ class MagnifierPointTool extends Tool
     @disc.addEvent 'marking-surface:element:move', [@, 'onMove']
     @disc.addEvent 'marking-surface:element:release', [@, 'onRelease']
 
-    @closeButtonGroup = @addShape 'g.close-button'
+    @closeButtonGroup = @addShape 'g.button'
     @closeButton = @closeButtonGroup.addShape 'circle', fill: 'black', stroke: 'currentColor'
     @closeCross = @closeButtonGroup.addShape 'path', fill: 'none', stroke: 'white', transform: 'rotate(-45)'
 
     @closeButtonGroup.addEvent 'click', [@mark, 'destroy']
+
+    @deselectButtonGroup = @addShape 'g.button'
+    @deselectButton = @deselectButtonGroup.addShape 'circle', fill: 'black', stroke: 'currentColor'
+    @deselectLine = @deselectButtonGroup.addShape 'path', fill: 'none', stroke: 'white', transform: 'rotate(45)'
+
+    @deselectButtonGroup.addEvent 'click', [@, 'deselect']
 
     setTimeout =>
       @href ||= @markingSurface.el.querySelector('image').href.baseVal
@@ -146,6 +152,19 @@ class MagnifierPointTool extends Tool
           M 0 #{-0.7 * scaledCloseButtonRadius} L 0 #{0.7 * scaledCloseButtonRadius}
         """
 
+      @deselectButtonGroup.attr
+        transform: "translate(#{scaledRadius}, 0)"
+
+      @deselectButton.attr
+        r: scaledCloseButtonRadius
+        strokeWidth: scaledStrokeWidth
+
+      @deselectLine.attr
+        strokeWidth: scaledStrokeWidth
+        d: """
+          M #{-0.7 * scaledCloseButtonRadius} 0 L #{0.7 * scaledCloseButtonRadius} 0
+        """
+
       @attr 'transform', "translate(#{@mark.x}, #{@mark.y})"
       @controls?.moveTo @getControlsPosition()...
 
@@ -167,11 +186,11 @@ MarkingSurface.insertStyle 'marking-surface-magnifier-point-tool-default-style',
     cursor: grabbing;
   }
 
-  .magnifier-point-tool .close-button {
+  .magnifier-point-tool .button {
     cursor: pointer;
   }
 
-  .magnifier-point-tool:not([data-selected]) .close-button {
+  .magnifier-point-tool:not([data-selected]) .button {
     display: none
   }
 '''
