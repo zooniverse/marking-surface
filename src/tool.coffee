@@ -80,7 +80,7 @@ class Tool extends SVG
 
   isComplete: ->
     # Override this if drawing the tool requires multiple drag steps (e.g. axes).
-    @movements is 1
+    @movements > 0
 
   focus: ->
     unless @focused
