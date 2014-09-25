@@ -41,7 +41,7 @@ class MagnifierPointTool extends Tool
       M 0 #{-0.7 * @closeButtonRadius} L 0 #{0.7 * @closeButtonRadius}
     ", stroke: 'white', transform: 'rotate(-45)'
 
-    @closeButtonGroup.addEvent 'click', [@mark, 'destroy']
+    @closeButtonGroup.addEvent 'marking-surface:element:click', [@mark, 'destroy']
 
     @deselectButtonGroup = @addShape 'g.button', strokeWidth: @strokeWidth, transform: "translate(#{@selectedRadius}, 0)"
     @deselectButtonGroup.addShape 'circle', r: @closeButtonRadius, fill: 'black', stroke: 'currentColor'
@@ -49,7 +49,7 @@ class MagnifierPointTool extends Tool
     @magnifyIcon.addShape 'circle', r: @closeButtonRadius / 3
     @magnifyIcon.addShape 'path', d: "M #{@closeButtonRadius / 3} 0 L #{@closeButtonRadius} 0"
 
-    @deselectButtonGroup.addEvent 'click', [@, 'deselect']
+    @deselectButtonGroup.addEvent 'marking-surface:element:click', [@, 'deselect']
 
     setTimeout =>
       @href ||= @markingSurface.el.querySelector('image').href.baseVal
