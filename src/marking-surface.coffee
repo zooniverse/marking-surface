@@ -57,10 +57,15 @@ class MarkingSurface extends ElementBase
     @root.addShape arguments...
 
   _onStart: (e) ->
-    return if e.defaultPrevented # The event bubbled up from a tool's shape.
-    return if matchesSelector e.target, '.marking-surface-tool-controls-container *'
-
     e.preventDefault()
+
+    if matchesSelector e.target, [
+      '.marking-surface-tool'
+      '.marking-surface-tool *'
+      '.marking-surface-tool-controls-container *'
+    ].join ','
+
+      return
 
     tool = if not @selection? or @selection?.isComplete()
       if @tool?

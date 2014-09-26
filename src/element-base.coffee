@@ -4,7 +4,6 @@ class ElementBase extends BaseClass
   disabled: false
 
   _startEvent: null
-  _moveEvent: null
 
   constructor: ->
     @_eventListeners = {}
@@ -71,7 +70,6 @@ class ElementBase extends BaseClass
     @dispatchEvent 'marking-surface:element:start', originalEvent: e
 
   _onMove: (e) ->
-    @_moveEvent = e
     @dispatchEvent 'marking-surface:element:move', originalEvent: e
 
   _onRelease: (e) ->
@@ -81,10 +79,9 @@ class ElementBase extends BaseClass
     removeEventListener 'touchend', this, false
     removeEventListener 'touchcancel', this, false
     @dispatchEvent 'marking-surface:element:release', originalEvent: e
-    unless @_moveEvent?
+    if e.target is @_startEvent.target
       @dispatchEvent 'marking-surface:element:click', originalEvent: e
     @_startEvent = null
-    @_moveEvent = null
 
   handleEvent: (e) ->
     unless @disabled
