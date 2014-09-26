@@ -8,7 +8,7 @@ class MagnifierPointTool extends Tool
   crosshairsGap: 0.2
   closeButtonRadius: if @mobile then 15 else 7
 
-  tag: 'g.magnifier-point-tool'
+  tag: @::tag + '.magnifier-point-tool'
   href: ''
   zoom: 2
 
