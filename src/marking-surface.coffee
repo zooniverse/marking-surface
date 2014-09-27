@@ -57,8 +57,6 @@ class MarkingSurface extends ElementBase
     @root.addShape arguments...
 
   _onStart: (e) ->
-    e.preventDefault()
-
     if matchesSelector e.target, [
       '.marking-surface-tool'
       '.marking-surface-tool *'
@@ -66,6 +64,8 @@ class MarkingSurface extends ElementBase
     ].join ','
 
       return
+
+    e.preventDefault()
 
     tool = if not @selection? or @selection?.isComplete()
       if @tool?

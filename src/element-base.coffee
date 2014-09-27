@@ -80,6 +80,7 @@ class ElementBase extends BaseClass
     removeEventListener 'touchcancel', this, false
     @dispatchEvent 'marking-surface:element:release', originalEvent: e
     if e.target is @_startEvent.target
+      @dispatchEvent 'click', originalEvent: e # This is not ideal.
       @dispatchEvent 'marking-surface:element:click', originalEvent: e
     @_startEvent = null
 
