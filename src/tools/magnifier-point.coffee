@@ -122,7 +122,7 @@ class MagnifierPointTool extends Tool
         transform: "translate(#{-1 * @mark.x * @zoom}, #{-1 * @mark.y * @zoom})"
         width: width * @zoom
         height: height * @zoom
-        opacity: if isSelected then 1 else 0
+        display: if isSelected then '' else 'none'
 
       @crosshairs.attr
         strokeWidth: if isSelected then @crosshairsWidth else @strokeWidth
@@ -163,7 +163,7 @@ MarkingSurface.insertStyle 'marking-surface-magnifier-point-tool-default-style',
   }
 
   .magnifier-point-tool:not([data-selected]) .button {
-    display: none
+    display: none;
   }
 '''
 

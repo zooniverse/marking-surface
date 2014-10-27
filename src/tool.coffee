@@ -78,6 +78,9 @@ class Tool extends SVG
   render: ->
     @attr 'data-complete', @isComplete() || null
 
+    setTimeout ->
+      document.body.className += '' # HACK: This forces IE to re-render styles in certain complex selectors.
+
   isComplete: ->
     # Override this if drawing the tool requires multiple drag steps (e.g. axes).
     @movements > 0
