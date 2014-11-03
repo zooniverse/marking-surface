@@ -1,6 +1,6 @@
 {
   "name": "marking-surface",
-  "version": "0.6.9",
+  "version": "0.6.10",
   "main": "./lib/marking-surface.js",
   "devDependencies": {
     "browserify": "^4.1.2",
