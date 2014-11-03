@@ -24,8 +24,8 @@ class MarkingSurface extends ElementBase
     @svg.addEvent 'marking-surface:tool:destroy', [@, 'onDestroyTool']
 
     @sizeRect = @svg.addShape 'rect.marking-surface-size-rect',
-      fill: 'none'
-      stroke: 'transparent'
+      fill: 'rgba(0, 0, 0, 0)' # Should be "none", but this fixes a sizing bug in Firefox.
+      stroke: 'none'
       strokeWidth: 0
       width: '100%'
       height: '100%'
